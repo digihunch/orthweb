@@ -1,28 +1,35 @@
-# Tested with Terraform 0.13.5
 
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 3.12.0"
-    }
+data "template_file" "myuserdata" {
+  template = "${file("${path.cwd}/myuserdata.tpl")}"
+  vars = {
+    tempvar = "i11"
   }
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region  = var.depregion
   profile = "default"
 }
 
 resource "aws_instance" "orthweb" {
-  ami           = "ami-0fc61db8544a617ed" 
+  ami           = var.amilut[var.depregion]
   instance_type = "t3.micro"
-  key_name      = "yi_cs"
+  user_data     = "${data.template_cloudinit_config.orthconfig.rendered}"
+  key_name      = var.depkey
   tags = {
     Name = "OrthServer"
   }
 }
 
-output "connstr" {
-   value = aws_instance.orthweb.public_dns
+data "template_cloudinit_config" "orthconfig" {
+  base64_encode = true
+  part {
+    content_type = "text/x-shellscript"
+    content      = "${data.template_file.myuserdata.template}"
+  }
+  part {
+    content_type = "text/x-shellscript"
+    content      = "${file("${path.cwd}/custom_userdata.sh")}"
+  }
 }
+
