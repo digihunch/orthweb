@@ -1,9 +1,17 @@
-# Terraform 0.13.5
+# Tested with Terraform 0.13.5
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.12.0"
+    }
+  }
+}
 
 provider "aws" {
   region = "us-east-1"
   profile = "default"
-  shared_credentials_file = "~/.aws/credentials"
 }
 
 resource "aws_instance" "orthweb" {
