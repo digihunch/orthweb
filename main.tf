@@ -16,6 +16,7 @@ resource "aws_instance" "orthweb" {
   instance_type = "t3.micro"
   user_data     = "${data.template_cloudinit_config.orthconfig.rendered}"
   key_name      = var.depkey
+  vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
   tags = {
     Name = "OrthServer"
   }
