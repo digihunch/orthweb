@@ -2,7 +2,7 @@
 data "template_file" "myuserdata" {
   template = "${file("${path.cwd}/myuserdata.tpl")}"
   vars = {
-    tempvar = "i11"
+    db_endpoint = "${data.aws_db_instance.postgres.endpoint}"
   }
 }
 
@@ -17,6 +17,7 @@ resource "aws_instance" "orthweb" {
   user_data     = "${data.template_cloudinit_config.orthconfig.rendered}"
   key_name      = var.depkey
   vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
+  depends_on = [aws_db_instance.postgres]
   tags = {
     Name = "OrthServer"
   }

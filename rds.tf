@@ -1,5 +1,5 @@
 
-resource "aws_db_instance" "default" {
+resource "aws_db_instance" "postgres" {
   allocated_storage = 5
   storage_type      = "standard"     #magnetic
   engine            = "postgres"

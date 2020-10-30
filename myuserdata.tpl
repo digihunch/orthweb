@@ -6,4 +6,5 @@ sudo usermod -a -G docker ec2-user   # this allows non-root user to run docker c
 sudo systemctl start docker
 curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
+echo "postgres endpoint ${db_endpoint}"
 echo "Leaving script myuserdata"
