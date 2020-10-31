@@ -2,7 +2,7 @@
 data "template_file" "myuserdata" {
   template = "${file("${path.cwd}/myuserdata.tpl")}"
   vars = {
-    db_endpoint = "${data.aws_db_instance.postgres.endpoint}"
+    db_endpoint = "${aws_db_instance.postgres.endpoint}"
   }
 }
 
@@ -27,7 +27,7 @@ data "template_cloudinit_config" "orthconfig" {
   base64_encode = true
   part {
     content_type = "text/x-shellscript"
-    content      = "${data.template_file.myuserdata.template}"
+    content      = "${data.template_file.myuserdata.rendered}"
   }
   part {
     content_type = "text/x-shellscript"
