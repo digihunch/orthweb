@@ -1,7 +1,8 @@
-version: '3.1'  # Secrets are only available since this version of Docker Compose
+version: "3.3"  # Secrets are only available since this version of Docker Compose
 services:
   orthanc:
-    image: jodogne/orthanc-plugins:1.8.0
+    image: jodogne/orthanc-plugins
+    container_name: orthweb
     command: /run/secrets/  # Path to the configuration files (stored as secrets)
     ports:
       - 4242:4242

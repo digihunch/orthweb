@@ -19,3 +19,7 @@ to do:
 2. network segmentation and security group hardening
 3. investigate private link to rds
 4. certs and entryption of payload and http
+
+
+https://book.orthanc-server.com/index.html
+psql --host=localhost --port 5432 --username=myuser --dbname=orthancdb

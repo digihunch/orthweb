@@ -1,13 +1,18 @@
 {
   "Name" : "Orthanc in Docker",
   "RemoteAccessAllowed" : true,
-  "PostgresQL" : {
+  "PostgreSQL" : {
     "EnableIndex" : true,
     "EnableStorage" : true,
-    "Host" : "aaa.bbb.ccc.ddd",
+    "Host" : "host.docker.internal",
     "Port" : 5432,
-    "Database" : "orthandpostgres",
+    "Database" : "postgres",
     "Username" : "myuser",
-    "Password" : "mpassword"
-  }
+    "Password" : "mpassword",
+    "EnableSsl" : false
+  },
+  "Plugins" : [
+    "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLIndex.so",
+    "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLStorage.so"
+  ]
 }
