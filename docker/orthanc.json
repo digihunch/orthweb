@@ -1,4 +1,13 @@
 {
   "Name" : "Orthanc in Docker",
-  "RemoteAccessAllowed" : true
+  "RemoteAccessAllowed" : true,
+  "PostgresQL" : {
+    "EnableIndex" : true,
+    "EnableStorage" : true,
+    "Host" : "aaa.bbb.ccc.ddd",
+    "Port" : 5432,
+    "Database" : "orthandpostgres",
+    "Username" : "myuser",
+    "Password" : "mpassword"
+  }
 }
