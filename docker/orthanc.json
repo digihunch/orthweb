@@ -13,6 +13,7 @@
   },
   "Plugins" : [
     "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLIndex.so",
-    "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLStorage.so"
+    "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLStorage.so",
+    "/usr/local/share/orthanc/plugins/libOrthancWebViewer.so"
   ]
 }
