@@ -8,6 +8,7 @@ su ec2-user -c "
   echo 'docker/*' >> .git/info/sparse-checkout
   git pull --depth=1 origin main 
   cd docker
+  sed -i -e 's/host\.docker\.internal/${DB_ENDPOIT}/g' orthanc.json
   docker-compose up
 "
 echo "Leaving custom script"
