@@ -1,6 +1,7 @@
 resource "aws_security_group" "orthsecgrp" {
   name        = "orth_sg"
   description = "security group for orthanc"
+  vpc_id     = aws_vpc.orthmain.id
 
   ingress {
     description = "SSH"
@@ -37,6 +38,7 @@ resource "aws_security_group" "orthsecgrp" {
 resource "aws_security_group" "dbsecgroup" {
   name        = "orthdb_sg"
   description = "postgres security group"
+  vpc_id     = aws_vpc.orthmain.id
   ingress {
     from_port   = 5432
     to_port     = 5432

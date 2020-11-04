@@ -20,6 +20,6 @@ to do:
 https://book.orthanc-server.com/index.html
 psql --host=localhost --port 5432 --username=myuser --dbname=orthancdb
 
-
+http://localhost:8042/instances/3922a8dc-5a33bcf5-6e14b94e-6830a00b-8d28a633/preview
 
 ![Alt text here] (diagram/Orthweb.png)
