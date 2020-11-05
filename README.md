@@ -34,10 +34,10 @@ The Terraform template creates a virtual private cloud (VPC), a subnet, an EC2 i
 
 ![Diagram](diagram/Orthweb.png)
 
-The bootstrap script of EC2 instance provisions Docker environment and load up the Docker image. This sample project provides a minimally functional stack without high availability and security setups, except for basic TLS configuration. Once the instance is launched, the public DNS name of the EC2 instance and RDS instances are printed. For validation:
+The bootstrap script of EC2 instance provisions Docker environment and load up the Docker image. This sample project provides a minimally functional stack without high availability and security setups, except for a self-signed X509 certificate for browser traffic. Once the instance is launched, the public DNS name of the EC2 instance and RDS instances are printed. For validation:
 
-* Web service will be available at: http://orthweb.ec2.url:8042
-* DICOM entrypoint will be available as ORTHANC@orthweb.ec2.url:4242
+* Web service will be available at: https://orthweb.ec2.url:8042 with a self-signed sample certificate. To disable HTTPS, set SslEnabled to false in orthanc.json 
+* DICOM entrypoint will be available as ORTHANC@orthweb.ec2.url:4242 and [TLS encryption is not supported](https://book.orthanc-server.com/faq/security.html) as of Orthanc 1.8 :(
 * RDS will be accessible from the EC2 instance, on port 5432. To validate by psql client, run:
 >psql --host=localhost --port 5432 --username=myuser --dbname=orthancdb
 
