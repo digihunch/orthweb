@@ -11,6 +11,12 @@ resource "aws_security_group" "orthsecgrp" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
+    from_port   = 8
+    to_port     = 0
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
     description = "Orthanc Web"
     from_port   = 8042
     to_port     = 8042
@@ -43,6 +49,12 @@ resource "aws_security_group" "dbsecgroup" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 8
+    to_port     = 0
+    protocol    = "icmp"
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {

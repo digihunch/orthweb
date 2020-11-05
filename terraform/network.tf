@@ -1,14 +1,7 @@
-// data "aws_vpc" "default" {
-//   default = true
-// }
-// 
-// data "aws_subnet_ids" "all" {
-//   vpc_id = data.aws_vpc.default.id
-// }
-
 resource "aws_vpc" "orthmain" {
   cidr_block       = "172.17.0.0/16"
   instance_tenancy = "default"
+  enable_dns_hostnames = true
   tags = { 
     Name = "OrthmainVPC" 
   }
@@ -23,10 +16,13 @@ resource "aws_subnet" "primarysubnet" {
   }
 }
 
+data "aws_availability_zones" "available" {}
+
 resource "aws_subnet" "privatesubnet1" {
   vpc_id     = aws_vpc.orthmain.id 
   cidr_block = "172.17.4.0/24"
   map_public_ip_on_launch = false
+  availability_zone = data.aws_availability_zones.available.names[1]
   tags = {
     Name = "PrivateSubnet1"
   }
@@ -36,6 +32,7 @@ resource "aws_subnet" "privatesubnet2" {
   vpc_id     = aws_vpc.orthmain.id 
   cidr_block = "172.17.5.0/24"
   map_public_ip_on_launch = false
+  availability_zone = data.aws_availability_zones.available.names[2]
   tags = {
     Name = "PrivateSubnet2"
   }
@@ -59,4 +56,14 @@ resource "aws_route_table" "public_route_table" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.maingw.id
   }
+}
+
+resource "aws_route_table_association" "pubsub_rt_assoc" {
+  subnet_id = aws_subnet.primarysubnet.id 
+  route_table_id = aws_route_table.public_route_table.id 
+}
+ 
+resource "aws_main_route_table_association" "vpc_rt_assoc" {
+  vpc_id =  aws_vpc.orthmain.id
+  route_table_id = aws_route_table.public_route_table.id
 }
