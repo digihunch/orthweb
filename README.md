@@ -26,6 +26,7 @@ To reclaim the resources
 > terraform destroy
 
 The Terraform template creates a virtual private cloud (VPC), a subnet, an EC2 instance. It also creates an RDS instance for PostgreSQL database as data store.
+
 ![Diagram](diagram/Orthweb.png)
 
 The bootstrap script of EC2 instance provisions Docker environment and load up the Docker image. This sample project provides a minimally functional stack without high availability and security setups. Once the instance is launched, the public DNS name of the EC2 instance and RDS instances are printed. For validation:
