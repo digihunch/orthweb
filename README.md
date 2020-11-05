@@ -1,6 +1,6 @@
-# OrthWeb - an open-source medical imaging repo and web portal
+# OrthWeb - an open-source medical imaging solution
 
-OrthWeb is a medical imaging PoC solution, built from **Orthanc** open-source project, on top of Amazon Web Service.
+OrthWeb is a medical imaging PoC for imaging data repo and web portal, built from **Orthanc** open-source project, on top of Amazon Web Service.
 
 # Application
 
@@ -30,14 +30,14 @@ To start provisioning resources, an AWS credential with sufficient privileges mu
 
 Terraform's AWS provider is built with AWS SDK, therefore it automatically pick up local AWS environment, including the credentials, and region.
 
-The Terraform template creates a virtual private cloud (VPC), a subnet, an EC2 instance. It also creates an RDS instance for PostgreSQL database as data store.
+The Terraform template creates a virtual private cloud (VPC), a subnet, an EC2 instance. It also creates an RDS instance for PostgreSQL database as data store to index patient, exam data as well as storing images. Below is a diagram of the key components.
 
 ![Diagram](diagram/Orthweb.png)
 
 The bootstrap script of EC2 instance provisions Docker environment and load up the Docker image. This sample project provides a minimally functional stack without high availability and security setups, except for a self-signed X509 certificate for browser traffic. Once the instance is launched, the public DNS name of the EC2 instance and RDS instances are printed. For validation:
 
-* Web service will be available at: https://orthweb.ec2.url:8042 with a self-signed sample certificate. To disable HTTPS, set SslEnabled to false in orthanc.json 
-* DICOM entrypoint will be available as ORTHANC@orthweb.ec2.url:4242 and [TLS encryption is not supported](https://book.orthanc-server.com/faq/security.html) as of Orthanc 1.8 :(
+* Web service will be available at: https://orthweb.ec2.url:8042 with a self-signed sample certificate which may triger a warning at browser. To disable HTTPS, set SslEnabled to false in orthanc.json 
+* DICOM entrypoint will be available as ORTHANC@orthweb.ec2.url:4242 and [TLS encryption is not supported](https://book.orthanc-server.com/faq/security.html) as of Orthanc 1.8. Peer application entity (AE) has to send DICOM data in unencrypted traffic.
 * RDS will be accessible from the EC2 instance, on port 5432. To validate by psql client, run:
 >psql --host=localhost --port 5432 --username=myuser --dbname=orthancdb
 
