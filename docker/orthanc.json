@@ -1,6 +1,8 @@
 {
   "Name" : "Orthanc in Docker",
   "RemoteAccessAllowed" : true,
+  "SslEnabled" : true,
+  "SslCertificate" : "site.pem",
   "PostgreSQL" : {
     "EnableIndex" : true,
     "EnableStorage" : true,

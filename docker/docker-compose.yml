@@ -9,6 +9,9 @@ services:
       - 8042:8042
     secrets:
       - orthanc.json
+      - site.pem
 secrets:
   orthanc.json:
     file: orthanc.json
+  site.pem:
+    file: sample.localhost.pem

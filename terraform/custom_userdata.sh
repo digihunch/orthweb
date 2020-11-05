@@ -9,6 +9,7 @@ su ec2-user -c "
   git pull --depth=1 origin main 
   cd docker
   sed -i -e 's/host\.docker\.internal/$(cat /tmp/db.host)/g' orthanc.json
+  sed -i -e 's/sample\.localhost\.pem/sample.amazonaws.pem/g' docker-compose.yml
   docker-compose up
 "
 echo "Leaving custom script"

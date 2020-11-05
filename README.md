@@ -1,6 +1,6 @@
-# OrthWeb - a medical imaging site
+# OrthWeb - an open-source medical imaging repo and web portal
 
-OrthWeb is a PoC medical imaging site built from **Orthanc** open-source project, on top of Amazon Web Service.
+OrthWeb is a medical imaging PoC solution, built from **Orthanc** open-source project, on top of Amazon Web Service.
 
 # Application
 
