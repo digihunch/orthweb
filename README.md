@@ -1,25 +1,38 @@
-# orthcloud
+# OrthWeb - a medical imaging site
 
-The provider section assumes credentials stored in ~/.aws/credentials under default profile. To initialize, use aws configure with keys.
+OrthWeb is a PoC medical imaging site built from **Orthanc** open-source project, on top of Amazon Web Service.
 
-* terraform init
+# Application
 
-* terraform apply
+The application is provided by [Orthanc - DICOM Server](https://www.orthanc-server.com/), an open-source **DICOM server**. They [release](https://www.orthanc-server.com/download.php) in all common platforms, including [Docker image](https://hub.docker.com/u/jodogne/). The source code are available [here](https://hg.orthanc-server.com/). **DICOM** is a standard under ISO that defines how medical imaging data are exchanged between healthcare informatics systems. It involves DICOM Upper Layer Protocol, an OSI layer 7 protocol to allow data exchange over TCP/IP network. It also includes definition of file format, which is referred to as DICOM Part 10 file.
 
-* terraform destroy
-
-web service available at:
-http://url:8042
-imaging data available at 
-ORTHANC@url:4242
-
-to do:
-2. network segmentation and security group hardening
+The Orthanc application receives medical imaging data from devices in DICOM protocol. It also allows clinical users to view images through web browser. The default credential is provided on the Orthanc website. This OrthWeb project includes the application in Docker and an example of Infrastructure as Code that hosts the environment.
 
 
-https://book.orthanc-server.com/index.html
-psql --host=localhost --port 5432 --username=myuser --dbname=orthancdb
+# Infrastructure
 
-http://localhost:8042/instances/3922a8dc-5a33bcf5-6e14b94e-6830a00b-8d28a633/preview
+The infrastructure is provisioned from AWS (Amazon Web Services), in Terraform. Terraform is an infrastructure as code tool that support multiple public cloud vendors, **AWS** being one of the popular providers. Here are the most basic commands in Terraform:
 
-![Alt text here] (diagram/Orthweb.png)
+To initialize terraform template, run:
+> terraform init
+
+To view resources to be created, run:
+> terraform plan
+
+To execute the template, run:
+> terraform apply
+
+To reclaim the resources
+> terraform destroy
+
+The Terraform template creates a virtual private cloud (VPC), a subnet, an EC2 instance. It also creates an RDS instance for PostgreSQL database as data store.
+![Diagram](diagram/Orthweb.png)
+
+The bootstrap script of EC2 instance provisions Docker environment and load up the Docker image. This sample project provides a minimally functional stack without high availability and security setups. Once the instance is launched, the public DNS name of the EC2 instance and RDS instances are printed. For validation:
+
+* Web service will be available at: http://orthweb.ec2.url:8042
+* DICOM entrypoint will be available as ORTHANC@orthweb.ec2.url:4242
+* RDS will be accessible from the EC2 instance, on port 5432. To validate by psql client, run:
+>psql --host=localhost --port 5432 --username=myuser --dbname=orthancdb
+
+The application UI provides very intuitive visual components to open an exam, and preview instances (images).
