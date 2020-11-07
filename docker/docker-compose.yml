@@ -1,6 +1,6 @@
 version: "3.3"  # Secrets are only available since this version of Docker Compose
 services:
-  orthanc:
+  orthanc-backend:
     image: jodogne/orthanc-plugins
     container_name: orthweb
     command: /run/secrets/  # Path to the configuration files (stored as secrets)
@@ -10,6 +10,14 @@ services:
     secrets:
       - orthanc.json
       - site.pem
+  nginx-proxy:
+    image: nginx
+    container_name: nginx
+    ports:
+      - 11112:11112 
+    volumes:
+      - ./dicomtls.conf:/etc/nginx/nginx.conf
+      - ./sample.localhost.pem:/etc/nginx/conf.d/site.pem
 secrets:
   orthanc.json:
     file: orthanc.json

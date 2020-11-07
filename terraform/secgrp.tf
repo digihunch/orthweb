@@ -24,9 +24,9 @@ resource "aws_security_group" "orthsecgrp" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    description = "Orthanc Image"
-    from_port   = 4242
-    to_port     = 4242
+    description = "DICOM Image"
+    from_port   = 11112
+    to_port     = 11112
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
