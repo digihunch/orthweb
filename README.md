@@ -34,10 +34,10 @@ The Terraform template creates a virtual private cloud (VPC), a subnet, an EC2 i
 
 ![Diagram](diagram/Orthweb.png)
 
-The bootstrap script of EC2 instance provisions Docker environment and load up the Docker image. This sample project provides a minimally functional stack without high availability and security setups. A self-signed X509 certificate (along with private key :) for browser traffic. Once the instance is launched, the public DNS name of the EC2 instance and RDS instances are printed. Functional validation can be attempted from the followings:
+The bootstrap script of EC2 instance provisions Docker environment and load up the Docker image. This sample project provides a minimally functional stack without high availability setup and with only basic security setups. A self-signed X509 certificate (along with private key :) for browser and DICOM traffic.  Once the instance is launched, the public DNS name of the EC2 instance and RDS instances are printed. Functional validation can be attempted from the followings:
 
-* Web service will be available at: https://orthweb.ec2.url:8042 with a self-signed sample certificate which may triger a warning at browser. Default credential is orthanc/orthanc as indicated in [Orthanc Book](https://book.orthanc-server.com/index.html). 
-* DICOM entrypoint will be available as ORTHANC@orthweb.ec2.url:4242 and [TLS encryption is not supported](https://book.orthanc-server.com/faq/security.html) as of Orthanc 1.8. Peer application entity (AE) has to send DICOM data in unencrypted traffic.
+* Web service is available at: https://orthweb.ec2.url:8042 with a self-signed sample certificate which may triger a warning at browser. Since Orthanc natively support SSL/TLS, there is no reverse proxy involved. Nginx as reverse proxy is a good alternative to terminate TLS traffic, which is used for DICOM traffic. To log on, default credential is orthanc/orthanc (as indicated in [Orthanc Book](https://book.orthanc-server.com/index.html)). 
+* DICOM entry point is available at ORTHANC@orthweb.ec2.url:11112. Nginx is used to terminate SSL and proxy incoming traffic to upstream at port 4242, Orthanc's unentrypted DICOM port. This is because [TLS encryption is not supported](https://book.orthanc-server.com/faq/security.html) as of Orthanc 1.8. Peer application entity (AE) must encrypt DICOM traffic across the Internet.
 * RDS will be accessible from the EC2 instance, on port 5432. To validate by psql client, run:
 >psql --host=localhost --port 5432 --username=myuser --dbname=orthancdb
 
