@@ -8,10 +8,10 @@
     "EnableStorage" : true,
     "Host" : "host.docker.internal",
     "Port" : 5432,
-    "Database" : "postgres",
+    "Database" : "orthancdb",
     "Username" : "myuser",
     "Password" : "mpassword",
-    "EnableSsl" : false
+    "EnableSsl" : true
   },
   "Plugins" : [
     "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLIndex.so",
