@@ -1,6 +1,6 @@
 variable "depkey" {
   type = string
-  default = "yi_cs"
+  default = "cskey"
 }
 variable "depregion" {
   type = string
