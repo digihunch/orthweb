@@ -1,3 +1,12 @@
+data "aws_secretsmanager_secret_version" "creds" {
+  secret_id = "db-creds"
+}
+
+locals {
+  db_creds = jdondecode(
+    data.aws_secretsmanager_secret_version.creds.secret_string
+  )
+}
 
 resource "aws_db_instance" "postgres" {
   allocated_storage         = 5
@@ -5,10 +14,12 @@ resource "aws_db_instance" "postgres" {
   engine                    = "postgres"
   engine_version            = "12.2"
   instance_class            = "db.t2.micro"
-  identifier                = "orthandpostgres"
+  identifier                = "orthancpostgres"
   name                      = "orthancdb"
-  username                  = "myuser"
-  password                  = "mpassword"
+#  username                  = "myuser"
+#  password                  = "mpassword"
+  username                  = local.db_creds.username
+  password                  = local.db_creds.password
   port                      = "5432"
   deletion_protection       = false
   skip_final_snapshot       = "true"
