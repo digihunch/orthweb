@@ -61,3 +61,18 @@ resource "aws_security_group" "dbsecgroup" {
     Name = "allow traffic to postgresdb"
   }
 }
+
+resource "aws_security_group" "epsecgroup" {
+  name        = "vpcep_sg"
+  description = "security group for vpc endpoint"
+  vpc_id      = aws_vpc.orthmain.id
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] 
+  }
+  tags = {
+    Name = "allowing outgoing traffic only."
+  }
+}

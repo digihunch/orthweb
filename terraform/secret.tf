@@ -1,11 +1,18 @@
 resource "random_password" "password" {
   length           = 16
   special          = true
-  override_special = "_%@"
+  override_special = "!#$%&*-_=+:?"
+}
+
+resource "random_id" "credsuffix" {
+#  keepers = {
+#    name = aws_secretsmanager_secret.secretDB.name
+#  }
+  byte_length = 8
 }
 
 resource "aws_secretsmanager_secret" "secretDB" {
-   name = "DatabaseCreds"
+   name = "DatabaseCreds${random_id.credsuffix.hex}"
 }
 
 resource "aws_secretsmanager_secret_version" "sversion" {

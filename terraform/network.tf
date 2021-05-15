@@ -67,3 +67,15 @@ resource "aws_main_route_table_association" "vpc_rt_assoc" {
   vpc_id =  aws_vpc.orthmain.id
   route_table_id = aws_route_table.public_route_table.id
 }
+
+resource "aws_vpc_endpoint" "secmgr" {
+  vpc_id = aws_vpc.orthmain.id
+  service_name = "com.amazonaws.${var.depregion}.secretsmanager"
+  vpc_endpoint_type = "Interface"
+  private_dns_enabled = true
+  security_group_ids = [aws_security_group.epsecgroup.id]
+  subnet_ids = [aws_subnet.primarysubnet.id] 
+  # For each interface endpoint, you can choose one subnet per AZ. 
+}
+
+

@@ -5,7 +5,10 @@ data "aws_caller_identity" "current" {
 data "template_file" "myuserdata" {
   template = "${file("${path.cwd}/myuserdata.tpl")}"
   vars = {
-    db_endpoint = "${aws_db_instance.postgres.endpoint}"
+    db_endpoint = "${aws_db_instance.postgres.endpoint}",
+    aws_region = "${var.depregion}"
+    sm_endpoint = aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
+    sec_name = "${aws_secretsmanager_secret.secretDB.name}"
   }
 }
 
@@ -50,13 +53,11 @@ resource "aws_iam_role_policy" "secret_reader_policy" {
       "Action": [
         "secretsmanager:GetResourcePolicy",
         "secretsmanager:GetSecretValue",
-        "secretsmanager:DescribeSecret",
-        "secretsmanager:ListSecretVersionIds",
-        "secretsmanager:ListSecrets"
+        "secretsmanager:DescribeSecret"
       ],
       "Effect": "Allow",
       "Resource": [
-        "arn:aws:secretsmanager:${var.depregion}:${data.aws_caller_identity.current.account_id}:secret:${aws_secretsmanager_secret.secretDB.id}"
+        "${aws_secretsmanager_secret.secretDB.id}"
       ]
     }
   ]
@@ -72,6 +73,7 @@ resource "aws_instance" "orthweb" {
   vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
   subnet_id     = aws_subnet.primarysubnet.id
   depends_on = [aws_db_instance.postgres]
+  iam_instance_profile = "${aws_iam_instance_profile.inst_profile.name}"
   tags = {
     Name = "OrthServer"
   }
