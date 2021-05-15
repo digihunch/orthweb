@@ -1,3 +1,6 @@
+data "aws_caller_identity" "current" {
+  # no arguments
+}
 
 data "template_file" "myuserdata" {
   template = "${file("${path.cwd}/myuserdata.tpl")}"
@@ -6,9 +9,59 @@ data "template_file" "myuserdata" {
   }
 }
 
-provider "aws" {
-  region  = var.depregion
-  profile = "default"
+resource "aws_iam_role" "inst_role" {
+  name = "inst_role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+
+  tags = {
+    Name = "InstanceRole"
+  }
+}
+
+resource "aws_iam_instance_profile" "inst_profile" {
+  name = "inst_profile"
+  role = "${aws_iam_role.inst_role.name}"
+}
+
+resource "aws_iam_role_policy" "secret_reader_policy" {
+  name = "secret_reader_policy"
+  role = "${aws_iam_role.inst_role.id}"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "secretsmanager:GetResourcePolicy",
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:ListSecretVersionIds",
+        "secretsmanager:ListSecrets"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:secretsmanager:${var.depregion}:${data.aws_caller_identity.current.account_id}:secret:${aws_secretsmanager_secret.secretDB.id}"
+      ]
+    }
+  ]
+}
+EOF
 }
 
 resource "aws_instance" "orthweb" {
