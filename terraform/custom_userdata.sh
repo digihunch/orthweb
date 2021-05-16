@@ -1,8 +1,6 @@
 #! /bin/bash
 echo "Entering custom script"
 ComName=`curl -s http://169.254.169.254/latest/meta-data/public-hostname|cut -d. -f2-`
-echo Hey$ComName
-#openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/private.key -out /tmp/certificate.crt -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ComName/emailAddress=info@digihunch.com
 openssl11 req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/private.key -out /tmp/certificate.crt -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ComName/emailAddress=info@digihunch.com -addext extendedKeyUsage=serverAuth -addext subjectAltName=DNS:orthweb.digihunch.com,DNS:$ComName
 
 runuser -l ec2-user -c " 

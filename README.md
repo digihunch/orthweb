@@ -25,8 +25,11 @@ To execute the template, run:
 To reclaim the resources
 > terraform destroy
 
-To remove a single resource (e.g. ec2 instance)
+To remove a single resource (e.g. ec2 instance) and dependent
 > terraform destroy -target aws_instance.orthweb
+
+To re-create a single resource (e.g. ec2 instance) 
+> terraform apply -target aws_instance.orthweb
 
 To start provisioning resources, an AWS credential with sufficient privileges must be provided. More information about permissions are provided [here](https://www.terraform.io/docs/cloud/users-teams-organizations/permissions.html). The user only needs programatic access, with its Access Key ID and Secret access key retrievable on the client where terraform is executed. You should also configure local aws-cli environment by running:
 > aws configure
@@ -44,6 +47,13 @@ The bootstrap script of EC2 instance provisions Docker environment and load up t
 * RDS will be accessible from the EC2 instance, on port 5432. To validate by psql client, run:
 >psql --host=localhost --port 5432 --username=myuser --dbname=orthancdb
 
-To disable HTTPS, set SslEnabled to false in orthanc.json. The terraform template in the example only creates one EC2 instance for simplicity. This example should also work with container hosted locally (e.g. on MacBook) if you have docker and PostgreSQL environment available. Just use docker-compose to bring up the application from docker directory.
+To disable HTTPS, set SslEnabled to false in orthanc.json. The terraform template in the example only creates one EC2 instance for simplicity. In reality it can be placed in autoscaling group.
  
 The application UI provides very intuitive visual components to open an exam, and preview instances (images). It also supports the ability to save DICOM studies as part 10 files. [Orthanc Book](https://book.orthanc-server.com/index.html) is the official resource in regard with the configuration, customization and implementation of Orthanc. 
+
+# Security
+
+1. The master user and password for database are now generated dynamically, in the secret manager in AWS. The EC2 instance is granted with the role to access the secret. The cloud-init script will be given the private endpoint of secret manager to pull the secret into a file. Docker compose maps the secret file to environment variables inside of container.
+
+2. Since the X509 certificate is self-signed for demo, it is now dynamically generated using openssl11 during bootstrapping.
+

@@ -5,9 +5,6 @@ resource "random_password" "password" {
 }
 
 resource "random_id" "credsuffix" {
-#  keepers = {
-#    name = aws_secretsmanager_secret.secretDB.name
-#  }
   byte_length = 8
 }
 
