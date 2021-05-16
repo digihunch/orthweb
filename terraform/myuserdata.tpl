@@ -17,13 +17,11 @@ chmod +x /usr/local/bin/docker-compose
 
 
 # Load app config
-echo "local user"
+echo "Populating docker config and secret."
 runuser -l ec2-user -c 'aws configure set region ${aws_region}'
-runuser -l ec2-user -c 'echo sm_endpoint ${sm_endpoint}'
-runuser -l ec2-user -c 'echo sec_name ${sec_name}'
-
-runuser -l ec2-user -c 'echo ${db_endpoint} | docker config create db_ep -'
-runuser -l ec2-user -c 'aws secretsmanager get-secret-value --secret-id ${sec_name} --query SecretString --output text --endpoint-url https://${sm_endpoint} | jq -r .username | docker secret create db_un -'
-runuser -l ec2-user -c 'aws secretsmanager get-secret-value --secret-id ${sec_name} --query SecretString --output text --endpoint-url https://${sm_endpoint} | jq -r .password | docker secret create db_pw -'
+runuser -l ec2-user -c '(echo -n DB_ADDR=;echo ${db_address}) >> .orthanc.env'
+runuser -l ec2-user -c '(echo -n DB_PORT=;echo ${db_port}) >> .orthanc.env'
+runuser -l ec2-user -c '(echo -n DB_USERNAME=;aws secretsmanager get-secret-value --secret-id ${sec_name} --query SecretString --output text --endpoint-url https://${sm_endpoint} | jq -r .username) >> .orthanc.env'
+runuser -l ec2-user -c '(echo -n DB_PASSWORD=;aws secretsmanager get-secret-value --secret-id ${sec_name} --query SecretString --output text --endpoint-url https://${sm_endpoint} | jq -r .password) >> .orthanc.env'
 
 echo "Leaving script myuserdata"

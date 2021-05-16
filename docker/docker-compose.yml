@@ -1,4 +1,4 @@
-version: "3.3"  # Secrets are only available since this version of Docker Compose
+version: "3.8"  # Secrets are only available since 3.4 
 services:
   orthanc-backend:
     image: jodogne/orthanc-plugins
@@ -7,6 +7,8 @@ services:
     ports:
       - 4242:4242
       - 8042:8042
+    env_file:
+      - /home/ec2-user/.orthanc.env
     secrets:
       - orthanc.json
       - site.pem

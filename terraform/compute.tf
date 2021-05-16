@@ -5,7 +5,8 @@ data "aws_caller_identity" "current" {
 data "template_file" "myuserdata" {
   template = "${file("${path.cwd}/myuserdata.tpl")}"
   vars = {
-    db_endpoint = "${aws_db_instance.postgres.endpoint}",
+    db_address = "${aws_db_instance.postgres.address}",
+    db_port = "${aws_db_instance.postgres.port}",
     aws_region = "${var.depregion}"
     sm_endpoint = aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
     sec_name = "${aws_secretsmanager_secret.secretDB.name}"

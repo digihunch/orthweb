@@ -6,11 +6,11 @@
   "PostgreSQL" : {
     "EnableIndex" : true,
     "EnableStorage" : true,
-    "Host" : "host.docker.internal",
-    "Port" : 5432,
+    "Host" : "${DB_ADDR}",
+    "Port" : ${DB_PORT},
     "Database" : "orthancdb",
-    "Username" : "myuser",
-    "Password" : "mpassword",
+    "Username" : "${DB_USERNAME}",
+    "Password" : "${DB_PASSWORD}",
     "EnableSsl" : true
   },
   "Plugins" : [

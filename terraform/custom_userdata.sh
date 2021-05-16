@@ -8,8 +8,12 @@ su ec2-user -c "
   echo 'docker/*' >> .git/info/sparse-checkout
   git pull --depth=1 origin main 
   cd docker
-  sed -i -e 's/host\.docker\.internal/$(cat /tmp/db.host)/g' orthanc.json
-  sed -i -e 's/sample\.localhost\.pem/sample.amazonaws.pem/g' docker-compose.yml
+  ComName=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname | cut -d'.' -f2-)
+  echo $ComName
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/private.key -out /tmp/certificate.crt -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ComName/emailAddress=info@digihunch.com
+  cat /tmp/private.key /tmp/certificate.crt > $ComName.pem
+  rm /tmp/private.key /tmp/certificate.crt
+  sed -i -e 's/sample\.localhost\.pem/$ComName.pem/g' docker-compose.yml
   docker-compose up
 "
 echo "Leaving custom script"
