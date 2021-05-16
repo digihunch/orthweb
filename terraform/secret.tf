@@ -9,11 +9,11 @@ resource "random_id" "credsuffix" {
 }
 
 resource "aws_secretsmanager_secret" "secretDB" {
-   name = "DatabaseCreds${random_id.credsuffix.hex}"
+  name = "DatabaseCreds${random_id.credsuffix.hex}"
 }
 
 resource "aws_secretsmanager_secret_version" "sversion" {
-  secret_id = aws_secretsmanager_secret.secretDB.id
+  secret_id     = aws_secretsmanager_secret.secretDB.id
   secret_string = <<EOF
    {
     "username": "myuser",
@@ -32,7 +32,7 @@ data "aws_secretsmanager_secret_version" "creds" {
 
 locals {
   db_creds = jsondecode(
-  data.aws_secretsmanager_secret_version.creds.secret_string
-   )
+    data.aws_secretsmanager_secret_version.creds.secret_string
+  )
 }
 

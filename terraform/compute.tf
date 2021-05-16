@@ -3,13 +3,13 @@ data "aws_caller_identity" "current" {
 }
 
 data "template_file" "myuserdata" {
-  template = "${file("${path.cwd}/myuserdata.tpl")}"
+  template = file("${path.cwd}/myuserdata.tpl")
   vars = {
-    db_address = "${aws_db_instance.postgres.address}",
-    db_port = "${aws_db_instance.postgres.port}",
-    aws_region = "${var.depregion}"
+    db_address  = "${aws_db_instance.postgres.address}",
+    db_port     = "${aws_db_instance.postgres.port}",
+    aws_region  = "${var.depregion}"
     sm_endpoint = aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
-    sec_name = "${aws_secretsmanager_secret.secretDB.name}"
+    sec_name    = "${aws_secretsmanager_secret.secretDB.name}"
   }
 }
 
@@ -39,12 +39,12 @@ EOF
 
 resource "aws_iam_instance_profile" "inst_profile" {
   name = "inst_profile"
-  role = "${aws_iam_role.inst_role.name}"
+  role = aws_iam_role.inst_role.name
 }
 
 resource "aws_iam_role_policy" "secret_reader_policy" {
   name = "secret_reader_policy"
-  role = "${aws_iam_role.inst_role.id}"
+  role = aws_iam_role.inst_role.id
 
   policy = <<EOF
 {
@@ -67,14 +67,14 @@ EOF
 }
 
 resource "aws_instance" "orthweb" {
-  ami           = var.amilut[var.depregion]
-  instance_type = "t2.micro"
-  user_data     = "${data.template_cloudinit_config.orthconfig.rendered}"
-  key_name      = var.depkey
+  ami                    = var.amilut[var.depregion]
+  instance_type          = "t2.micro"
+  user_data              = data.template_cloudinit_config.orthconfig.rendered
+  key_name               = var.depkey
   vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
-  subnet_id     = aws_subnet.primarysubnet.id
-  depends_on = [aws_db_instance.postgres]
-  iam_instance_profile = "${aws_iam_instance_profile.inst_profile.name}"
+  subnet_id              = aws_subnet.primarysubnet.id
+  depends_on             = [aws_db_instance.postgres]
+  iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
   tags = {
     Name = "OrthServer"
   }
@@ -84,11 +84,11 @@ data "template_cloudinit_config" "orthconfig" {
   base64_encode = true
   part {
     content_type = "text/x-shellscript"
-    content      = "${data.template_file.myuserdata.rendered}"
+    content      = data.template_file.myuserdata.rendered
   }
   part {
     content_type = "text/x-shellscript"
-    content      = "${file("${path.cwd}/custom_userdata.sh")}"
+    content      = file("${path.cwd}/custom_userdata.sh")
   }
 }
 

@@ -1,7 +1,7 @@
 resource "aws_security_group" "orthsecgrp" {
   name        = "orth_sg"
   description = "security group for orthanc"
-  vpc_id     = aws_vpc.orthmain.id
+  vpc_id      = aws_vpc.orthmain.id
 
   ingress {
     description = "SSH"
@@ -44,7 +44,7 @@ resource "aws_security_group" "orthsecgrp" {
 resource "aws_security_group" "dbsecgroup" {
   name        = "orthdb_sg"
   description = "postgres security group"
-  vpc_id     = aws_vpc.orthmain.id
+  vpc_id      = aws_vpc.orthmain.id
   ingress {
     from_port   = 5432
     to_port     = 5432
@@ -70,7 +70,7 @@ resource "aws_security_group" "epsecgroup" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
     Name = "allowing outgoing traffic only."

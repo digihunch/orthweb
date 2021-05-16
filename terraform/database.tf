@@ -1,7 +1,7 @@
 
 resource "aws_db_instance" "postgres" {
   allocated_storage         = 5
-  storage_type              = "standard"     #magnetic drive minimum 5g storage
+  storage_type              = "standard" #magnetic drive minimum 5g storage
   engine                    = "postgres"
   engine_version            = "12.2"
   instance_class            = "db.t2.micro"
