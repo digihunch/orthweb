@@ -25,6 +25,9 @@ To execute the template, run:
 To reclaim the resources
 > terraform destroy
 
+To remove a single resource (e.g. ec2 instance)
+> terraform destroy -target aws_instance.orthweb
+
 To start provisioning resources, an AWS credential with sufficient privileges must be provided. More information about permissions are provided [here](https://www.terraform.io/docs/cloud/users-teams-organizations/permissions.html). The user only needs programatic access, with its Access Key ID and Secret access key retrievable on the client where terraform is executed. You should also configure local aws-cli environment by running:
 > aws configure
 

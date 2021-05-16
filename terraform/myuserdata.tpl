@@ -8,7 +8,6 @@ usermod -a -G docker ec2-user
 # this allows non-root user to run docker cli command but only takes effect after current user session
 systemctl restart docker
 chmod 666 /var/run/docker.sock
-docker swarm init
 
 
 # Configure docker-compose
@@ -17,7 +16,7 @@ chmod +x /usr/local/bin/docker-compose
 
 
 # Load app config
-echo "Populating docker config and secret."
+echo "Pulling app configuration."
 runuser -l ec2-user -c 'aws configure set region ${aws_region}'
 runuser -l ec2-user -c '(echo -n DB_ADDR=;echo ${db_address}) >> .orthanc.env'
 runuser -l ec2-user -c '(echo -n DB_PORT=;echo ${db_port}) >> .orthanc.env'
