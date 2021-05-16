@@ -1,7 +1,7 @@
 #! /bin/bash
 echo "Entering script myuserdata"
 yum update -y
-yum install postgresql docker git jq -y
+yum install postgresql docker git jq openssl11 -y
 
 # Configure docker
 usermod -a -G docker ec2-user   
