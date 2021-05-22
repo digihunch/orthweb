@@ -12,6 +12,7 @@ resource "aws_db_instance" "postgres" {
   port                      = "5432"
   deletion_protection       = false
   skip_final_snapshot       = "true"
+  iam_database_authentication_enabled = true
   final_snapshot_identifier = "demodb"
   vpc_security_group_ids    = ["${aws_security_group.dbsecgroup.id}"]
   db_subnet_group_name      = aws_db_subnet_group.default.name

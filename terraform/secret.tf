@@ -4,12 +4,12 @@ resource "random_password" "password" {
   override_special = "!#$%&*-_+:?"
 }
 
-resource "random_id" "credsuffix" {
+resource "random_id" "randsuffix" {
   byte_length = 8
 }
 
 resource "aws_secretsmanager_secret" "secretDB" {
-  name = "DatabaseCreds${random_id.credsuffix.hex}"
+  name = "DatabaseCreds${random_id.randsuffix.hex}"
 }
 
 resource "aws_secretsmanager_secret_version" "sversion" {

@@ -1,7 +1,3 @@
-data "aws_caller_identity" "current" {
-  # no arguments
-}
-
 data "template_file" "myuserdata" {
   template = file("${path.cwd}/myuserdata.tpl")
   vars = {
@@ -59,6 +55,49 @@ resource "aws_iam_role_policy" "secret_reader_policy" {
       "Effect": "Allow",
       "Resource": [
         "${aws_secretsmanager_secret.secretDB.id}"
+      ]
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "database_access_policy" {
+  name = "database_access_policy"
+  role = aws_iam_role.inst_role.id
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "rds-db:connect"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "${aws_db_instance.postgres.arn}"
+      ]
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "s3_access_policy" {
+  name = "s3_access_policy"
+  role = aws_iam_role.inst_role.id
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "s3:*"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "${aws_s3_bucket.orthbucket.arn}"
+        "${aws_s3_bucket.orthbucket.arn}/*"
       ]
     }
   ]

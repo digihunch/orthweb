@@ -4,3 +4,6 @@ output "hostinfo" {
 output "dbinfo" {
   value = aws_db_instance.postgres.endpoint
 }
+output "s3bucket" {
+  value = aws_s3_bucket.orthbucket.bucket_domain_name
+}
