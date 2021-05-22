@@ -6,8 +6,10 @@ data "template_file" "myuserdata" {
     aws_region  = "${var.depregion}"
     sm_endpoint = aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
     sec_name    = "${aws_secretsmanager_secret.secretDB.name}"
+    s3_bucket   = "${aws_s3_bucket.orthbucket.bucket}"
   }
 }
+
 
 resource "aws_iam_role" "inst_role" {
   name = "inst_role"
@@ -63,8 +65,8 @@ EOF
 }
 
 resource "aws_iam_role_policy" "database_access_policy" {
-  name = "database_access_policy"
-  role = aws_iam_role.inst_role.id
+  name   = "database_access_policy"
+  role   = aws_iam_role.inst_role.id
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -83,21 +85,27 @@ resource "aws_iam_role_policy" "database_access_policy" {
 EOF
 }
 
+# IAM role needs to access KMS key to upload and download objects in S3 bucket with SSE 
+# https://aws.amazon.com/premiumsupport/knowledge-center/decrypt-kms-encrypted-objects-s3/
+# https://aws.amazon.com/premiumsupport/knowledge-center/s3-access-denied-error-kms/
 resource "aws_iam_role_policy" "s3_access_policy" {
-  name = "s3_access_policy"
-  role = aws_iam_role.inst_role.id
+  name   = "s3_access_policy"
+  role   = aws_iam_role.inst_role.id
   policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
     {
       "Action": [
-        "s3:*"
+        "s3:*",
+        "kms:Decrypt",
+        "kms:GenerateDataKey"
       ],
       "Effect": "Allow",
       "Resource": [
-        "${aws_s3_bucket.orthbucket.arn}"
-        "${aws_s3_bucket.orthbucket.arn}/*"
+        "${aws_s3_bucket.orthbucket.arn}",
+        "${aws_s3_bucket.orthbucket.arn}/*",
+        "${aws_kms_key.s3key.arn}"
       ]
     }
   ]
@@ -112,7 +120,7 @@ resource "aws_instance" "orthweb" {
   key_name               = var.depkey
   vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
   subnet_id              = aws_subnet.primarysubnet.id
-  depends_on             = [aws_db_instance.postgres]
+  depends_on             = [aws_db_instance.postgres, aws_s3_bucket.orthbucket]
   iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
   tags = {
     Name = "OrthServer"

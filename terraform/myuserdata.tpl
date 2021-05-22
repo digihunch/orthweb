@@ -22,5 +22,6 @@ runuser -l ec2-user -c '(echo -n DB_ADDR=;echo ${db_address}) >> .orthanc.env'
 runuser -l ec2-user -c '(echo -n DB_PORT=;echo ${db_port}) >> .orthanc.env'
 runuser -l ec2-user -c '(echo -n DB_USERNAME=;aws secretsmanager get-secret-value --secret-id ${sec_name} --query SecretString --output text --endpoint-url https://${sm_endpoint} | jq -r .username) >> .orthanc.env'
 runuser -l ec2-user -c '(echo -n DB_PASSWORD=;aws secretsmanager get-secret-value --secret-id ${sec_name} --query SecretString --output text --endpoint-url https://${sm_endpoint} | jq -r .password) >> .orthanc.env'
+runuser -l ec2-user -c '(echo -n S3_BUCKET=;echo ${s3_bucket}) >> .orthanc.env'
 
 echo "Leaving script myuserdata"
