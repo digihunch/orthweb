@@ -20,6 +20,7 @@ resource "aws_secretsmanager_secret_version" "sversion" {
     "password": "${random_password.password.result}"
    }
 EOF
+  depends_on = [aws_secretsmanager_secret.secretDB]
 }
 
 data "aws_secretsmanager_secret" "secretDB" {
