@@ -1,0 +1,74 @@
+name: OrthancS3Plugin
+
+on:
+  workflow_dispatch:
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build_library:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: install apt packages
+      run: |
+        sudo apt-get update && sudo apt list --installed
+        sudo apt-get install -y zip mercurial libcrypto++-dev libcurlpp-dev uuid-dev zlib1g-dev libssl-dev build-essential cmake libcurl4-openssl-dev libgtest-dev libjsoncpp-dev libboost-all-dev libpulse-dev
+      
+    - name: install vcpkg
+      working-directory: '/home/runner'
+      run: |
+        git clone https://github.com/Microsoft/vcpkg --depth=1
+        bash ~/vcpkg/bootstrap-vcpkg.sh
+        vcpkg/vcpkg install cryptopp
+      
+    - name: compile aws sdk
+      working-directory: '/home/runner'
+      run: |
+        mkdir ~/aws && cd ~/aws && git clone --recurse-submodules https://github.com/aws/aws-sdk-cpp.git --depth=1
+        mkdir -p ~/aws/builds/aws-sdk-cpp && cd ~/aws/builds/aws-sdk-cpp
+        cmake -DBUILD_ONLY="s3;transfer" ~/aws/aws-sdk-cpp && make -j 4
+        sudo make install
+      
+    - name: pull plugin source code
+      working-directory: '/home/runner'
+      run: |
+        mkdir -p ~/orthanc-object-storage && cd ~/orthanc-object-storage
+        hg clone https://hg.orthanc-server.com/orthanc-object-storage/ ~/orthanc-object-storage/
+        sudo apt list --installed
+    
+    - name: compile plugin library
+      working-directory: '/home/runner/orthanc-object-storage'
+      run: |
+        mkdir -p build/aws && cd build/aws
+        cmake -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake ../../Aws/ -DLibCrypto_INCLUDE_DIR=/usr/include -DLibCrypto_SHARED_LIBRARY=/usr/lib/x86_64-linux-gnu/libcrypto.so -DSTATIC_AWS_CLIENT=TRUE 
+        cmake --build . --config Release && ls -lh ~/orthanc-object-storage/build/aws/libOrthancAwsS3Storage.so* && md5sum ~/orthanc-object-storage/build/aws/libOrthancAwsS3Storage.so
+        
+    - name: unit test
+      working-directory: '/home/runner/orthanc-object-storage'
+      run: build/aws/UnitTests
+        
+    - name: publish artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: libOrthancAwsS3Storage.so
+        path: /home/runner/orthanc-object-storage/build/aws/*.so
+        retention-days: 1
+      
+  publish_image:
+    runs-on: ubuntu-latest
+    needs: [build_library]
+    
+    steps:
+    - name: start
+      run: echo "starting publish_image"
+    - name: download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: libOrthancAwsS3Storage.so
+        path: /home/runner/artifact
+    - name: verify artifact
+      working-directory: '/home/runner/'
+      run: md5sum artifact/libOrthancAwsS3Storage.so
