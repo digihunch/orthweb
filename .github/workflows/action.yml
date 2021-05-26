@@ -95,7 +95,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: '/home/runner/orthweb/orthanc-builder'
-        platforms: linux/amd64
+        #platforms: linux/amd64
         push: true
         tags: |
           digihunch/orthanc-plugin:latest
