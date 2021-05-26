@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: prepare vm
+    - name: prepare os packages
       run: |
         sudo apt-get update
       
@@ -24,12 +24,26 @@ jobs:
         echo 'plugin-builder/*' >> .git/info/sparse-checkout && git pull --depth=1 origin main
         docker --version
         
-    - name: build docker image locally
+    - name: publish docker image locally
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
         docker build -t "digihunch/s3-plugin-builder:0.1" .
         mkdir out && docker image ls
       
+    - name: build plugin with docker
+      working-directory: '/home/runner/orthweb/plugin-builder'
+      run: |
+        docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:0.1
+        # to overwrite default CMD, run: docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:0.1 /bin/bash -c "ls && pwd"
+        # 
+    - name: publish artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: libOrthancAwsS3Storage.so
+        path: /home/runner/orthweb/plugin-builder/out/*.so
+        retention-days: 1
+        
+    
   publish_image:
     runs-on: ubuntu-latest
     needs: [build_library]
