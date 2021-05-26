@@ -15,10 +15,6 @@ jobs:
     - name: prepare os packages
       run: |
         sudo apt-get update
-        
-    - name: Git Version
-      uses: codacy/git-version@2.4.0
-   
     - name: download dockerfile
       working-directory: '/home/runner'
       run: |
@@ -27,6 +23,8 @@ jobs:
         echo 'plugin-builder/*' >> .git/info/sparse-checkout && git pull --depth=1 origin main
         docker --version
         
+    - name: Git Version
+      uses: codacy/git-version@2.4.0 
     - name: Output Version
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
