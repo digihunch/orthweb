@@ -16,6 +16,17 @@ jobs:
       run: |
         sudo apt-get update
         
+    - name: Git Version
+      uses: codacy/git-version@2.4.0
+   
+    - name: Output Version
+      run: |
+        echo 'Here is the version' 
+        echo ${{ MAJOR }}
+        echo ${{ MINOR }}
+        echo ${{ PATCH }}
+        echo ${{ hash }}
+
     - name: download dockerfile
       working-directory: '/home/runner'
       run: |
