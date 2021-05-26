@@ -1,4 +1,5 @@
 FROM debian:buster-20210511-slim as s3-plugin-builder 
+# Refer to image osimis/orthanc-builder-base
 
 # START Prep build envivornment and clone source code for plugin
 RUN export DEBIAN_FRONTEND=noninteractive && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && apt-get update && \
