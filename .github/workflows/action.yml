@@ -75,7 +75,7 @@ jobs:
         
     - name: verify artifact
       working-directory: '/home/runner/orthweb/orthanc-builder'
-      run: md5sum artifact/libOrthancAwsS3Storage.so
+      run: md5sum libOrthancAwsS3Storage.so
       
     - name: publish docker image locally
       working-directory: '/home/runner/orthweb/orthanc-builder'
