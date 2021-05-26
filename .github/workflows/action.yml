@@ -77,8 +77,30 @@ jobs:
       working-directory: '/home/runner/orthweb/orthanc-builder'
       run: md5sum libOrthancAwsS3Storage.so
       
-    - name: publish docker image locally
-      working-directory: '/home/runner/orthweb/orthanc-builder'
-      run: |
-        docker build -t "digihunch/orthanc-plugin:0.1" .
-        docker image ls
+    #- name: publish docker image locally
+    #  working-directory: '/home/runner/orthweb/orthanc-builder'
+    #  run: |
+    #    docker build -t "digihunch/orthanc-plugin:0.1" .
+    #    docker image ls
+        
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        registry: digihunch
+        logout: true
+        
+    - name: build and push
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        platforms: linux/amd64
+        push: true
+        tags: |
+          digihunch/orthanc-plugin:latest
+          digihunch/orthanc-plugin:0.1
+    
+    - name: image digest
+      run: echo ${{ step.docker_build.outputs.digest }}
