@@ -14,7 +14,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && echo "en_US.UTF-8 UTF-8" > /etc/loc
 WORKDIR /build
 CMD cmake -DUSE_VCPKG_PACKAGES=FALSE -DSTATIC_AWS_CLIENT=TRUE /sources/orthanc-object-storage/Aws && \
     cmake --build . --config Release && \
-    ./UnitTests &&
+    ./UnitTests && \
     cp /build/*.so /out/
 
 ### END BUILD Orthanc S3 Plugin
