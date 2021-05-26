@@ -23,12 +23,12 @@ jobs:
         echo 'plugin-builder/*' >> .git/info/sparse-checkout && git pull --depth=1 origin main
         docker --version
         
-    - name: Git Version
-      uses: codacy/git-version@2.4.0 
-    - name: Output Version
-      working-directory: '/home/runner/orthweb/plugin-builder'
-      run: |
-        git-version
+    - name: Generate build number
+      uses: einaregilsson/build-number@v3
+      with:
+        token: ${{secrets.github_token}}        
+    - name: Print new build number
+      run: echo "Build number is $BUILD_NUMBER"
         
     - name: publish docker image locally
       working-directory: '/home/runner/orthweb/plugin-builder'
