@@ -29,6 +29,7 @@ data "aws_secretsmanager_secret" "secretDB" {
 
 data "aws_secretsmanager_secret_version" "creds" {
   secret_id = data.aws_secretsmanager_secret.secretDB.arn
+  depends_on = [aws_secretsmanager_secret_version.sversion]
 }
 
 locals {

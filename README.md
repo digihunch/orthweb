@@ -38,7 +38,7 @@ Terraform's AWS provider is built with AWS SDK, therefore it automatically picks
 
 The Terraform template creates a virtual private cloud (VPC), a subnet, an EC2 instance. It also creates an RDS instance for PostgreSQL database as data store to index patient, exam data as well as storing images. Below is a diagram of the key components.
 
-![Diagram](diagram/Orthweb.png)
+![Diagram](resources/Orthweb.png)
 
 The bootstrap script of EC2 instance provisions Docker environment and load up the Docker image. This sample project provides a minimally functional stack without high availability setup and with only basic security setups. A self-signed X509 certificate (along with private key :) for browser and DICOM traffic.  Once the instance is launched, the public DNS name of the EC2 instance and RDS instances are printed. Functional validation can be attempted from the followings:
 
