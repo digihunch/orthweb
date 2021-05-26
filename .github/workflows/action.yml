@@ -27,9 +27,8 @@ jobs:
     - name: build docker image locally
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
-        makedir out
         docker build -t "digihunch/s3-plugin-builder:0.1" .
-        docker image ls
+        mkdir out && docker image ls
       
   publish_image:
     runs-on: ubuntu-latest
