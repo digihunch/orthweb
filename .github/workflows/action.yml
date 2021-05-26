@@ -34,8 +34,9 @@ jobs:
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
         docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:0.1
-        # to overwrite default CMD, run: docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:0.1 /bin/bash -c "ls && pwd"
-        # 
+        # to overwrite default CMD, run the following
+        #docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:0.1 /bin/bash -c "ls && pwd"
+        md5sum out/libOrthancAwsS3Storage.so
     - name: publish artifact
       uses: actions/upload-artifact@v2
       with:
