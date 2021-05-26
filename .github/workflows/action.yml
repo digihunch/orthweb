@@ -12,17 +12,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: install apt packages
+    - name: prepare vm
       run: |
         sudo apt-get update
       
-    - name: install vcpkg
+    - name: download dockerfile
       working-directory: '/home/runner'
       run: |
         git init orthweb && cd orthweb
         git remote add origin https://github.com/digihunch/orthweb.git && git config core.sparsecheckout true
         echo 'plugin-builder/*' >> .git/info/sparse-checkout && git pull --depth=1 origin main
         docker --version
+        
+    - name: build docker image locally
+      working-directory: '/home/runner/orthweb/plugin-builder'
+      run: |
+        makedir out
+        docker build -t "digihunch/s3-plugin-builder:0.1" .
+        docker image ls
       
   publish_image:
     runs-on: ubuntu-latest
