@@ -15,7 +15,7 @@ jobs:
     - name: prepare os packages
       run: |
         sudo apt-get update
-      
+        
     - name: download dockerfile
       working-directory: '/home/runner'
       run: |
@@ -42,6 +42,7 @@ jobs:
         ./UnitTests && \
         cp /build/*.so /out/"
         md5sum out/libOrthancAwsS3Storage.so
+        
     - name: publish artifact
       uses: actions/upload-artifact@v2
       with:
@@ -55,13 +56,29 @@ jobs:
     needs: [build_library]
     
     steps:
-    - name: start
-      run: echo "starting publish_image"
+    - name: prepare os packages
+      run: |
+        sudo apt-get update
+    - name: download dockerfile
+      working-directory: '/home/runner'
+      run: |
+        git init orthweb && cd orthweb
+        git remote add origin https://github.com/digihunch/orthweb.git && git config core.sparsecheckout true
+        echo 'orthanc-builder/*' >> .git/info/sparse-checkout && git pull --depth=1 origin main
+        docker --version
+
     - name: download artifact
       uses: actions/download-artifact@v2
       with:
         name: libOrthancAwsS3Storage.so
-        path: /home/runner/artifact
+        path: /home/runner/orthweb/orthanc-builder
+        
     - name: verify artifact
-      working-directory: '/home/runner/'
+      working-directory: '/home/runner/orthweb/orthanc-builder'
       run: md5sum artifact/libOrthancAwsS3Storage.so
+      
+    - name: publish docker image locally
+      working-directory: '/home/runner/orthweb/orthanc-builder'
+      run: |
+        docker build -t "digihunch/orthanc-plugin:0.1" .
+        docker image ls
