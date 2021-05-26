@@ -19,14 +19,6 @@ jobs:
     - name: Git Version
       uses: codacy/git-version@2.4.0
    
-    - name: Output Version
-      run: |
-        echo 'Here is the version' 
-        echo ${{ MAJOR }}
-        echo ${{ MINOR }}
-        echo ${{ PATCH }}
-        echo ${{ hash }}
-
     - name: download dockerfile
       working-directory: '/home/runner'
       run: |
@@ -34,6 +26,11 @@ jobs:
         git remote add origin https://github.com/digihunch/orthweb.git && git config core.sparsecheckout true
         echo 'plugin-builder/*' >> .git/info/sparse-checkout && git pull --depth=1 origin main
         docker --version
+        
+    - name: Output Version
+      working-directory: '/home/runner/orthweb/plugin-builder'
+      run: |
+        git-version
         
     - name: publish docker image locally
       working-directory: '/home/runner/orthweb/plugin-builder'
