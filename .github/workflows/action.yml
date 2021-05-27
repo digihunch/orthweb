@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   # Instruction to use environment variable https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
   BUILD_TYPE: Release
   MAJOR_NUMBER: 0
@@ -39,6 +38,27 @@ jobs:
       run: |
         docker build -t "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}" .
         mkdir out && docker image ls
+        
+    - name: build plugin with docker
+      working-directory: '/home/runner/orthweb/plugin-builder'
+      run: |
+        # built-in build command
+        # docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}"
+        # custom build command
+        docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}" /bin/bash -c " \
+        cmake -DUSE_VCPKG_PACKAGES=FALSE -DSTATIC_AWS_CLIENT=TRUE -DSTATIC_BUILD=ON /sources/orthanc-object-storage/Aws && \
+        cmake --build . --config Release && \
+        ./UnitTests && \
+        cp /build/*.so /out/"
+        md5sum out/libOrthancAwsS3Storage.so
+        
+    - name: publish artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: libOrthancAwsS3Storage.so
+        path: /home/runner/orthweb/plugin-builder/out/*.so
+        retention-days: 7
+        
     outputs:
       version: ${{ env.VERSION_NUMBER }}        
     
@@ -50,12 +70,10 @@ jobs:
     - name: prepare os packages
       run: |
         echo "VERSION_NUMBER=${{ needs.build_library.outputs.version }}" >> $GITHUB_ENV
-        echo "VERSION NUMBER is ${{ env.VERSION_NUMBER }}"
         sudo apt-get update
     - name: download dockerfile
       working-directory: '/home/runner'
       run: |
-        echo "VERSION NUMBER is ${{ env.VERSION_NUMBER }}"
         git init orthweb && cd orthweb
         git remote add origin https://github.com/digihunch/orthweb.git && git config core.sparsecheckout true
         echo 'orthanc-builder/*' >> .git/info/sparse-checkout && git pull --depth=1 origin main
@@ -70,12 +88,6 @@ jobs:
     - name: verify artifact
       working-directory: '/home/runner/orthweb/orthanc-builder'
       run: md5sum libOrthancAwsS3Storage.so
-      
-    #- name: publish docker image locally
-    #  working-directory: '/home/runner/orthweb/orthanc-builder'
-    #  run: |
-    #    docker build -t "digihunch/orthanc-plugin:0.1" .
-    #    docker image ls
         
     - name: Login to DockerHub # no need to specify registry
       uses: docker/login-action@v1
@@ -96,4 +108,4 @@ jobs:
           digihunch/orthanc-plugin:${{ env.VERSION_NUMBER }}
     
     - name: image digest
-      run: echo ${{ steps.docker_build.outputs.digest }}
+      run: echo Image ${{ steps.docker_build.outputs.digest }} was published to DockerHub as digihunch/orthanc-plugin:${{ env.VERSION_NUMBER }}
