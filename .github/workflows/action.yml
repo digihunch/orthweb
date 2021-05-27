@@ -6,6 +6,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  MAJOR_NUMBER: 0
 
 jobs:
   build_library:
@@ -28,34 +29,37 @@ jobs:
       with:
         token: ${{secrets.github_token}}        
     - name: Print new build number
-      run: echo "Build number is $BUILD_NUMBER"
+      run: |
+        echo "Build number is $BUILD_NUMBER"
+        VERSION_NUMBER=$MAJOR_NUMBER.$BUILD_NUMBER
+        echo "Version number is $VERSION_NUMBER"
         
     - name: publish docker image locally
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
-        docker build -t "digihunch/s3-plugin-builder:0.1" .
+        docker build -t "digihunch/s3-plugin-builder:$VERSION_NUMBER" .
         mkdir out && docker image ls
       
     - name: build plugin with docker
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
         # built-in build command
-        # docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:0.1
+        # docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:$VERSION_NUMBER
         # custom build command
-        docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:0.1 /bin/bash -c " \
+        docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:$VERSION_NUMBER /bin/bash -c " \
         cmake -DUSE_VCPKG_PACKAGES=FALSE -DSTATIC_AWS_CLIENT=TRUE -DSTATIC_BUILD=ON /sources/orthanc-object-storage/Aws && \
         cmake --build . --config Release && \
         ./UnitTests && \
         cp /build/*.so /out/"
         md5sum out/libOrthancAwsS3Storage.so
-        
     - name: publish artifact
       uses: actions/upload-artifact@v2
       with:
         name: libOrthancAwsS3Storage.so
         path: /home/runner/orthweb/plugin-builder/out/*.so
         retention-days: 1
-        
+    outputs:
+      version: VERSION_NUMBER        
     
   publish_image:
     runs-on: ubuntu-latest
@@ -64,6 +68,8 @@ jobs:
     steps:
     - name: prepare os packages
       run: |
+        VERSION_NUMBER=${{ needs.build_library.outputs.VERSION_NUMBER }}
+        echo "VERSION NUMBER IS $VERSION_NUMBER"
         sudo apt-get update
     - name: download dockerfile
       working-directory: '/home/runner'
@@ -105,7 +111,7 @@ jobs:
         push: true
         tags: |
           digihunch/orthanc-plugin:latest
-          digihunch/orthanc-plugin:0.1
+          digihunch/orthanc-plugin:$VERSION_NUMBER
     
     - name: image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
