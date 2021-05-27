@@ -5,9 +5,9 @@ on:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  # Instruction to use environment variable https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
   BUILD_TYPE: Release
   MAJOR_NUMBER: 0
-  VERSION_NUMBER: 0
 
 jobs:
   build_library:
@@ -32,21 +32,22 @@ jobs:
     - name: Print new build number
       run: |
         VERSION_NUMBER=$MAJOR_NUMBER.$BUILD_NUMBER
-        echo "Build number is $BUILD_NUMBER" -n && echo "Version is $VERSION_NUMBER"
+        echo "VERSION_NUMBER=$VERSION_NUMBER" >> $GITHUB_ENV
+        echo -n "Build number is $BUILD_NUMBER." && echo "Version is $VERSION_NUMBER"
         
     - name: publish docker image locally
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
-        docker build -t digihunch/s3-plugin-builder:$VERSION_NUMBER .
+        docker build -t "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}" .
         mkdir out && docker image ls
       
     - name: build plugin with docker
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
         # built-in build command
-        # docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:$VERSION_NUMBER
+        # docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}"
         # custom build command
-        docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind digihunch/s3-plugin-builder:$VERSION_NUMBER /bin/bash -c " \
+        docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}" /bin/bash -c " \
         cmake -DUSE_VCPKG_PACKAGES=FALSE -DSTATIC_AWS_CLIENT=TRUE -DSTATIC_BUILD=ON /sources/orthanc-object-storage/Aws && \
         cmake --build . --config Release && \
         ./UnitTests && \
@@ -59,7 +60,7 @@ jobs:
         path: /home/runner/orthweb/plugin-builder/out/*.so
         retention-days: 1
     outputs:
-      version: VERSION_NUMBER        
+      version: ${{ env.VERSION_NUMBER }}        
     
   publish_image:
     runs-on: ubuntu-latest
