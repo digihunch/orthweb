@@ -1,7 +1,7 @@
 version: "3.8"  # Secrets are only available since 3.4 
 services:
   orthanc-backend:
-    image: osimis/orthanc 
+    image: digihunch/orthanc-plugin 
     container_name: orthweb
     command: /run/secrets/  # Path to the configuration files (stored as secrets)
     ports:

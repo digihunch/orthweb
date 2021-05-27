@@ -7,15 +7,24 @@
     "EnableIndex" : true,
     "EnableStorage" : true,
     "Host" : "${DB_ADDR}",
-    "Port" : "${DB_PORT}",
+    "Port" : ${DB_PORT},
     "Database" : "orthancdb",
     "Username" : "${DB_USERNAME}",
     "Password" : "${DB_PASSWORD}",
     "EnableSsl" : true
   },
+  "AwsS3Storage" : {
+    "BucketName": "${S3_BUCKET}",
+    "Region" : "us-east-1",
+    "ConnectionTimeout": 30,
+    "RequestTimeout": 1200,
+    "RootPath": "orth",
+    "StorageStructure": "flat"
+  },
   "Plugins" : [
     "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLIndex.so",
     "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLStorage.so",
-    "/usr/local/share/orthanc/plugins/libOrthancWebViewer.so"
+    "/usr/local/share/orthanc/plugins/libOrthancWebViewer.so",
+    "/usr/local/share/orthanc/plugins/libOrthancAwsS3Storage.so"
   ]
 }
