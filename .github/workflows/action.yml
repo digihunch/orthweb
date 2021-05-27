@@ -40,25 +40,6 @@ jobs:
       run: |
         docker build -t "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}" .
         mkdir out && docker image ls
-      
-    - name: build plugin with docker
-      working-directory: '/home/runner/orthweb/plugin-builder'
-      run: |
-        # built-in build command
-        # docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}"
-        # custom build command
-        docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}" /bin/bash -c " \
-        cmake -DUSE_VCPKG_PACKAGES=FALSE -DSTATIC_AWS_CLIENT=TRUE -DSTATIC_BUILD=ON /sources/orthanc-object-storage/Aws && \
-        cmake --build . --config Release && \
-        ./UnitTests && \
-        cp /build/*.so /out/"
-        md5sum out/libOrthancAwsS3Storage.so
-    - name: publish artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: libOrthancAwsS3Storage.so
-        path: /home/runner/orthweb/plugin-builder/out/*.so
-        retention-days: 1
     outputs:
       version: ${{ env.VERSION_NUMBER }}        
     
@@ -69,8 +50,8 @@ jobs:
     steps:
     - name: prepare os packages
       run: |
-        VERSION_NUMBER=${{ needs.build_library.outputs.VERSION_NUMBER }}
-        echo "VERSION NUMBER IS $VERSION_NUMBER"
+        echo "VERSION_NUMBER=${{ needs.build_library.outputs.version }}" >> $GITHUB_ENV
+        echo "VERSION NUMBER IS ${{ env.VERSION_NUMBER }}"
         sudo apt-get update
     - name: download dockerfile
       working-directory: '/home/runner'
@@ -112,7 +93,7 @@ jobs:
         push: true
         tags: |
           digihunch/orthanc-plugin:latest
-          digihunch/orthanc-plugin:$VERSION_NUMBER
+          digihunch/orthanc-plugin:${{ env.VERSION_NUMBER }}
     
     - name: image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
