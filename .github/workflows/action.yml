@@ -7,6 +7,7 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   MAJOR_NUMBER: 0
+  VERSION_NUMBER: 0
 
 jobs:
   build_library:
