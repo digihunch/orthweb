@@ -30,14 +30,13 @@ jobs:
         token: ${{secrets.github_token}}        
     - name: Print new build number
       run: |
-        echo "Build number is $BUILD_NUMBER"
         VERSION_NUMBER=$MAJOR_NUMBER.$BUILD_NUMBER
-        echo "Version number is $VERSION_NUMBER"
+        echo "Build number is $BUILD_NUMBER" -n && echo "Version is $VERSION_NUMBER"
         
     - name: publish docker image locally
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
-        docker build -t "digihunch/s3-plugin-builder:$VERSION_NUMBER" .
+        docker build -t digihunch/s3-plugin-builder:$VERSION_NUMBER .
         mkdir out && docker image ls
       
     - name: build plugin with docker
