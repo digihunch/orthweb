@@ -13,9 +13,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Generate build number
+      uses: einaregilsson/build-number@v3
+      with:
+        token: ${{secrets.github_token}}  
+        
     - name: prepare os packages
       run: |
+        echo "VERSION_NUMBER=$MAJOR_NUMBER.$BUILD_NUMBER" >> $GITHUB_ENV
+        echo -n "Build number is $BUILD_NUMBER." && echo "Version is $VERSION_NUMBER"
         sudo apt-get update
+        
     - name: download dockerfile
       working-directory: '/home/runner'
       run: |
@@ -24,22 +32,13 @@ jobs:
         echo 'plugin-builder/*' >> .git/info/sparse-checkout && git pull --depth=1 origin main
         docker --version
         
-    - name: Generate build number
-      uses: einaregilsson/build-number@v3
-      with:
-        token: ${{secrets.github_token}}        
-    - name: Print new build number
-      run: |
-        echo "VERSION_NUMBER=$MAJOR_NUMBER.$BUILD_NUMBER" >> $GITHUB_ENV
-        echo -n "Build number is $BUILD_NUMBER." && echo "Version is $VERSION_NUMBER"
-        
-    - name: publish docker image locally
+    - name: publish docker image for plugin builder locally
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
         docker build -t "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}" .
         mkdir out && docker image ls
         
-    - name: build plugin with docker
+    - name: run docker container to build plugin
       working-directory: '/home/runner/orthweb/plugin-builder'
       run: |
         # built-in build command
@@ -71,6 +70,7 @@ jobs:
       run: |
         echo "VERSION_NUMBER=${{ needs.build_library.outputs.version }}" >> $GITHUB_ENV
         sudo apt-get update
+        
     - name: download dockerfile
       working-directory: '/home/runner'
       run: |
