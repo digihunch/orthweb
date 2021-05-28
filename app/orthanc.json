@@ -5,7 +5,7 @@
   "SslCertificate" : "site.pem",
   "PostgreSQL" : {
     "EnableIndex" : true,
-    "EnableStorage" : true,
+    "EnableStorage" : false,
     "Host" : "${DB_ADDR}",
     "Port" : ${DB_PORT},
     "Database" : "orthancdb",
@@ -15,7 +15,7 @@
   },
   "AwsS3Storage" : {
     "BucketName": "${S3_BUCKET}",
-    "Region" : "us-east-1",
+    "Region" : "${S3_REGION}",
     "ConnectionTimeout": 30,
     "RequestTimeout": 1200,
     "RootPath": "orth",
