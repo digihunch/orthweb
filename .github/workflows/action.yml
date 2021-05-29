@@ -5,8 +5,7 @@ on:
 
 env:
   # Instruction to use environment variable https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
-  #BUILD_TYPE: Release
-  BUILD_TYPE: Debug 
+  BUILD_TYPE: Release 
   MAJOR_NUMBER: 0
 
 jobs:
@@ -49,15 +48,14 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
               -DUSE_VCPKG_PACKAGES=FALSE \
               -DSTATIC_AWS_CLIENT=TRUE \
-              -DUSE_SYSTEM_CURL=ON \
-              -DUSE_SYSTEM_SSL=ON \
-              -DSTATIC_BUILD=ON \
-              -DENABLE_CURL_LOGGING=ON \
+              -DSTANDALONE_BUILD=ON \
+              -DALLOW_DOWNLOADS=ON \
               /sources/orthanc-object-storage/Aws && \
         cmake --build . --config Release && \
         ./UnitTests && \
         cp /build/*.so /out/"
-        md5sum out/libOrthancAwsS3Storage.so
+        ldd /out/libOrthancAwsS3Storage.so
+        echo -n Hash md5sum out/libOrthancAwsS3Storage.so
         
     - name: publish artifact
       uses: actions/upload-artifact@v2
