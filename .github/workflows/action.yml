@@ -53,9 +53,9 @@ jobs:
               /sources/orthanc-object-storage/Aws && \
         cmake --build . --config Release && \
         ./UnitTests && \
-        cp /build/*.so /out/"
-        ldd /out/libOrthancAwsS3Storage.so
-        echo -n Hash md5sum out/libOrthancAwsS3Storage.so
+        cp /build/*.so /out/ && \
+        ldd /out/libOrthancAwsS3Storage.so"
+        echo -n Hash && md5sum out/libOrthancAwsS3Storage.so
         
     - name: publish artifact
       uses: actions/upload-artifact@v2
