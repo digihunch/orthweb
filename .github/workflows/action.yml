@@ -5,7 +5,8 @@ on:
 
 env:
   # Instruction to use environment variable https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
-  BUILD_TYPE: Release
+  #BUILD_TYPE: Release
+  BUILD_TYPE: Debug 
   MAJOR_NUMBER: 0
 
 jobs:
@@ -45,7 +46,13 @@ jobs:
         # docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}"
         # custom build command
         docker run --mount src=/home/runner/orthweb/plugin-builder/out,target=/out,type=bind "digihunch/s3-plugin-builder:${{ env.VERSION_NUMBER }}" /bin/bash -c " \
-        cmake -DUSE_VCPKG_PACKAGES=FALSE -DSTATIC_AWS_CLIENT=TRUE -DSTATIC_BUILD=ON /sources/orthanc-object-storage/Aws && \
+        cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+              -DUSE_VCPKG_PACKAGES=FALSE \
+              -DSTATIC_AWS_CLIENT=TRUE \
+              -DUSE_SYSTEM_CURL=ON \
+              -DUSE_SYSTEM_SSL=ON \
+              -DSTATIC_BUILD=ON \
+              /sources/orthanc-object-storage/Aws && \
         cmake --build . --config Release && \
         ./UnitTests && \
         cp /build/*.so /out/"
