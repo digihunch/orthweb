@@ -52,6 +52,7 @@ jobs:
               -DUSE_SYSTEM_CURL=ON \
               -DUSE_SYSTEM_SSL=ON \
               -DSTATIC_BUILD=ON \
+              -DENABLE_CURL_LOGGING=ON \
               /sources/orthanc-object-storage/Aws && \
         cmake --build . --config Release && \
         ./UnitTests && \
