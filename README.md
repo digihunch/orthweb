@@ -8,6 +8,12 @@ The application is provided by [Orthanc - DICOM Server](https://www.orthanc-serv
 
 The Orthanc application receives medical imaging data from devices in DICOM protocol. It also allows clinical users to view images through web browser. This OrthWeb project includes the application in Docker and an example of Infrastructure as Code that hosts the environment.
 
+# Prerequisite
+awscli
+terraform
+ecscli
+https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
+
 
 # Infrastructure
 
