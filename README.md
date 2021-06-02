@@ -1,18 +1,16 @@
 # OrthWeb - an open-source Orthanc deployment (medical imaging application)
 
-OrthWeb is a medical imaging PoC for imaging data repo and web portal, built from **Orthanc** open-source project, on top of Amazon Web Service.
+Orthweb is a medical imaging PoC deployment on Amazon Web Service, based on  **Orthanc**, open-source project to ingest, store, view and distribute medical images.
+# Prerequisite
+* AWS account required permission
+* AWS cli configured on the client (see [instruction](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html))
+* terraform configured on the client (see [instruction](https://learn.hashicorp.com/tutorials/terraform/install-cli))
 
 # Application
 
 The application is provided by [Orthanc - DICOM Server](https://www.orthanc-server.com/), an open-source **DICOM server**. They [release](https://www.orthanc-server.com/download.php) in all common platforms, including [Docker image](https://hub.docker.com/u/jodogne/). The source code are available [here](https://hg.orthanc-server.com/). **DICOM** is a standard under ISO that defines how medical imaging data are exchanged between healthcare informatics systems. It involves DICOM Upper Layer Protocol, an OSI layer 7 protocol to allow data exchange over TCP/IP network. It also includes definition of file format, commonly referred to as DICOM Part 10 file in healthcare IT.
 
-The Orthanc application receives medical imaging data from devices in DICOM protocol. It also allows clinical users to view images through web browser. This OrthWeb project includes the application in Docker and an example of Infrastructure as Code that hosts the environment.
-
-# Prerequisite
-awscli
-terraform
-ecscli
-https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
+The Orthanc application receives medical imaging data from devices in DICOM protocol. It also allows clinical users to view images through web browser. This Orthweb project includes the application in Docker and an example of Infrastructure as Code that hosts the environment.
 
 
 # Infrastructure
@@ -57,9 +55,26 @@ To disable HTTPS, set SslEnabled to false in orthanc.json. The terraform templat
  
 The application UI provides very intuitive visual components to open an exam, and preview instances (images). It also supports the ability to save DICOM studies as part 10 files. [Orthanc Book](https://book.orthanc-server.com/index.html) is the official resource in regard with the configuration, customization and implementation of Orthanc. 
 
+# Architecture Q & A
+
+* Why Orthanc? Orthanc is an open-source, application released in containers.
+* Why EC2? Because of limitations with ECS. Refer to [this](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) comment. The best way to build operation environment is Kubernetes.
+* Why PostgreSQL? In this configuration we use PostgreSQL to store both patient index and pixel data. S3 plugin is a commercial product not available to public and not straightforward to build.
+* Why Terraform? Terraform has better modularization support than CloudFormation. It is easier to set up than AWS CDK.
+* Why Docker? This POC does not include complex orchestration. A docker-compose suffices for the use case. Or Kubernetes cluster should be used for advanced orchestration.
+* Why AWS? It doesn't have to. In fact I prefer a provider independent setup. However, we need database as service from cloud provider so the code has to be specific to a cloud provider.
+
+
 # Security
+Check out [this post](https://www.digihunch.com/2021/05/secure-web-application-deployment/) for more details.
 
-1. The master user and password for database are now generated dynamically, in the secret manager in AWS. The EC2 instance is granted with the role to access the secret. The cloud-init script will be given the private endpoint of secret manager to pull the secret into a file. Docker compose maps the secret file to environment variables inside of container.
+Configuration
+1. Both DICOM and web traffic are encrypted in TLS
+2. PostgreSQL data is encrypted at rest, and the traffic to and from application container is encrypted in transit.
+3. The master user and password for database are now generated dynamically, in the secret manager in AWS. The EC2 instance is granted with the role to access the secret. The cloud-init script will be given the private endpoint of secret manager to pull the secret into a file. Docker compose maps the secret file to environment variables inside of container.
+4. Since the X509 certificate is self-signed for demo, it is now dynamically generated using openssl11 during bootstrapping, in compliance with [Mac requirement](https://support.apple.com/en-us/HT210176).
 
-2. Since the X509 certificate is self-signed for demo, it is now dynamically generated using openssl11 during bootstrapping.
-
+Vulnerabilities
+1. the traffic between nginx container and orthan container is unencrypted
+2. Database password is generated at Terraform client and then sent to deployment server to create PostgreSQL. The generated password is also stored in state file of Terraform. To overcome this, we need a) Terraform tells AWS secrets manager to generate a password; and b) it tells other AWS service to resolve the newly created secret. a) is doable but b) isn't due to a limitation with Terraform
+3. Secret management with Docker container: secret are presented to container process as environment variables, instead of file content. As per [this article](https://techbeacon.com/devops/how-keep-your-container-secrets-secure), it is not recommended because environment variable could be leaked out.
