@@ -58,10 +58,10 @@ The application UI provides very intuitive visual components to open an exam, an
 # Architecture Q & A
 
 * Why Orthanc? Orthanc is an open-source, application released in containers.
-* Why EC2? Because of limitations with ECS. Refer to [this](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) comment. The best way to build operation environment is Kubernetes.
+* Why EC2? Because of limitations with ECS. Refer to [this](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) comment. A better way to build operation environment is Kubernetes, check out this [Korthweb](https://github.com/digihunch/korthweb) project.
 * Why PostgreSQL? In this configuration we use PostgreSQL to store both patient index and pixel data. S3 plugin is a commercial product not available to public and not straightforward to build.
 * Why Terraform? Terraform has better modularization support than CloudFormation. It is easier to set up than AWS CDK.
-* Why Docker? This POC does not include complex orchestration. A docker-compose suffices for the use case. Or Kubernetes cluster should be used for advanced orchestration.
+* Why Docker? This POC does not include complex orchestration. A docker-compose suffices for the use case. Or Kubernetes cluster should be used for advanced orchestration. The [Korthweb](https://github.com/digihunch/korthweb) project gives a template to create cluster in EKS.
 * Why AWS? It doesn't have to. In fact I prefer a provider independent setup. However, we need database as service from cloud provider so the code has to be specific to a cloud provider.
 
 
