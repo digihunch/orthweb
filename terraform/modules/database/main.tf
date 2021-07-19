@@ -1,6 +1,46 @@
+data "aws_subnet" "private_subnet1" {
+  id = var.private_subnet1_id
+}
+
 resource "aws_kms_key" "dbkey" {
   description             = "This key is used to encrypt database storage"
   deletion_window_in_days = 10
+}
+
+data "aws_secretsmanager_secret_version" "dbcreds" {
+  secret_id = var.db_secret_id 
+}
+
+locals {
+  db_creds = jsondecode(
+    data.aws_secretsmanager_secret_version.dbcreds.secret_string
+  )
+}
+
+resource "aws_db_subnet_group" "default" {
+  name       = "dbsubnetgroup"
+  subnet_ids = [var.private_subnet1_id, var.private_subnet2_id]
+}
+
+resource "aws_security_group" "dbsecgroup" {
+  name        = "orthdb_sg"
+  description = "postgres security group"
+  vpc_id      = data.aws_subnet.private_subnet1.vpc_id
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 8
+    to_port     = 0
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "DBSecurityGroup-${var.tag_suffix}"
+  }
 }
 
 resource "aws_db_instance" "postgres" {

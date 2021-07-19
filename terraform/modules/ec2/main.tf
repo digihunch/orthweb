@@ -10,30 +10,6 @@ data "template_file" "myuserdata" {
   }
 }
 
-resource "aws_iam_role" "inst_role" {
-  name = "inst_role"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}
-EOF
-
-  tags = {
-    Name = "InstanceRole"
-  }
-}
-
 resource "aws_iam_instance_profile" "inst_profile" {
   name = "inst_profile"
   role = aws_iam_role.inst_role.name

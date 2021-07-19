@@ -1,15 +1,18 @@
+data "aws_subnet" "public_subnet" {
+  id = var.public_subnet_id
+}
+
 resource "random_password" "password" {
   length           = 16
   special          = true
   override_special = "!#$%&*-_+:?"
 }
 
-resource "random_id" "randsuffix" {
-  byte_length = 8
-}
-
 resource "aws_secretsmanager_secret" "secretDB" {
-  name = "DatabaseCreds${random_id.randsuffix.hex}"
+  name = "DatabaseCreds${var.name_suffix}"
+  tags = {
+    Name = "Secret-${var.tag_suffix}"
+  }
 }
 
 resource "aws_secretsmanager_secret_version" "sversion" {
@@ -32,18 +35,31 @@ data "aws_secretsmanager_secret_version" "creds" {
   depends_on = [aws_secretsmanager_secret_version.sversion]
 }
 
-locals {
-  db_creds = jsondecode(
-    data.aws_secretsmanager_secret_version.creds.secret_string
-  )
+resource "aws_security_group" "epsecgroup" {
+  name        = "vpcep_sg"
+  description = "security group for vpc endpoint"
+  vpc_id      = data.aws_subnet.public_subnet.vpc_id 
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "EndPointSecurityGroup-${var.tag_suffix}"
+  }
 }
 
 resource "aws_vpc_endpoint" "secmgr" {
-  vpc_id              = aws_vpc.orthmain.id
+  #vpc_id              = aws_vpc.orthmain.id
+  vpc_id              = data.aws_subnet.public_subnet.vpc_id 
   service_name        = "com.amazonaws.${var.region}.secretsmanager"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
   security_group_ids  = [aws_security_group.epsecgroup.id]
-  subnet_ids          = [aws_subnet.publicsubnet.id]
+  subnet_ids          = [var.public_subnet_id]
   # For each interface endpoint, you can choose one subnet per AZ. 
+  tags = {
+    Name = "EndPointForSecMgr-${var.tag_suffix}"
+  }
 }

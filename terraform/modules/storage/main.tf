@@ -2,13 +2,17 @@ data "aws_caller_identity" "current" {
   # no arguments
 }
 
+data "aws_iam_role" "instance_role" {
+  name = "${var.role_name}"
+}
+
 resource "aws_kms_key" "s3key" {
   description             = "This key is used to encrypt bucket objects"
   deletion_window_in_days = 10
 }
 
 resource "aws_s3_bucket" "orthbucket" {
-  bucket = "orthbucket${random_id.randsuffix.hex}"
+  bucket = "orthbucket${var.name_suffix}"
 
   force_destroy = true # remaining object does not stop bucket from being deleted
   server_side_encryption_configuration {
@@ -51,7 +55,7 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
         Condition = {
           StringNotLike = {
             "aws:userId" = [
-              "${aws_iam_role.inst_role.unique_id}:*",          # instance role
+              "${data.aws_iam_role.instance_role.unique_id}:*",          # instance role
               "${data.aws_caller_identity.current.account_id}", # root user
               "${data.aws_caller_identity.current.user_id}"     # deployment user
             ]

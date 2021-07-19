@@ -38,11 +38,6 @@ resource "aws_subnet" "privatesubnet2" {
   }
 }
 
-resource "aws_db_subnet_group" "default" {
-  name       = "dbsubnetgroup"
-  subnet_ids = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
-}
-
 resource "aws_internet_gateway" "maingw" {
   vpc_id = aws_vpc.orthmain.id
   tags = {
@@ -113,38 +108,3 @@ resource "aws_security_group" "orthsecgrp" {
   }
 }
 
-resource "aws_security_group" "dbsecgroup" {
-  name        = "orthdb_sg"
-  description = "postgres security group"
-  vpc_id      = aws_vpc.orthmain.id
-  ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    from_port   = 8
-    to_port     = 0
-    protocol    = "icmp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  tags = {
-    Name = "DBSecurityGroup-${var.tag_suffix}"
-  }
-}
-
-resource "aws_security_group" "epsecgroup" {
-  name        = "vpcep_sg"
-  description = "security group for vpc endpoint"
-  vpc_id      = aws_vpc.orthmain.id
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  tags = {
-    Name = "EndPointSecurityGroup-${var.tag_suffix}"
-  }
-}
