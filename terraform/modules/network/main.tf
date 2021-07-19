@@ -3,7 +3,7 @@ resource "aws_vpc" "orthmain" {
   instance_tenancy     = "default"
   enable_dns_hostnames = true
   tags = {
-    Name = "OrthmainVPC"
+    Name = "MainVPC-${var.tag_suffix}"
   }
 }
 
@@ -12,7 +12,7 @@ resource "aws_subnet" "publicsubnet" {
   cidr_block              = "${var.public_subnet_cidr_block}"
   map_public_ip_on_launch = true
   tags = {
-    Name = "PublicSubnet"
+    Name = "PublicSubnet-${var.tag_suffix}"
   }
 }
 
@@ -24,7 +24,7 @@ resource "aws_subnet" "privatesubnet1" {
   map_public_ip_on_launch = false
   availability_zone       = data.aws_availability_zones.available.names[1]
   tags = {
-    Name = "PrivateSubnet1"
+    Name = "PrivateSubnet1-${var.tag_suffix}"
   }
 }
 
@@ -34,7 +34,7 @@ resource "aws_subnet" "privatesubnet2" {
   map_public_ip_on_launch = false
   availability_zone       = data.aws_availability_zones.available.names[2]
   tags = {
-    Name = "PrivateSubnet2"
+    Name = "PrivateSubnet2-${var.tag_suffix}"
   }
 }
 
@@ -46,7 +46,7 @@ resource "aws_db_subnet_group" "default" {
 resource "aws_internet_gateway" "maingw" {
   vpc_id = aws_vpc.orthmain.id
   tags = {
-    Name = "MainIntGtwy"
+    Name = "MainGateway-${var.tag_suffix}"
   }
 }
 
@@ -70,4 +70,81 @@ resource "aws_main_route_table_association" "vpc_rt_assoc" {
 
 
 
+resource "aws_security_group" "orthsecgrp" {
+  name        = "orth_sg"
+  description = "security group for orthanc"
+  vpc_id      = aws_vpc.orthmain.id
 
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 8
+    to_port     = 0
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Orthanc Web"
+    from_port   = 8042
+    to_port     = 8042
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "DICOM Image"
+    from_port   = 11112
+    to_port     = 11112
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "WorkloadSecurityGroup-${var.tag_suffix}"
+  }
+}
+
+resource "aws_security_group" "dbsecgroup" {
+  name        = "orthdb_sg"
+  description = "postgres security group"
+  vpc_id      = aws_vpc.orthmain.id
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 8
+    to_port     = 0
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "DBSecurityGroup-${var.tag_suffix}"
+  }
+}
+
+resource "aws_security_group" "epsecgroup" {
+  name        = "vpcep_sg"
+  description = "security group for vpc endpoint"
+  vpc_id      = aws_vpc.orthmain.id
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "EndPointSecurityGroup-${var.tag_suffix}"
+  }
+}
