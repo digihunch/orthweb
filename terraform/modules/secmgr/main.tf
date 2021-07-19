@@ -1,7 +1,3 @@
-data "aws_subnet" "public_subnet" {
-  id = var.public_subnet_id
-}
-
 resource "random_password" "password" {
   length           = 16
   special          = true
@@ -24,15 +20,6 @@ resource "aws_secretsmanager_secret_version" "sversion" {
    }
 EOF
   depends_on = [aws_secretsmanager_secret.secretDB]
-}
-
-data "aws_secretsmanager_secret" "secretDB" {
-  arn = aws_secretsmanager_secret.secretDB.arn
-}
-
-data "aws_secretsmanager_secret_version" "creds" {
-  secret_id = data.aws_secretsmanager_secret.secretDB.arn
-  depends_on = [aws_secretsmanager_secret_version.sversion]
 }
 
 resource "aws_security_group" "epsecgroup" {

@@ -1,23 +1,9 @@
-data "aws_subnet" "private_subnet1" {
-  id = var.private_subnet1_id
-}
-
 resource "aws_kms_key" "dbkey" {
   description             = "This key is used to encrypt database storage"
   deletion_window_in_days = 10
   tags = {
     Name = "DB-KMS-Key-${var.tag_suffix}"
   }
-}
-
-data "aws_secretsmanager_secret_version" "dbcreds" {
-  secret_id = var.db_secret_id 
-}
-
-locals {
-  db_creds = jsondecode(
-    data.aws_secretsmanager_secret_version.dbcreds.secret_string
-  )
 }
 
 resource "aws_db_subnet_group" "default" {

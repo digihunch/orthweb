@@ -16,8 +16,6 @@ resource "aws_subnet" "publicsubnet" {
   }
 }
 
-data "aws_availability_zones" "available" {}
-
 resource "aws_subnet" "privatesubnet1" {
   vpc_id                  = aws_vpc.orthmain.id
   cidr_block              = "${var.private_subnet1_cidr_block}"

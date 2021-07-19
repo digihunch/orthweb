@@ -47,7 +47,6 @@ module "ec2" {
   pubkey_name = "${var.pubkey_name}"
   region = var.region  
   role_name = module.iam_role.role_info.ec2_iam_role_name
-  #db_instance_name = module.database.db_info.db_instance_name
   db_instance_id = module.database.db_info.db_instance_id
   s3_bucket_name = module.storage.s3_info.bucket_name
   db_secret_arn = module.secretmanager.secret_info.db_secret_arn

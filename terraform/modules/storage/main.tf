@@ -1,11 +1,3 @@
-data "aws_caller_identity" "current" {
-  # no arguments
-}
-
-data "aws_iam_role" "instance_role" {
-  name = "${var.role_name}"
-}
-
 resource "aws_kms_key" "s3key" {
   description             = "This key is used to encrypt bucket objects"
   deletion_window_in_days = 10
@@ -69,4 +61,3 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
   })
   depends_on = [aws_s3_bucket_public_access_block.orthbucketblockpublicaccess]
 }
-
