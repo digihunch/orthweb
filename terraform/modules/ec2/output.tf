@@ -1,3 +1,5 @@
 output "bastion_info" {
-  value = aws_instance.orthweb.public_dns 
+  value = {
+    public_dns = aws_instance.orthweb.public_dns 
+  } 
 }

@@ -51,7 +51,6 @@ resource "aws_security_group" "epsecgroup" {
 }
 
 resource "aws_vpc_endpoint" "secmgr" {
-  #vpc_id              = aws_vpc.orthmain.id
   vpc_id              = data.aws_subnet.public_subnet.vpc_id 
   service_name        = "com.amazonaws.${var.region}.secretsmanager"
   vpc_endpoint_type   = "Interface"

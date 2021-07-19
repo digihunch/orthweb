@@ -6,15 +6,15 @@ variable "aws_provider_secret_key" {
   type = string
   default = null
 }
-variable "depkey" {
+variable "pubkey_name" {
   type    = string
-  default = "cskey"
+  default = "anamac"
 }
 variable "region" {
   type    = string
   default = "us-east-1"
 }
-variable "tag-suffix" {
+variable "tag_suffix" {
   type = string
   default = "orthweb"
 }

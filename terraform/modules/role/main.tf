@@ -16,4 +16,7 @@ resource "aws_iam_role" "ec2_iam_role" {
   ]
 }
 EOF
+  tags = {
+    Name = "IAMRole-${var.tag_suffix}"
+  }
 }

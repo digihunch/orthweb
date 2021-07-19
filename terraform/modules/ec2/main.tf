@@ -1,23 +1,92 @@
+data "aws_db_instance" "postgres" {
+  #db_instance_identifier = "${var.db_instance_name}"
+  db_instance_identifier = "${var.db_instance_id}"
+}
+
+data "aws_s3_bucket" "orthbucket" {
+  bucket = "${var.s3_bucket_name}"
+}
+
+data "aws_iam_role" "instance_role" {
+  name = "${var.role_name}"
+}
+
+data "aws_secretsmanager_secret" "secretDB" {
+  arn = "${var.db_secret_arn}"
+}
+
+data "aws_vpc_endpoint" "secmgr" {
+  vpc_id = data.aws_subnet.public_subnet.vpc_id
+  service_name = "${var.ep_service_name}"
+}
+
+data "aws_subnet" "public_subnet" {
+  id = var.public_subnet_id
+}
+
 data "template_file" "myuserdata" {
-  template = file("${path.cwd}/myuserdata.tpl")
+  template = file("${path.module}/myuserdata.tpl")
   vars = {
-    db_address  = "${aws_db_instance.postgres.address}",
-    db_port     = "${aws_db_instance.postgres.port}",
+    db_address  = "${data.aws_db_instance.postgres.address}",
+    db_port     = "${data.aws_db_instance.postgres.port}",
     aws_region  = "${var.region}"
-    sm_endpoint = aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
-    sec_name    = "${aws_secretsmanager_secret.secretDB.name}"
-    s3_bucket   = "${aws_s3_bucket.orthbucket.bucket}"
+    sm_endpoint = data.aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
+    sec_name    = "${data.aws_secretsmanager_secret.secretDB.name}"
+    s3_bucket   = "${data.aws_s3_bucket.orthbucket.bucket}"
+  }
+}
+
+resource "aws_security_group" "orthsecgrp" {
+  name        = "orth_sg"
+  description = "security group for orthanc"
+  vpc_id      = data.aws_subnet.public_subnet.vpc_id
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 8
+    to_port     = 0
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Orthanc Web"
+    from_port   = 8042
+    to_port     = 8042
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "DICOM Image"
+    from_port   = 11112
+    to_port     = 11112
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "WorkloadSecurityGroup-${var.tag_suffix}"
   }
 }
 
 resource "aws_iam_instance_profile" "inst_profile" {
   name = "inst_profile"
-  role = aws_iam_role.inst_role.name
+  role = data.aws_iam_role.instance_role.name
 }
 
 resource "aws_iam_role_policy" "secret_reader_policy" {
   name = "secret_reader_policy"
-  role = aws_iam_role.inst_role.id
+  role = data.aws_iam_role.instance_role.id
 
   policy = <<EOF
 {
@@ -31,7 +100,7 @@ resource "aws_iam_role_policy" "secret_reader_policy" {
       ],
       "Effect": "Allow",
       "Resource": [
-        "${aws_secretsmanager_secret.secretDB.id}"
+        "${data.aws_secretsmanager_secret.secretDB.id}"
       ]
     }
   ]
@@ -41,7 +110,7 @@ EOF
 
 resource "aws_iam_role_policy" "database_access_policy" {
   name   = "database_access_policy"
-  role   = aws_iam_role.inst_role.id
+  role   = data.aws_iam_role.instance_role.id
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -52,7 +121,7 @@ resource "aws_iam_role_policy" "database_access_policy" {
       ],
       "Effect": "Allow",
       "Resource": [
-        "${aws_db_instance.postgres.arn}"
+        "${data.aws_db_instance.postgres.db_instance_arn}"
       ]
     }
   ]
@@ -65,7 +134,7 @@ EOF
 # https://aws.amazon.com/premiumsupport/knowledge-center/s3-access-denied-error-kms/
 resource "aws_iam_role_policy" "s3_access_policy" {
   name   = "s3_access_policy"
-  role   = aws_iam_role.inst_role.id
+  role   = data.aws_iam_role.instance_role.id
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -78,16 +147,15 @@ resource "aws_iam_role_policy" "s3_access_policy" {
       ],
       "Effect": "Allow",
       "Resource": [
-        "${aws_s3_bucket.orthbucket.arn}",
-        "${aws_s3_bucket.orthbucket.arn}/*",
-        "${aws_kms_key.s3key.arn}"
+        "${data.aws_s3_bucket.orthbucket.arn}",
+        "${data.aws_s3_bucket.orthbucket.arn}/*",
+        "${var.s3_key_arn}"
       ]
     }
   ]
 }
 EOF
 }
-
 resource "aws_instance" "orthweb" {
   ami                    = var.amilut[var.region]
   instance_type          = "t3.micro"
@@ -95,13 +163,11 @@ resource "aws_instance" "orthweb" {
   key_name               = var.pubkey_name
   vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
   subnet_id              = var.public_subnet_id
-  depends_on             = [aws_db_instance.postgres, aws_s3_bucket.orthbucket]
   iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
   tags = {
-    Name = "OrthServer"
+    Name = "Orthweb-EC2-${var.tag_suffix}"
   }
 }
-
 data "template_cloudinit_config" "orthconfig" {
   base64_encode = true
   part {
@@ -110,7 +176,6 @@ data "template_cloudinit_config" "orthconfig" {
   }
   part {
     content_type = "text/x-shellscript"
-    content      = file("${path.cwd}/custom_userdata.sh")
+    content      = file("${path.module}/custom_userdata.sh")
   }
 }
-

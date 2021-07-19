@@ -23,6 +23,9 @@ resource "aws_s3_bucket" "orthbucket" {
       }
     }
   }
+  tags = {
+    Name = "OrthwebS3Bucket-${var.tag_suffix}"
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "orthbucketblockpublicaccess" {
