@@ -34,8 +34,6 @@ The source code of Orthanc is available [here](https://hg.orthanc-server.com/). 
 
 The Orthanc application receives medical imaging data from devices in DICOM protocol. It also allows clinical users to view images through web browser. This Orthweb project includes the application in Docker and an example of Infrastructure as Code that hosts the environment.
 
-## Architecture
-
 ![Diagram](resources/Orthweb.png)
 
 The bootstrap script of EC2 instance provisions Docker environment and load up the Docker image. This sample project provides a minimally functional stack without high availability setup and with only basic security setups. A self-signed X509 certificate (along with private key :) for browser and DICOM traffic.  Once the instance is launched, the public DNS name of the EC2 instance and RDS instances are printed. Functional validation can be attempted from the followings:
