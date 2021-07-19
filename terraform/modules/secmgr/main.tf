@@ -38,3 +38,12 @@ locals {
   )
 }
 
+resource "aws_vpc_endpoint" "secmgr" {
+  vpc_id              = aws_vpc.orthmain.id
+  service_name        = "com.amazonaws.${var.region}.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  security_group_ids  = [aws_security_group.epsecgroup.id]
+  subnet_ids          = [aws_subnet.publicsubnet.id]
+  # For each interface endpoint, you can choose one subnet per AZ. 
+}

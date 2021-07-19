@@ -3,13 +3,12 @@ data "template_file" "myuserdata" {
   vars = {
     db_address  = "${aws_db_instance.postgres.address}",
     db_port     = "${aws_db_instance.postgres.port}",
-    aws_region  = "${var.depregion}"
+    aws_region  = "${var.region}"
     sm_endpoint = aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
     sec_name    = "${aws_secretsmanager_secret.secretDB.name}"
     s3_bucket   = "${aws_s3_bucket.orthbucket.bucket}"
   }
 }
-
 
 resource "aws_iam_role" "inst_role" {
   name = "inst_role"
@@ -114,12 +113,12 @@ EOF
 }
 
 resource "aws_instance" "orthweb" {
-  ami                    = var.amilut[var.depregion]
-  instance_type          = "t2.micro"
+  ami                    = var.amilut[var.region]
+  instance_type          = "t3.micro"
   user_data              = data.template_cloudinit_config.orthconfig.rendered
-  key_name               = var.depkey
+  key_name               = var.pubkey_name
   vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
-  subnet_id              = aws_subnet.primarysubnet.id
+  subnet_id              = var.public_subnet_id
   depends_on             = [aws_db_instance.postgres, aws_s3_bucket.orthbucket]
   iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
   tags = {
