@@ -43,7 +43,7 @@ module "storage" {
 module "ec2" {
   source = "./modules/ec2"
   tag_suffix = var.tag_suffix
-  pubkey_name = var.pubkey_name
+  public_key = coalesce(var.public_key, data.local_file.pubkey.content) 
   role_name = module.iam_role.role_info.ec2_iam_role_name
   db_instance_id = module.database.db_info.db_instance_id
   s3_bucket_name = module.storage.s3_info.bucket_name

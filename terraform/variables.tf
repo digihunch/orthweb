@@ -6,9 +6,13 @@ variable "aws_provider_secret_key" {
   type = string
   default = null
 }
-variable "pubkey_name" {
-  type    = string
-  default = "anamac"
+variable "public_key" {
+  type = string
+  default = null
+}
+variable "local_pubkey_file" {
+  type = string
+  default = "~/.ssh/id_rsa.pub"
 }
 variable "region" {
   type    = string

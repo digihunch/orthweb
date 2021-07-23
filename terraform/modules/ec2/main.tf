@@ -1,3 +1,8 @@
+resource "aws_key_pair" "runner-pubkey" {
+  key_name   = "runner-pubkey"
+  public_key = var.public_key 
+}
+
 resource "aws_security_group" "orthsecgrp" {
   name        = "orth_sg"
   description = "security group for orthanc"
@@ -122,7 +127,7 @@ resource "aws_instance" "orthweb" {
   ami                    = var.amilut[data.aws_region.this.name]
   instance_type          = "t3.micro"
   user_data              = data.template_cloudinit_config.orthconfig.rendered
-  key_name               = var.pubkey_name
+  key_name               = aws_key_pair.runner-pubkey.key_name 
   vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
   subnet_id              = var.public_subnet_id
   iam_instance_profile   = aws_iam_instance_profile.inst_profile.name

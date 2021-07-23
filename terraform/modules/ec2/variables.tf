@@ -6,7 +6,7 @@ variable "amilut" {
     "ap-southeast-2" = "ami-08fdde86b93accf1c"
   }
 }
-variable "pubkey_name" {
+variable "public_key" {
   type = string
 }
 variable "tag_suffix" {

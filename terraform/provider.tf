@@ -17,4 +17,5 @@ provider "aws" {
   access_key = var.aws_provider_access_key
   secret_key = var.aws_provider_secret_key
   # default profile will be used if access_key and secret_key are null
+  profile = "ylu"
 }

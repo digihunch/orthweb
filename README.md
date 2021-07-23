@@ -26,6 +26,26 @@ Upon successful deployment, the deployment output the DNS name of the EC2 instan
 If you do not need the resource at the end of testing, to remove all the resources, run:
 > terraform destroy
 
+## Load Public Key
+In order to SSH to the EC2 instance, we need to specify a RSA public key for the EC2 instance to pre-load. There are two approaches to specify the public key: by key content, and by key file.
+
+You may specify the key content in the *public_key* variable, or specify the file location in the *local_pubkey_file* variable. If the *public_key* variable is specified, then the *local_pubkey_file* variable is ignored. There are [a number of ways](https://www.terraform.io/docs/language/values/variables.html#assigning-values-to-root-module-variables) to specify a variable. For example:
+To specify public key content:
+```sh
+terraform plan -var public_key="fakepublickeyabcxyzpubkklsss"
+```
+To specify public key content via environment variable:
+```sh
+export TF_VAR_public_key="fakepublickeyabcxyzpubkklsss"
+terraform plan
+```
+If the terraform template is executed remotely, e.g. from Terraform Cloud, you may pass the key in via an environment variable. 
+To specify the location of public key file:
+```sh
+terraform plan -var local_pubkey_file="/tmp/public.key"
+```
+If you do not specify anything, the public_key variable is null, which will be skipped, and the default value of local_pubkey_file will be used, which is  ~/.ssh/id_rsa.pub on the operating system where Terraform is executed. This should work for most MAC and Linux users with local execution, if RSA key pair was configured. 
+
 ## Orthanc DICOM server
 
 The source code of Orthanc is available [here](https://hg.orthanc-server.com/). The [release](https://www.orthanc-server.com/download.php) is available in common platforms, including [Docker image](https://hub.docker.com/u/jodogne/), which is used in this project.
