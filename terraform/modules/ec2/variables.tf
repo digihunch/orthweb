@@ -12,9 +12,6 @@ variable "pubkey_name" {
 variable "tag_suffix" {
   type = string
 }
-variable "region" {
-  type = string
-}
 variable "public_subnet_id" {
   type = string
 }

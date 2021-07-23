@@ -2,6 +2,8 @@ data "aws_subnet" "public_subnet" {
   id = var.public_subnet_id
 }
 
+data "aws_region" "this" {}
+
 data "aws_secretsmanager_secret" "secretDB" {
   arn = aws_secretsmanager_secret.secretDB.arn
 }

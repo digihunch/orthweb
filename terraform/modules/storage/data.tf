@@ -3,5 +3,5 @@ data "aws_caller_identity" "current" {
 }
 
 data "aws_iam_role" "instance_role" {
-  name = "${var.role_name}"
+  name = var.role_name
 }

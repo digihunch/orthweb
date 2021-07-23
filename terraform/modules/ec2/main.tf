@@ -119,7 +119,7 @@ resource "aws_iam_role_policy" "s3_access_policy" {
 EOF
 }
 resource "aws_instance" "orthweb" {
-  ami                    = var.amilut[var.region]
+  ami                    = var.amilut[data.aws_region.this.name]
   instance_type          = "t3.micro"
   user_data              = data.template_cloudinit_config.orthconfig.rendered
   key_name               = var.pubkey_name

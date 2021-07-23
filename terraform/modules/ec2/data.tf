@@ -1,23 +1,24 @@
 data "aws_db_instance" "postgres" {
-  #db_instance_identifier = "${var.db_instance_name}"
-  db_instance_identifier = "${var.db_instance_id}"
+  db_instance_identifier = var.db_instance_id
 }
 
+data "aws_region" "this" {}
+
 data "aws_s3_bucket" "orthbucket" {
-  bucket = "${var.s3_bucket_name}"
+  bucket = var.s3_bucket_name
 }
 
 data "aws_iam_role" "instance_role" {
-  name = "${var.role_name}"
+  name = var.role_name
 }
 
 data "aws_secretsmanager_secret" "secretDB" {
-  arn = "${var.db_secret_arn}"
+  arn = var.db_secret_arn
 }
 
 data "aws_vpc_endpoint" "secmgr" {
   vpc_id = data.aws_subnet.public_subnet.vpc_id
-  service_name = "${var.ep_service_name}"
+  service_name = var.ep_service_name
 }
 
 data "aws_subnet" "public_subnet" {
@@ -27,12 +28,12 @@ data "aws_subnet" "public_subnet" {
 data "template_file" "myuserdata" {
   template = file("${path.module}/myuserdata.tpl")
   vars = {
-    db_address  = "${data.aws_db_instance.postgres.address}",
-    db_port     = "${data.aws_db_instance.postgres.port}",
-    aws_region  = "${var.region}"
+    db_address  = data.aws_db_instance.postgres.address
+    db_port     = data.aws_db_instance.postgres.port
+    aws_region  = data.aws_region.this.name 
     sm_endpoint = data.aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
-    sec_name    = "${data.aws_secretsmanager_secret.secretDB.name}"
-    s3_bucket   = "${data.aws_s3_bucket.orthbucket.bucket}"
+    sec_name    = data.aws_secretsmanager_secret.secretDB.name
+    s3_bucket   = data.aws_s3_bucket.orthbucket.bucket
   }
 }
 

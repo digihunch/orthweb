@@ -1,5 +1,5 @@
 resource "aws_vpc" "orthmain" {
-  cidr_block           = "${var.vpc_cidr_block}"
+  cidr_block           = var.vpc_cidr_block
   instance_tenancy     = "default"
   enable_dns_hostnames = true
   tags = {
@@ -9,7 +9,7 @@ resource "aws_vpc" "orthmain" {
 
 resource "aws_subnet" "publicsubnet" {
   vpc_id                  = aws_vpc.orthmain.id
-  cidr_block              = "${var.public_subnet_cidr_block}"
+  cidr_block              = var.public_subnet_cidr_block
   map_public_ip_on_launch = true
   tags = {
     Name = "PublicSubnet-${var.tag_suffix}"
@@ -18,7 +18,7 @@ resource "aws_subnet" "publicsubnet" {
 
 resource "aws_subnet" "privatesubnet1" {
   vpc_id                  = aws_vpc.orthmain.id
-  cidr_block              = "${var.private_subnet1_cidr_block}"
+  cidr_block              = var.private_subnet1_cidr_block
   map_public_ip_on_launch = false
   availability_zone       = data.aws_availability_zones.available.names[1]
   tags = {
@@ -28,7 +28,7 @@ resource "aws_subnet" "privatesubnet1" {
 
 resource "aws_subnet" "privatesubnet2" {
   vpc_id                  = aws_vpc.orthmain.id
-  cidr_block              = "${var.private_subnet2_cidr_block}"
+  cidr_block              = var.private_subnet2_cidr_block
   map_public_ip_on_launch = false
   availability_zone       = data.aws_availability_zones.available.names[2]
   tags = {

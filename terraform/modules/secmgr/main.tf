@@ -39,7 +39,7 @@ resource "aws_security_group" "epsecgroup" {
 
 resource "aws_vpc_endpoint" "secmgr" {
   vpc_id              = data.aws_subnet.public_subnet.vpc_id 
-  service_name        = "com.amazonaws.${var.region}.secretsmanager"
+  service_name        = "com.amazonaws.${data.aws_region.this.name}.secretsmanager"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
   security_group_ids  = [aws_security_group.epsecgroup.id]
