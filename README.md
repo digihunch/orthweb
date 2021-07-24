@@ -69,12 +69,11 @@ The application UI provides very intuitive visual components to open an exam, an
 
 ## Architecture Q & A
 
-* Why Orthanc? Orthanc is an open-source, application released in containers.
-* Why EC2? Because of limitations with ECS. Refer to [this](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) comment. A better way to build operation environment is Kubernetes, check out this [Korthweb](https://github.com/digihunch/korthweb) project.
-* Why PostgreSQL? In this configuration we use PostgreSQL to store both patient index and pixel data. S3 plugin is a commercial product not available to public and not straightforward to build.
+* Why Docker on EC2? The alternative to EC2 is ECS but ECS has limitations. Refer to [this](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) comment. For production use, we should put EC2 instances in an autoscaling group behind load balancer. As to Docker vs Kubernetes. First, for large deployment, Kubernetes is a better way to deploy Orthanc. Check out this [Korthweb](https://github.com/digihunch/korthweb) project. However, the complexity and additional layer brought in by Kubernetes may not be worth all the effort, especially for a small deployment. A docker-compose is sufficient for typical Orthanc use case. Check out [this](https://ably.com/blog/no-we-dont-use-kubernetes) article for the case against Kubernetes.
+* Why AWS? It doesn't have to. In fact I prefer a provider independent setup. However, we need database as service from cloud provider so the code has to be specific to a cloud provider. Also, I'm more familiar with AWS than other platforms.
+* Why PostgreSQL? We can use PostgreSQL to store both patient index and pixel data. 
 * Why Terraform? Terraform has better modularization support than CloudFormation. It is easier to set up than AWS CDK.
-* Why Docker? This POC does not include complex orchestration. A docker-compose suffices for the use case. Or Kubernetes cluster should be used for advanced orchestration. The [Korthweb](https://github.com/digihunch/korthweb) project gives a template to create cluster in EKS.
-* Why AWS? It doesn't have to. In fact I prefer a provider independent setup. However, we need database as service from cloud provider so the code has to be specific to a cloud provider.
+
 
 ## Security
 
@@ -91,3 +90,4 @@ The followings are identified as not up to highest security standard. They may n
 1. the traffic between nginx container and orthan container is unencrypted
 2. Database password is generated at Terraform client and then sent to deployment server to create PostgreSQL. The generated password is also stored in state file of Terraform. To overcome this, we need a) Terraform tells AWS secrets manager to generate a password; and b) it tells other AWS service to resolve the newly created secret. a) is doable but b) isn't due to a limitation with Terraform
 3. Secret management with Docker container: secret are presented to container process as environment variables, instead of file content. As per [this article](https://techbeacon.com/devops/how-keep-your-container-secrets-secure), it is not recommended because environment variable could be leaked out.
+

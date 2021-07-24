@@ -1,3 +1,5 @@
+# this resources warrants a module of its own because it is shared by two other modules
+
 resource "aws_iam_role" "ec2_iam_role" {
   name = "inst_role"
 

@@ -12,6 +12,22 @@ services:
     secrets:
       - orthanc.json
       - site.pem
+    restart: always
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    networks:
+      - orthnet
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    healthcheck:
+      test: "wget --header='Authorization: Basic b3J0aGFuYzpvcnRoYW5j' https://127.0.0.1:8042/app/explorer.html --no-check-certificate || exit 1"
+      interval: 60s
+      retries: 3
+      start_period: 15s
   nginx-proxy:
     image: nginx
     container_name: nginx
@@ -20,8 +36,15 @@ services:
     volumes:
       - ./dicomtls.conf:/etc/nginx/nginx.conf
       - ./sample.localhost.pem:/etc/nginx/conf.d/site.pem
+    networks:
+      - orthnet
 secrets:
   orthanc.json:
     file: orthanc.json
   site.pem:
     file: sample.localhost.pem
+networks:
+  orthnet:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: 'false'
