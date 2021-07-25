@@ -6,7 +6,7 @@ resource "aws_key_pair" "runner-pubkey" {
 resource "aws_security_group" "orthsecgrp" {
   name        = "orth_sg"
   description = "security group for orthanc"
-  vpc_id      = data.aws_subnet.public_subnet.vpc_id
+  vpc_id      = data.aws_subnet.public_subnet1.vpc_id
 
   ingress {
     description = "SSH"
@@ -123,15 +123,63 @@ resource "aws_iam_role_policy" "s3_access_policy" {
 }
 EOF
 }
-resource "aws_instance" "orthweb" {
+
+resource "aws_instance" "orthweb_1" {
   ami                    = var.amilut[data.aws_region.this.name]
   instance_type          = "t3.micro"
   user_data              = data.template_cloudinit_config.orthconfig.rendered
   key_name               = aws_key_pair.runner-pubkey.key_name 
   vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
-  subnet_id              = var.public_subnet_id
+  subnet_id              = var.public_subnet1_id
   iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
   tags = {
-    Name = "Orthweb-EC2-${var.tag_suffix}"
+    Name = "Orthweb1-${var.tag_suffix}"
   }
 }
+
+resource "aws_instance" "orthweb_2" {
+  ami                    = var.amilut[data.aws_region.this.name]
+  instance_type          = "t3.micro"
+  user_data              = data.template_cloudinit_config.orthconfig.rendered
+  key_name               = aws_key_pair.runner-pubkey.key_name 
+  vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
+  subnet_id              = var.public_subnet2_id
+  iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
+  tags = {
+    Name = "Orthweb2-${var.tag_suffix}"
+  }
+}
+#resource "aws_launch_template" "orthweb_inst_tpl" {
+#  image_id = var.amilut[data.aws_region.this.name]
+#  instance_type = "t3.micro"
+#  user_data = data.template_cloudinit_config.orthconfig.rendered
+#  key_name = aws_key_pair.runner-pubkey.key_name
+#  vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
+#  iam_instance_profile {
+#    name = aws_iam_instance_profile.inst_profile.name
+#  }
+#}
+#
+#resource "aws_instance" "orthweb_1" {
+#  launch_template {
+#    id = aws_launch_template.orthweb_inst_tpl.id
+#    version = "$Latest" 
+#  }
+#  subnet_id = var.public_subnet1_id 
+#  tags = {
+#    Name = "Orthweb-Instance1-${var.tag_suffix}"
+#  }
+#}
+#
+#resource "aws_instance" "orthweb_2" {
+#  launch_template {
+#    id = aws_launch_template.orthweb_inst_tpl.id
+#    version = "$Latest" 
+#  }
+#  subnet_id = var.public_subnet2_id 
+#  tags = {
+#    Name = "Orthweb-Instance2-${var.tag_suffix}"
+#  }
+#}
+#
+#

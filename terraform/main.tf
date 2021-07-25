@@ -10,7 +10,8 @@ module "iam_role" {
 module "network" {
   source = "./modules/network"
   vpc_cidr_block = "172.17.0.0/16"
-  public_subnet_cidr_block = "172.17.1.0/24"
+  public_subnet1_cidr_block = "172.17.1.0/24"
+  public_subnet2_cidr_block = "172.17.2.0/24"
   private_subnet1_cidr_block = "172.17.4.0/24"
   private_subnet2_cidr_block = "172.17.5.0/24"
   tag_suffix = var.tag_suffix
@@ -18,7 +19,8 @@ module "network" {
 
 module "secretmanager" {
   source = "./modules/secmgr"
-  public_subnet_id = module.network.vpc_info.public_subnet_id
+  public_subnet1_id = module.network.vpc_info.public_subnet1_id
+  public_subnet2_id = module.network.vpc_info.public_subnet2_id
   tag_suffix = var.tag_suffix
   name_suffix = random_id.randsuffix.hex
 }
@@ -50,6 +52,7 @@ module "ec2" {
   db_secret_arn = module.secretmanager.secret_info.db_secret_arn
   s3_key_arn = module.storage.s3_info.key_arn
   ep_service_name = module.secretmanager.secret_info.ep_service_name
-  public_subnet_id = module.network.vpc_info.public_subnet_id
+  public_subnet1_id = module.network.vpc_info.public_subnet1_id
+  public_subnet2_id = module.network.vpc_info.public_subnet2_id
   depends_on = [module.iam_role, module.database, module.storage]
 }

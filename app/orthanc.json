@@ -11,7 +11,8 @@
     "Database" : "orthancdb",
     "Username" : "${DB_USERNAME}",
     "Password" : "${DB_PASSWORD}",
-    "EnableSsl" : true
+    "EnableSsl" : true,
+    "Lock" : false
   },
   "Plugins" : [
     "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLIndex.so",

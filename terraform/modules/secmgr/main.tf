@@ -25,7 +25,7 @@ EOF
 resource "aws_security_group" "epsecgroup" {
   name        = "vpcep_sg"
   description = "security group for vpc endpoint"
-  vpc_id      = data.aws_subnet.public_subnet.vpc_id 
+  vpc_id      = data.aws_subnet.public_subnet1.vpc_id 
   ingress {
     from_port   = 443
     to_port     = 443
@@ -38,12 +38,12 @@ resource "aws_security_group" "epsecgroup" {
 }
 
 resource "aws_vpc_endpoint" "secmgr" {
-  vpc_id              = data.aws_subnet.public_subnet.vpc_id 
+  vpc_id              = data.aws_subnet.public_subnet1.vpc_id 
   service_name        = "com.amazonaws.${data.aws_region.this.name}.secretsmanager"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
   security_group_ids  = [aws_security_group.epsecgroup.id]
-  subnet_ids          = [var.public_subnet_id]
+  subnet_ids          = [var.public_subnet1_id, var.public_subnet2_id]
   # For each interface endpoint, you can choose one subnet per AZ. 
   tags = {
     Name = "EndPointForSecMgr-${var.tag_suffix}"

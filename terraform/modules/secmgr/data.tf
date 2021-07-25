@@ -1,5 +1,9 @@
-data "aws_subnet" "public_subnet" {
-  id = var.public_subnet_id
+data "aws_subnet" "public_subnet1" {
+  id = var.public_subnet1_id
+}
+
+data "aws_subnet" "public_subnet2" {
+  id = var.public_subnet2_id
 }
 
 data "aws_region" "this" {}

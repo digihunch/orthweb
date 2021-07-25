@@ -7,12 +7,21 @@ resource "aws_vpc" "orthmain" {
   }
 }
 
-resource "aws_subnet" "publicsubnet" {
+resource "aws_subnet" "publicsubnet1" {
   vpc_id                  = aws_vpc.orthmain.id
-  cidr_block              = var.public_subnet_cidr_block
+  cidr_block              = var.public_subnet1_cidr_block
   map_public_ip_on_launch = true
   tags = {
-    Name = "PublicSubnet-${var.tag_suffix}"
+    Name = "PublicSubnet1-${var.tag_suffix}"
+  }
+}
+
+resource "aws_subnet" "publicsubnet2" {
+  vpc_id                  = aws_vpc.orthmain.id
+  cidr_block              = var.public_subnet2_cidr_block
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "PublicSubnet2-${var.tag_suffix}"
   }
 }
 
@@ -51,8 +60,13 @@ resource "aws_route_table" "public_route_table" {
   }
 }
 
-resource "aws_route_table_association" "pubsub_rt_assoc" {
-  subnet_id      = aws_subnet.publicsubnet.id
+resource "aws_route_table_association" "pubsub1_rt_assoc" {
+  subnet_id      = aws_subnet.publicsubnet1.id
+  route_table_id = aws_route_table.public_route_table.id
+}
+
+resource "aws_route_table_association" "pubsub2_rt_assoc" {
+  subnet_id      = aws_subnet.publicsubnet2.id
   route_table_id = aws_route_table.public_route_table.id
 }
 
