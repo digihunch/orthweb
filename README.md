@@ -102,6 +102,6 @@ Check out this [blog post](https://www.digihunch.com/2021/05/secure-web-applicat
 
 The followings are identified as not up to highest security standard. They may not be important for a demo system, but should be addressed for a production system. The **[Korthweb](https://github.com/digihunch/korthweb)** deployment project does not have these limitations.
 
-1. the traffic between nginx container and orthan container is unencrypted
+1. the traffic between nginx container and orthan container is unencrypted. While this is not an issue in the current architecture because the traffic goes through docker bridge, it is advisable to have end-to-end encryption when nginx and orthanc containers may live on different virtual machines.
 2. Database password is generated at Terraform client and then sent to deployment server to create PostgreSQL. The generated password is also stored in state file of Terraform. To overcome this, we need a) Terraform tells AWS secrets manager to generate a password; and b) it tells other AWS service to resolve the newly created secret. a) is doable but b) isn't due to a limitation with Terraform
 3. Secret management with Docker container: secret are presented to container process as environment variables, instead of file content. As per [this article](https://techbeacon.com/devops/how-keep-your-container-secrets-secure), it is not recommended because environment variable could be leaked out.
