@@ -8,10 +8,8 @@ This deployment environment is for developers or for demo. For an operation-frie
 
 ## Prerequisite
 
-We can execute deployment locally (e.g. from your Laptop) or remotely (e.g. from Terraform Cloud). Either way requires programatic access to AWS account with sufficient [privilege](https://www.terraform.io/docs/cloud/users-teams-organizations/permissions.html) (e.g. Administrator) to provision the resources involved. For local execution, we need:
-
-* **awsli** configured on the laptop (see [instruction](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)) to ensure connectivity to AWS, which will be used by Terraform.
-* **terraform** configured on the laptop (see [instruction](https://learn.hashicorp.com/tutorials/terraform/install-cli)). Terraform supports multiple public cloud vendors. We use Terraform to drive AWS deployment by specifying *hashicorp/aws* as provider.
+We can execute deployment locally (e.g. from Laptop) or remotely (e.g. from Terraform Cloud, if you have an account). This instruction assumes local execution but either way requires programatic access to AWS account with appropriate [privilege](https://www.terraform.io/docs/cloud/users-teams-organizations/permissions.html) (e.g. Administrator). For local execution, we use Terraform client (aka [Terraform CLI](https://www.terraform.io/docs/cli/commands/index.html)), with *hashicorp/aws* [provider]((https://registry.terraform.io/providers/hashicorp/aws/latest/docs)). There are multiple ways to manage connectivity. One way is to share [credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) with **awscli** as discussed [here](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#shared-credentials-file). To set up credential for awscli, see this [instruction](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
+.
 
 ## Steps
 
@@ -29,39 +27,38 @@ We use a standard local-execution workflow for Terraform, starting from the terr
 
 > terraform apply
 
-Upon successful deployment, the deployment output the DNS name of the EC2 instance. You will be able to access the website at <https://ec2-ip-address-public-dns.amazonaws.com:8042>, and be able to send DICOM studies to port 4242.
+Upon successful deployment, the console output displays the DNS name of the EC2 instance. You will be able to access the website at <https://ec2-ip-address-public-dns.amazonaws.com:8042>, and be able to send DICOM studies to port 4242.
 
 If you do not need the resource at the end of testing, to remove all the resources, run:
 > terraform destroy
 
-## Load Public Key
+## Connect to the Server
 
-In order to SSH to the EC2 instance, we need to specify a RSA public key for the EC2 instance to pre-load. There are two approaches to specify the public key: by key content, and by key file.
+Although the website is up at the end of deployment, for many reasons, you might want to connect to the EC2 instance in SSH. EC2 instance manages SSH authentication by (RSA key pairs)[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html]: we give it our public key  prior to provisioning, and later SSH to it with our private key as identity. This project assumes users have their own RSA key pair, and employs a technique to upload user's public key, either by providing key text directly, or by specifying the location of the file that stores key text. The former option overrides the latter. In other words, if the *public_key* variable is specified, then the *local_pubkey_file* variable is ignored. 
 
-You may specify the key content in the *public_key* variable, or specify the file location in the *local_pubkey_file* variable. If the *public_key* variable is specified, then the *local_pubkey_file* variable is ignored. There are [a number of ways](https://www.terraform.io/docs/language/values/variables.html#assigning-values-to-root-module-variables) to specify a variable. For example:
-To specify public key content:
+In general, there are [a number of ways](https://www.terraform.io/docs/language/values/variables.html#assigning-values-to-root-module-variables) to specify a variable in Terraform code. For example, to specify public key content as the value of variable *public_key*, we can pass it in as command argument:
 
 ```sh
 terraform plan -var public_key="fakepublickeyabcxyzpubkklsss"
+terraform apply -var public_key="fakepublickeyabcxyzpubkklsss"
 ```
 
-To specify public key content via environment variable:
+We can also assign value to *public_key* variable, by setting environment variable with specific name prior to running terraform command as below. This can be used when running terraform script from Terraform Cloud.
 
 ```sh
 export TF_VAR_public_key="fakepublickeyabcxyzpubkklsss"
 terraform plan
 ```
 
-If the terraform template is executed remotely, e.g. from Terraform Cloud, you may pass the key in via an environment variable.
-To specify the location of public key file:
+Alternatively, we can specify the location of the file that stores the public key text, to variable *local_pubkey_file*
 
 ```sh
 terraform plan -var local_pubkey_file="/tmp/public.key"
 ```
+The default value for *public_key* is null, and the default value for *local_pubkey_file* is ~/.ssh/id_rsa.pub. Therefore, if you do not specify either of the variables above, then the Terraform code attempts to fetch public key text from ~/.ssh/id_rsa.pub file, which is the default location of public key by OpenSSH. Because of this setup, the Terraform project should work off the shelf for users with default OpenSSH configuration, without having to provide public key explicitly.
 
-If you do not specify anything, the public_key variable is null, which will be skipped, and the default value of local_pubkey_file will be used, which is  ~/.ssh/id_rsa.pub on the operating system where Terraform is executed. This should work for most MAC and Linux users with local execution, if RSA key pair was configured.
 
-## Orthanc DICOM server
+## About Orthanc DICOM server
 
 The source code of Orthanc is available [here](https://hg.orthanc-server.com/). The [release](https://www.orthanc-server.com/download.php) is available in common platforms, including [Docker image](https://hub.docker.com/u/jodogne/), which is used in this project.
 
