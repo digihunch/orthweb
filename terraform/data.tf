@@ -1,3 +1,3 @@
-data "local_file" "pubkey" {
-  filename = pathexpand(var.local_pubkey_file)
+data "local_file" "pubkey_file" {
+  filename = pathexpand(var.pubkey_path)
 }

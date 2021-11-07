@@ -12,10 +12,7 @@ variable "public_key" {
 variable "tag_suffix" {
   type = string
 }
-variable "public_subnet1_id" {
-  type = string
-}
-variable "public_subnet2_id" {
+variable "public_subnet_id" {
   type = string
 }
 variable "db_instance_id" {

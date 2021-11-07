@@ -17,16 +17,12 @@ data "aws_secretsmanager_secret" "secretDB" {
 }
 
 data "aws_vpc_endpoint" "secmgr" {
-  vpc_id = data.aws_subnet.public_subnet1.vpc_id
+  vpc_id = data.aws_subnet.public_subnet.vpc_id
   service_name = var.ep_service_name
 }
 
-data "aws_subnet" "public_subnet1" {
-  id = var.public_subnet1_id
-}
-
-data "aws_subnet" "public_subnet2" {
-  id = var.public_subnet2_id
+data "aws_subnet" "public_subnet" {
+  id = var.public_subnet_id
 }
 
 data "template_file" "myuserdata" {

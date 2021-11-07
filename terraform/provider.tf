@@ -13,9 +13,10 @@ terraform {
 }
 
 provider "aws" {
-  region  = var.region
-  access_key = var.aws_provider_access_key
-  secret_key = var.aws_provider_secret_key
-  # default profile will be used if access_key and secret_key are null
-  #profile = "ylu"
+  # All provider details should be provided via environment variables:
+  # export AWS_ACCESS_KEY_ID=
+  # export AWS_SECRET_ACCESS_KEY=
+  # export AWS_DEFAULT_REGION= 
+  # export AWS_PROFILE=
+  # export AWS_REGION=
 }
