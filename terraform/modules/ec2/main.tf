@@ -126,7 +126,7 @@ EOF
 
 resource "aws_instance" "orthweb" {
   ami                    = var.amilut[data.aws_region.this.name]
-  instance_type          = "t3.micro"
+  instance_type          = "t2.medium"
   user_data              = data.template_cloudinit_config.orthconfig.rendered
   key_name               = aws_key_pair.runner-pubkey.key_name 
   vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
