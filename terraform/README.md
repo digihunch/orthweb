@@ -1,3 +1,4 @@
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -10,7 +11,6 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_local"></a> [local](#provider\_local) | 2.1.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.1.0 |
 
 ## Modules
@@ -29,17 +29,13 @@
 | Name | Type |
 |------|------|
 | [random_id.randsuffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
-| [local_file.pubkey](https://registry.terraform.io/providers/hashicorp/local/latest/docs/data-sources/file) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_aws_provider_access_key"></a> [aws\_provider\_access\_key](#input\_aws\_provider\_access\_key) | n/a | `string` | `null` | no |
-| <a name="input_aws_provider_secret_key"></a> [aws\_provider\_secret\_key](#input\_aws\_provider\_secret\_key) | n/a | `string` | `null` | no |
-| <a name="input_local_pubkey_file"></a> [local\_pubkey\_file](#input\_local\_pubkey\_file) | n/a | `string` | `"~/.ssh/id_rsa.pub"` | no |
-| <a name="input_public_key"></a> [public\_key](#input\_public\_key) | n/a | `string` | `null` | no |
-| <a name="input_region"></a> [region](#input\_region) | n/a | `string` | `"us-east-1"` | no |
+| <a name="input_pubkey_data"></a> [pubkey\_data](#input\_pubkey\_data) | n/a | `string` | `null` | no |
+| <a name="input_pubkey_path"></a> [pubkey\_path](#input\_pubkey\_path) | n/a | `string` | `"~/.ssh/id_rsa.pub"` | no |
 | <a name="input_tag_suffix"></a> [tag\_suffix](#input\_tag\_suffix) | n/a | `string` | `"orthweb"` | no |
 
 ## Outputs
@@ -47,6 +43,6 @@
 | Name | Description |
 |------|-------------|
 | <a name="output_dbinfo"></a> [dbinfo](#output\_dbinfo) | n/a |
-| <a name="output_host1info"></a> [host1info](#output\_host1info) | n/a |
-| <a name="output_host2info"></a> [host2info](#output\_host2info) | n/a |
+| <a name="output_hostinfo"></a> [hostinfo](#output\_hostinfo) | n/a |
 | <a name="output_s3bucket"></a> [s3bucket](#output\_s3bucket) | n/a |
+<!-- END_TF_DOCS -->
