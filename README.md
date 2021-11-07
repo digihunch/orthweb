@@ -87,6 +87,20 @@ The application UI provides very intuitive visual components to open an exam, an
 * Why PostgreSQL? We can use PostgreSQL to store both patient index and pixel data.
 * Why Terraform? Terraform has better modularization support than CloudFormation. It is easier to set up than AWS CDK.
 
+## Validation
+C-ECHO is DICOM command to validate DICOM connectivity between application entities (AE). There's a handful of open-source DICOM implmenetations, such as dcmtk and dcm4che3. The latter is written in Java. We use dcm4che3 as an example. The command storescu can be used to issue a C-ECHO command. 
+1. pull out the certificate section from compute-1.amazonaws.com.pem. This file is located in the user directory on the EC2 instance.
+2. Import the certificate into java trust store.
+```sh
+keytool -import -alias orthweb -file site.crt -storetype JKS -keystore server.truststore
+```
+Password to trust store is mandatory. Let's say it is Password123
+3. use storescu in dcm4che3 (not dcmtk) to test c-echo
+```sh
+./storescu -c ORTHANC@ec2-123-145-111-222.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store path/to/server.truststore --trust-store-pass password123
+```
+
+
 ## Security
 
 ### Configurations for security
@@ -105,3 +119,4 @@ The followings are identified as not up to highest security standard. They may n
 1. the traffic between nginx container and orthan container is unencrypted. While this is not an issue in the current architecture because the traffic goes through docker bridge, it is advisable to have end-to-end encryption when nginx and orthanc containers may live on different virtual machines.
 2. Database password is generated at Terraform client and then sent to deployment server to create PostgreSQL. The generated password is also stored in state file of Terraform. To overcome this, we need a) Terraform tells AWS secrets manager to generate a password; and b) it tells other AWS service to resolve the newly created secret. a) is doable but b) isn't due to a limitation with Terraform
 3. Secret management with Docker container: secret are presented to container process as environment variables, instead of file content. As per [this article](https://techbeacon.com/devops/how-keep-your-container-secrets-secure), it is not recommended because environment variable could be leaked out.
+
