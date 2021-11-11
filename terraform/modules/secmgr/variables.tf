@@ -4,9 +4,9 @@ variable "public_subnet1_id" {
 variable "public_subnet2_id" {
   type = string
 }
-variable "tag_suffix" {
+variable "resource_prefix" {
   type = string
 }
-variable "name_suffix" {
-  type = string
+variable "resource_tags" {
+  type = map(any)
 }

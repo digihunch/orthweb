@@ -4,7 +4,7 @@ resource "aws_kms_key" "s3key" {
 }
 
 resource "aws_s3_bucket" "orthbucket" {
-  bucket = "orthbucket${var.name_suffix}"
+  bucket = "${var.resource_prefix}-orthbucket"
 
   force_destroy = true # remaining object does not stop bucket from being deleted
   server_side_encryption_configuration {
@@ -15,9 +15,7 @@ resource "aws_s3_bucket" "orthbucket" {
       }
     }
   }
-  tags = {
-    Name = "OrthwebS3Bucket-${var.tag_suffix}"
-  }
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-orthbucket" })
 }
 
 resource "aws_s3_bucket_public_access_block" "orthbucketblockpublicaccess" {
@@ -36,7 +34,7 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
   bucket = aws_s3_bucket.orthbucket.id
   policy = jsonencode({
     Version = "2012-10-17"
-    Id      = "OrthBucketPolicy"
+    Id      = "${var.resource_prefix}-OrthBucketPolicy"
     Statement = [
       {
         Sid       = "DenyExceptRootAccnt"
@@ -50,7 +48,7 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
         Condition = {
           StringNotLike = {
             "aws:userId" = [
-              "${data.aws_iam_role.instance_role.unique_id}:*",          # instance role
+              "${data.aws_iam_role.instance_role.unique_id}:*", # instance role
               "${data.aws_caller_identity.current.account_id}", # root user
               "${data.aws_caller_identity.current.user_id}"     # deployment user
             ]

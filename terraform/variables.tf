@@ -1,12 +1,16 @@
 variable "pubkey_data" {
-  type = string
+  type    = string
   default = null
 }
 variable "pubkey_path" {
-  type = string
+  type    = string
   default = "~/.ssh/id_rsa.pub"
 }
-variable "tag_suffix" {
-  type = string
-  default = "orthweb"
+variable "Tags" {
+  description = "Tags for every resource."
+  type        = map(any)
+  default = {
+    Environment = "Dev"
+    Owner       = "my@email.com"
+  }
 }

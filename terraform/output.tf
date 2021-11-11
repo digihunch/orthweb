@@ -5,5 +5,5 @@ output "dbinfo" {
   value = module.database.db_info.db_endpoint
 }
 output "s3bucket" {
-  value = module.storage.s3_info.bucket_domain_name 
+  value = module.storage.s3_info.bucket_domain_name
 }

@@ -1,18 +1,16 @@
 resource "aws_kms_key" "dbkey" {
   description             = "This key is used to encrypt database storage"
   deletion_window_in_days = 10
-  tags = {
-    Name = "DB-KMS-Key-${var.tag_suffix}"
-  }
+  tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-DB-KMS-Key" })
 }
 
 resource "aws_db_subnet_group" "default" {
-  name       = "dbsubnetgroup"
+  name       = "${var.resource_prefix}-dbsubnetgroup"
   subnet_ids = [var.private_subnet1_id, var.private_subnet2_id]
 }
 
 resource "aws_security_group" "dbsecgroup" {
-  name        = "orthdb_sg"
+  name        = "${var.resource_prefix}-orthdb_sg"
   description = "postgres security group"
   vpc_id      = data.aws_subnet.private_subnet1.vpc_id
   ingress {
@@ -27,9 +25,7 @@ resource "aws_security_group" "dbsecgroup" {
     protocol    = "icmp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = {
-    Name = "DBSecurityGroup-${var.tag_suffix}"
-  }
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSecurityGroup" })
 }
 
 resource "aws_db_instance" "postgres" {
@@ -39,7 +35,7 @@ resource "aws_db_instance" "postgres" {
   engine_version                      = "12.2"
   instance_class                      = "db.t2.small" # t2.micro does not support encryption at rest
   identifier                          = "orthancpostgres"
-  name                                = "orthancdb"
+  name                                = replace("${var.resource_prefix}-orthancdb", "-", "")
   username                            = local.db_creds.username
   password                            = local.db_creds.password
   port                                = "5432"
@@ -51,5 +47,6 @@ resource "aws_db_instance" "postgres" {
   db_subnet_group_name                = aws_db_subnet_group.default.name
   storage_encrypted                   = true
   kms_key_id                          = aws_kms_key.dbkey.arn
+  tags                                = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBInstance" })
 }
 

@@ -2,6 +2,16 @@ data "aws_db_instance" "postgres" {
   db_instance_identifier = var.db_instance_id
 }
 
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm*"]
+  }
+}
+
 data "aws_region" "this" {}
 
 data "aws_s3_bucket" "orthbucket" {
@@ -17,7 +27,7 @@ data "aws_secretsmanager_secret" "secretDB" {
 }
 
 data "aws_vpc_endpoint" "secmgr" {
-  vpc_id = data.aws_subnet.public_subnet.vpc_id
+  vpc_id       = data.aws_subnet.public_subnet.vpc_id
   service_name = var.ep_service_name
 }
 
@@ -30,7 +40,7 @@ data "template_file" "myuserdata" {
   vars = {
     db_address  = data.aws_db_instance.postgres.address
     db_port     = data.aws_db_instance.postgres.port
-    aws_region  = data.aws_region.this.name 
+    aws_region  = data.aws_region.this.name
     sm_endpoint = data.aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
     sec_name    = data.aws_secretsmanager_secret.secretDB.name
     s3_bucket   = data.aws_s3_bucket.orthbucket.bucket

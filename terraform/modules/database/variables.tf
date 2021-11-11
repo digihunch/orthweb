@@ -1,7 +1,3 @@
-variable "tag_suffix" {
-  type = string
-}
-
 variable "private_subnet1_id" {
   type = string
 }
@@ -10,4 +6,10 @@ variable "private_subnet2_id" {
 }
 variable "db_secret_id" {
   type = string
+}
+variable "resource_prefix" {
+  type = string
+}
+variable "resource_tags" {
+  type = map(any)
 }

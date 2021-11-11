@@ -1,10 +1,10 @@
 resource "aws_key_pair" "runner-pubkey" {
-  key_name   = "runner-pubkey"
-  public_key = var.public_key 
+  key_name   = "${var.resource_prefix}-runner-pubkey"
+  public_key = var.public_key
 }
 
 resource "aws_security_group" "orthsecgrp" {
-  name        = "orth_sg"
+  name        = "${var.resource_prefix}-orth_sg"
   description = "security group for orthanc"
   vpc_id      = data.aws_subnet.public_subnet.vpc_id
 
@@ -22,14 +22,14 @@ resource "aws_security_group" "orthsecgrp" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    description = "Orthanc Web"
+    description = "Orthanc Web Portal"
     from_port   = 8042
     to_port     = 8042
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    description = "DICOM Image"
+    description = "DICOM Communication"
     from_port   = 11112
     to_port     = 11112
     protocol    = "tcp"
@@ -41,18 +41,16 @@ resource "aws_security_group" "orthsecgrp" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = {
-    Name = "WorkloadSecurityGroup-${var.tag_suffix}"
-  }
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-WorkloadSecurityGroup" })
 }
 
 resource "aws_iam_instance_profile" "inst_profile" {
-  name = "inst_profile"
+  name = "${var.resource_prefix}-inst_profile"
   role = data.aws_iam_role.instance_role.name
 }
 
 resource "aws_iam_role_policy" "secret_reader_policy" {
-  name = "secret_reader_policy"
+  name = "${var.resource_prefix}-secret_reader_policy"
   role = data.aws_iam_role.instance_role.id
 
   policy = <<EOF
@@ -76,7 +74,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "database_access_policy" {
-  name   = "database_access_policy"
+  name   = "${var.resource_prefix}-database_access_policy"
   role   = data.aws_iam_role.instance_role.id
   policy = <<EOF
 {
@@ -100,7 +98,7 @@ EOF
 # https://aws.amazon.com/premiumsupport/knowledge-center/decrypt-kms-encrypted-objects-s3/
 # https://aws.amazon.com/premiumsupport/knowledge-center/s3-access-denied-error-kms/
 resource "aws_iam_role_policy" "s3_access_policy" {
-  name   = "s3_access_policy"
+  name   = "${var.resource_prefix}-s3_access_policy"
   role   = data.aws_iam_role.instance_role.id
   policy = <<EOF
 {
@@ -125,15 +123,13 @@ EOF
 }
 
 resource "aws_instance" "orthweb" {
-  ami                    = var.amilut[data.aws_region.this.name]
+  ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t2.medium"
   user_data              = data.template_cloudinit_config.orthconfig.rendered
-  key_name               = aws_key_pair.runner-pubkey.key_name 
+  key_name               = aws_key_pair.runner-pubkey.key_name
   vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
   subnet_id              = var.public_subnet_id
   iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
-  tags = {
-    Name = "Orthweb-${var.tag_suffix}"
-  }
+  tags                   = merge(var.resource_tags, { Name = "${var.resource_prefix}-EC2-Instance" })
 }
 
