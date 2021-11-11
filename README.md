@@ -39,21 +39,21 @@ Although the website is up at the end of deployment, for many reasons, you might
 In general, there are [a number of ways](https://www.terraform.io/docs/language/values/variables.html#assigning-values-to-root-module-variables) to specify a variable in Terraform code. For example, to specify public key content as the value of variable *public_key*, we can pass it in as command argument:
 
 ```sh
-terraform plan -var public_key="fakepublickeyabcxyzpubkklsss"
-terraform apply -var public_key="fakepublickeyabcxyzpubkklsss"
+terraform plan -var pubkey_data="fakepublickeyabcxyzpubkklsss"
+terraform apply -var pubkey_data="fakepublickeyabcxyzpubkklsss"
 ```
 
 We can also assign value to *public_key* variable, by setting environment variable with specific name prior to running terraform command as below. This can be used when running terraform script from Terraform Cloud.
 
 ```sh
-export TF_VAR_public_key="fakepublickeyabcxyzpubkklsss"
+export TF_VAR_pubkey_data="fakepublickeyabcxyzpubkklsss"
 terraform plan
 ```
 
 Alternatively, we can specify the location of the file that stores the public key text, to variable *local_pubkey_file*
 
 ```sh
-terraform plan -var local_pubkey_file="/tmp/public.key"
+terraform plan -var pubkey_path="/tmp/public.key"
 ```
 The default value for *public_key* is null, and the default value for *local_pubkey_file* is ~/.ssh/id_rsa.pub. Therefore, if you do not specify either of the variables above, then the Terraform code attempts to fetch public key text from ~/.ssh/id_rsa.pub file, which is the default location of public key by OpenSSH. Because of this setup, the Terraform project should work off the shelf for users with default OpenSSH configuration, without having to provide public key explicitly.
 
