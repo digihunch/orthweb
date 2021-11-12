@@ -9,6 +9,7 @@ resource "aws_subnet" "publicsubnet1" {
   vpc_id                  = aws_vpc.orthmain.id
   cidr_block              = var.public_subnet1_cidr_block
   map_public_ip_on_launch = true
+  availability_zone       = data.aws_availability_zones.available.names[1]
   tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-PublicSubnet1" })
 }
 
@@ -16,6 +17,7 @@ resource "aws_subnet" "publicsubnet2" {
   vpc_id                  = aws_vpc.orthmain.id
   cidr_block              = var.public_subnet2_cidr_block
   map_public_ip_on_launch = true
+  availability_zone       = data.aws_availability_zones.available.names[2]
   tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-PublicSubnet2" })
 }
 

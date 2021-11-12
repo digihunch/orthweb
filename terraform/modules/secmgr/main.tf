@@ -23,18 +23,18 @@ EOF
 resource "aws_security_group" "epsecgroup" {
   name        = "${var.resource_prefix}-vpcep_sg"
   description = "security group for vpc endpoint"
-  vpc_id      = data.aws_subnet.public_subnet1.vpc_id
+  vpc_id      = data.aws_vpc.mainVPC.id
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [data.aws_vpc.mainVPC.cidr_block]
   }
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-EndPointSecurityGroup" })
 }
 
 resource "aws_vpc_endpoint" "secmgr" {
-  vpc_id              = data.aws_subnet.public_subnet1.vpc_id
+  vpc_id              = data.aws_vpc.mainVPC.id
   service_name        = "com.amazonaws.${data.aws_region.this.name}.secretsmanager"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true

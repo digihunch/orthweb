@@ -6,6 +6,10 @@ data "aws_subnet" "public_subnet2" {
   id = var.public_subnet2_id
 }
 
+data "aws_vpc" "mainVPC" {
+  id = data.aws_subnet.public_subnet1.vpc_id
+}
+
 data "aws_region" "this" {}
 
 data "aws_secretsmanager_secret" "secretDB" {

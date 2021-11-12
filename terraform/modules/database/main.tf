@@ -12,18 +12,18 @@ resource "aws_db_subnet_group" "default" {
 resource "aws_security_group" "dbsecgroup" {
   name        = "${var.resource_prefix}-orthdb_sg"
   description = "postgres security group"
-  vpc_id      = data.aws_subnet.private_subnet1.vpc_id
+  vpc_id      = data.aws_vpc.mainVPC.id
   ingress {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [data.aws_vpc.mainVPC.cidr_block]
   }
   ingress {
     from_port   = 8
     to_port     = 0
     protocol    = "icmp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [data.aws_vpc.mainVPC.cidr_block]
   }
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSecurityGroup" })
 }

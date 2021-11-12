@@ -2,6 +2,10 @@ data "aws_subnet" "private_subnet1" {
   id = var.private_subnet1_id
 }
 
+data "aws_vpc" "mainVPC" {
+  id = data.aws_subnet.private_subnet1.vpc_id
+}
+
 data "aws_secretsmanager_secret_version" "dbcreds" {
   secret_id = var.db_secret_id
 }
