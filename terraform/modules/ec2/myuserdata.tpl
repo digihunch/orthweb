@@ -6,6 +6,17 @@ yum install postgresql docker git jq openssl11 -y
 # Configure docker
 usermod -a -G docker ec2-user   
 # this allows non-root user to run docker cli command but only takes effect after current user session
+
+# Tell docker bridge to use a address pool than 172.17.x.x 
+cat << EOF > /etc/docker/daemon.json
+{
+  "default-address-pools":
+  [
+    {"base":"10.10.0.0/16","size":24}
+  ]
+}
+EOF
+
 systemctl restart docker
 chmod 666 /var/run/docker.sock
 

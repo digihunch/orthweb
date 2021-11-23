@@ -8,11 +8,11 @@ module "iam_role" {
 
 module "network" {
   source                     = "./modules/network"
-  vpc_cidr_block             = "172.17.0.0/16"
-  public_subnet1_cidr_block  = "172.17.3.0/24"
-  public_subnet2_cidr_block  = "172.17.5.0/24"
-  private_subnet1_cidr_block = "172.17.4.0/24"
-  private_subnet2_cidr_block = "172.17.6.0/24"
+  vpc_cidr_block             = "172.27.0.0/16"
+  public_subnet1_cidr_block  = "172.27.3.0/24"
+  public_subnet2_cidr_block  = "172.27.5.0/24"
+  private_subnet1_cidr_block = "172.27.4.0/24"
+  private_subnet2_cidr_block = "172.27.6.0/24"
   resource_tags              = var.Tags
   resource_prefix            = random_pet.prefix.id
 }
