@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   orthanc-backend:
-    image: jodogne/orthanc-plugins 
+    image: digihunch/orthanc 
     container_name: orthweb
     command: /run/secrets/  # Path to the configuration files (stored as secrets)
     ports:

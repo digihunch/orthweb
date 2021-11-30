@@ -9,7 +9,7 @@ env:
   MAJOR_NUMBER: 0
 
 jobs:
-  build_library:
+  build_orthanc_image:
     runs-on: ubuntu-latest
 
     steps:
