@@ -1,14 +1,15 @@
-# Orthweb - Orthanc deployment on AWS with Docker
+
+# Orthweb - Orthanc in Docker on AWS
  
 ## Overview
 
-**[Orthanc](https://www.orthanc-server.com/)** is an open-source application for medical imaging to ingest, store, view and distribute medical images. **[Orthweb](https://github.com/digihunch/orthweb)** is an open-source project for automated infrastructure provisioning on AWS, and automated configuration of Orthanc. The website is ready to serve web and DICOM traffic as soon as deployment is completed.
-
-This project demonstrates the idea of infrastructure-as-code, deployment automation and security configurations in compliance with HIPPA. It does not intend to provide production capacity. For custom deployment towards production and clinical use, please contact the author.
-
-The open-source Orthanc porject does not include the plugin for storing images on S3 bucket. This project also includes the builder for Digi Hunch [custom Orthanc image](https://hub.docker.com/repository/docker/digihunch/orthanc) with the plugin. 
+**[Orthanc](https://www.orthanc-server.com/)** is an open-source application to ingest, store, display and distribute medical images. **[Orthweb](https://github.com/digihunch/orthweb)** is an open-source project to automatically configure Orthanc and associated resource on AWS. It configures Orthanc in 10 minutes. When the deployment is completed, the website is ready to serve both web and DICOM traffic.
 
 We use Terraform to create infrastructure on AWS, including VPC, subnets, secret manager, managed database (PostgreSQL), an EC2 instance and S3 bucket. The application is hosted in a Docker container on the EC2 instance.
+
+## Production Use
+
+Orthweb project demonstrates the idea of infrastructure-as-code, deployment automation and security configurations in compliance with HIPPA. It provisions just enough resources for demo, and it is not intended for production use. A solution for production and clinical use requires a holistic planning for scalability, high availability, disaster recovery, security compliance etc, as well as custom implementation. Please contact [Digi Hunch](https://www.digihunch.com/) for professional IT service.
 
 ## Prerequisite
 
@@ -86,7 +87,7 @@ At this step, it is mandatory to provide password. Let's say it is Password123. 
 ```sh
 ./storescu -c ORTHANC@ec2-102-203-105-112.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store path/to/server.truststore --trust-store-pass Password123
 ```
-The output should read Status code 0 in C-ECHO-RSP, followed by C-ECHO-RQ. For example, the last few lines of the output should read something like:
+The output should read Status code 0 in C-ECHO-RSP, followed by C-ECHO-RQ. For example, the output should contain some important lines such as:
 ```
 23:21:27,506 INFO  - STORESCU->ORTHANC(1) << 1:C-ECHO-RQ[pcid=1
   cuid=1.2.840.10008.1.1 - Verification SOP Class
@@ -106,83 +107,98 @@ The output should read Status code 0 in C-ECHO-RSP, followed by C-ECHO-RQ. For e
 (0000,0120) US [1] MessageIDBeingRespondedTo
 (0000,0800) US [257] CommandDataSetType
 (0000,0900) US [0] Status
-
-23:21:27,571 INFO  - STORESCU->ORTHANC(1) << A-RELEASE-RQ
-23:21:27,571 DEBUG - STORESCU->ORTHANC(1): enter state: Sta7 - Awaiting A-RELEASE-RP PDU
-23:21:27,595 INFO  - STORESCU->ORTHANC(1) >> A-RELEASE-RP
-23:21:27,596 INFO  - STORESCU->ORTHANC(1): close Socket[addr=ec2-54-174-215-157.compute-1.amazonaws.com/54.174.215.157,port=11112,localport=55608]
-23:21:27,599 DEBUG - STORESCU->ORTHANC(1): enter state: Sta1 - Idle
 ```
-4. We can use it to store DICOM part 10 file (usually .dcm extension) to the server.
+4. We can use it to store DICOM part 10 file (usually .dcm extension) to the server, using storescu again:
+```sh
+./storescu -c ORTHANC@ec2-102-203-105-112.compute-1.amazonaws.com:11112 MYFILE.DCM --tls12 --tls-aes --trust-store path/to/server.truststore --trust-store-pass Password123
+```
+The output log should contain the following:
+```
+22:02:19,529 DEBUG - STORESCU->ORTHANC(1): enter state: Sta6 - Association established and ready for data transfer
+Connected to ORTHANC in 392ms
+22:02:19,532 INFO  - STORESCU->ORTHANC(1) << 1:C-STORE-RQ[pcid=7, prior=0
+  cuid=1.2.840.10008.5.1.4.1.1.12.1 - X-Ray Angiographic Image Storage
+  iuid=1.3.12.2.1107.5.4.3.321890.19960124.162922.29 - ?
+  tsuid=1.2.840.10008.1.2.4.50 - JPEG Baseline (Process 1)]
+22:02:19,547 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Command:
+(0000,0002) UI [1.2.840.10008.5.1.4.1.1.12.1] AffectedSOPClassUID
+(0000,0100) US [1] CommandField
+(0000,0110) US [1] MessageID
+(0000,0700) US [0] Priority
+(0000,0800) US [0] CommandDataSetType
+(0000,1000) UI [1.3.12.2.1107.5.4.3.321890.19960124.162922.29] AffectedSOPInst
 
-Note: DICOM traffic is proxied through Nginx. 
+22:02:19,549 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Dataset sending...
+22:02:22,160 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Dataset sent
+22:02:22,449 INFO  - STORESCU->ORTHANC(1) >> 1:C-STORE-RSP[pcid=7, status=0H
+  cuid=1.2.840.10008.5.1.4.1.1.12.1 - X-Ray Angiographic Image Storage
+  iuid=1.3.12.2.1107.5.4.3.321890.19960124.162922.29 - ?
+  tsuid=1.2.840.10008.1.2.4.50 - JPEG Baseline (Process 1)]
+22:02:22,449 DEBUG - STORESCU->ORTHANC(1) >> 1:C-STORE-RSP Command:
+(0000,0002) UI [1.2.840.10008.5.1.4.1.1.12.1] AffectedSOPClassUID
+(0000,0100) US [32769] CommandField
+(0000,0120) US [1] MessageIDBeingRespondedTo
+(0000,0800) US [257] CommandDataSetType
+(0000,0900) US [0] Status
+(0000,1000) UI [1.3.12.2.1107.5.4.3.321890.19960124.162922.29] AffectedSOPInst
+```
+C-STORE-RSP status 0 indicates successful image transfer, and the image is viewable from web portal. 
 
 ### Database Validation
 
-
-RDS will be accessible from the EC2 instance, on port 5432. To validate by psql client, run:
-
+RDS will be accessible from the EC2 instance, on port 5432. The database URL and password can be retrieved using AWS CLI command. Their values are also kept in file /home/ec2-user/.orthanc.env during initialization. To validate by psql client, run:
 ```sh
 psql --host=postgresdbinstance.us-east-1.rds.amazonaws.com --port 5432 --username=myuser --dbname=orthancdb
 ```
-The password can be retrieved from AWS secret.
+Then you are in the PostgreSQL command console.
 
 ### Storage Validation
 
-Storage validation can be performed simply by examining the content of S3 bucket. For example on t
+Storage validation can be performed simply by examining the content of S3 bucket. For example, we can use AWS CLI command from the EC2 instance:
 ```sh
 aws s3 ls s3://bucket-name
 ```
-Once studies are sent to Orthanc, the corresponding DICOM file should be stored in this location.
-
-
-
-
-
-
-
-
-
+If S3 integration is turned on, once studies are sent to Orthanc, the corresponding DICOM file should be stored in this location.
 
 ## Custom Orthanc image Builder
-why build custom image
+
+The open-source Orthanc project does not include the plugin for storing images on S3 bucket. So I use custom Orthanc image based on [Osimis Orthanc image](https://hub.docker.com/r/osimis/orthanc), if S3 integration is turned on. 
+
+This project also includes the builder for Digi Hunch [custom Orthanc image](https://hub.docker.com/repository/docker/digihunch/orthanc) in the *build* directory. I use Github Action to build and push the image to my Docker registry. 
+
+The EC2 initialization script automatically apply the configuration for the Orthanc image and Orthanc.json files, based on whether UseS3Storage variable is set to true.
+
 
 ##  Architecture
 
+The architecture can be illustrated in the diagram below:
+
 ![Diagram](resources/Orthweb.png)
 
-why use nginx proxy
+Orthweb is built on AWS as cloud platform, and uses Docker on EC2 to host application. The alternative to EC2 is ECS but ECS has some [limitations](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561). Docker on EC2 is sufficient for typical imaging workload. [This](https://ably.com/blog/no-we-dont-use-kubernetes) blog discusses how Docker on EC2 in Autoscaling group suits the need of most workloads without the complexity of Kubernetes. Orthweb has a sibling project [Korthweb](https://github.com/digihunch/korthweb) under development, which deploys Orthanc on Kubernetes platform.
 
+|            | Orthweb Demo                 | Korthweb Demo                        |
+|------------|------------------------------|--------------------------------------|
+| App        | Docker on EC2                | Kubernetes                           |
+| Database   | Managed PostgreSQL           | Managed PostgresSQL or custom design |
+| Storage    | Managed PostgreSQL or S3     | Managed PostgreSQL or Object storage |
+| Networking | Vanilla Setup                | Vanilla Setup                        |
+| HA/DR      | N/A. requiring custom design to add Load Balancer and AutoScaling | N/A, requiring custom design         |
 
+Orthweb currently uses Nginx to proxy DICOM traffic. This is because Orthanc originally does not support DICOM over TLS. This is not the case anymore since Orthanc release 1.9.0. However, the native DICOM TLS configuration isn't as straightforward as using Nginx as proxy.
 
-* Why Docker on EC2? The alternative to EC2 is ECS but ECS has limitations. Refer to [this](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) comment. For production use, we should put EC2 instances in an autoscaling group behind load balancer. As to Docker vs Kubernetes. First, for large deployment, Kubernetes is a better way to deploy Orthanc. Check out this [Korthweb](https://github.com/digihunch/korthweb) project. However, the complexity and additional layer brought in by Kubernetes may not be worth all the effort, especially for a small deployment. A docker-compose is sufficient for typical Orthanc use case. Check out [this](https://ably.com/blog/no-we-dont-use-kubernetes) article for the case against Kubernetes.
-* Why AWS? It doesn't have to. In fact I prefer a provider independent setup. However, we need database as service from cloud provider so the code has to be specific to a cloud provider. Also, I'm more familiar with AWS than other platforms.
-* Why PostgreSQL? We can use PostgreSQL to store both patient index and pixel data.
-* Why Terraform? Terraform has better modularization support than CloudFormation. It is easier to set up than AWS CDK.
-
-Related project Korthweb.
-
+Among many database backends supported by Orthanc, Orthweb use PostgreSQL database backend. It can be used to index patient data only, or store pixel data as well. The other way to store pixel data is to use the S3 bucket using the custom built S3 plugin.
 
 ## Security
 
-### Configurations for security
+Despite of a demo project, Orthweb project takes security seriously for HIPPA compliance. It uses self-signed certificate in the demo but in production deployment it should be replaced with certificates signed by CA. Below are the points of configurations for security compliance:
 
-1. Both DICOM and web traffic are encrypted in TLS
-2. PostgreSQL data is encrypted at rest, and the traffic to and from application container is encrypted in transit.
-3. The master user and password for database are now generated dynamically, in the secret manager in AWS. The EC2 instance is granted with the role to access the secret. The cloud-init script will be given the private endpoint of secret manager to pull the secret into a file. Docker compose maps the secret file to environment variables inside of container.
-4. Since the X509 certificate is self-signed for demo, it is now dynamically generated using openssl11 during bootstrapping, in compliance with [Mac requirement](https://support.apple.com/en-us/HT210176).
+1. Both DICOM and web traffic are encrypted in TLS. This requires peer DICOM AE to support DICOM TLS in order to connect with Orthanc.
+2. PostgreSQL data is encrypted at rest, and the database traffic between Orthanc application and database is encrypted in SSL.
+3. The S3 bucket has server side encryption. The traffic in transit between S3 bucket and Orthanc application is encrypted as well.
+4. The password for database are generated dynamically and stored in AWS Secret Manager in AWS. The EC2 instance is granted access to the secret, which allows the cloud-init script to fetch the secret and launch container with it. 
+5. The demo-purpose self-signed X509 certificate is dynamically generated using openssl11 during bootstrapping, in compliance with [Mac requirement](https://support.apple.com/en-us/HT210176).
 
-Check out this [blog post](https://www.digihunch.com/2021/05/secure-web-application-deployment/) for further details design considerations.
-
-### Known Limitations
-
-The followings are identified as not up to highest security standard. They may not be important for a demo system, but should be addressed for a production system. The **[Korthweb](https://github.com/digihunch/korthweb)** deployment project does not have these limitations.
-
-1. the traffic between nginx container and orthan container is unencrypted. While this is not an issue in the current architecture because the traffic goes through docker bridge, it is advisable to have end-to-end encryption when nginx and orthanc containers may live on different virtual machines.
-2. Database password is generated at Terraform client and then sent to deployment server to create PostgreSQL. The generated password is also stored in state file of Terraform. To overcome this, we need a) Terraform tells AWS secrets manager to generate a password; and b) it tells other AWS service to resolve the newly created secret. a) is doable but b) isn't due to a limitation with Terraform
-3. Secret management with Docker container: secret are presented to container process as environment variables, instead of file content. As per [this article](https://techbeacon.com/devops/how-keep-your-container-secrets-secure), it is not recommended because environment variable could be leaked out.
-
-
-## Towards production
-
-TODO: what needs to be done to configure towards production
+The handling of secret at some points of configurations has room for improvement.
+1. Database password is generated at Terraform client and then sent to deployment server to create PostgreSQL. The generated password is also stored in state file of Terraform. To overcome this, we need a) Terraform tells AWS secrets manager to generate a password; and b) it tells other AWS service to resolve the newly created secret. As of May 2021, a) is doable but b) isn't due to a limitation with Terraform
+2. Secret management with Docker container: secret are presented to container process as environment variables, instead of file content. As per [this article](https://techbeacon.com/devops/how-keep-your-container-secrets-secure), this is not the best practice.
