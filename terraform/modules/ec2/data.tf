@@ -44,6 +44,7 @@ data "template_file" "myuserdata" {
     sm_endpoint = data.aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
     sec_name    = data.aws_secretsmanager_secret.secretDB.name
     s3_bucket   = data.aws_s3_bucket.orthbucket.bucket
+    s3_integration = var.s3_integration
   }
 }
 

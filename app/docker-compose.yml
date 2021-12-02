@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   orthanc-backend:
-    image: digihunch/orthanc 
+    image: $DOCKER_IMAGE
     container_name: orthweb
     command: /run/secrets/  # Path to the configuration files (stored as secrets)
     ports:
@@ -35,14 +35,14 @@ services:
       - 11112:11112 
     volumes:
       - ./dicomtls.conf:/etc/nginx/nginx.conf
-      - ./sample.localhost.pem:/etc/nginx/conf.d/site.pem
+      - ./$SITE_KEY_CERT_FILE:/etc/nginx/conf.d/site.pem
     networks:
       - orthnet
 secrets:
   orthanc.json:
-    file: orthanc.json
+    file: $ORTHANC_CONFIG_FILE
   site.pem:
-    file: sample.localhost.pem
+    file: $SITE_KEY_CERT_FILE
 networks:
   orthnet:
     driver: bridge

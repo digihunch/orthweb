@@ -14,3 +14,7 @@ variable "Tags" {
     Owner       = "my@email.com"
   }
 }
+variable "UseS3Storage" {
+  type = bool
+  default = false
+}

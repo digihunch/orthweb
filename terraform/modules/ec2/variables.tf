@@ -30,6 +30,10 @@ variable "s3_key_arn" {
 variable "ep_service_name" {
   type = string
 }
+variable "s3_integration" {
+  type = bool
+  default = false
+}
 variable "resource_prefix" {
   type = string
 }

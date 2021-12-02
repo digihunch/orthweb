@@ -53,6 +53,7 @@ module "ec2" {
   s3_key_arn       = module.storage.s3_info.key_arn
   ep_service_name  = module.secretmanager.secret_info.ep_service_name
   public_subnet_id = module.network.vpc_info.public_subnet1_id
+  s3_integration = var.UseS3Storage
   depends_on       = [module.iam_role, module.database, module.storage]
   resource_tags    = var.Tags
   resource_prefix  = random_pet.prefix.id

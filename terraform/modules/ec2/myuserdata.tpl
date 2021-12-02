@@ -35,5 +35,6 @@ runuser -l ec2-user -c '(echo -n DB_USERNAME=;aws secretsmanager get-secret-valu
 runuser -l ec2-user -c '(echo -n DB_PASSWORD=;aws secretsmanager get-secret-value --secret-id ${sec_name} --query SecretString --output text --endpoint-url https://${sm_endpoint} | jq -r .password) >> .orthanc.env'
 runuser -l ec2-user -c '(echo -n S3_BUCKET=;echo ${s3_bucket}) >> .orthanc.env'
 runuser -l ec2-user -c '(echo -n S3_REGION=;echo ${aws_region}) >> .orthanc.env'
+runuser -l ec2-user -c 'if ${s3_integration}; then touch .s3_integration; fi'
 
 echo "Leaving script myuserdata"
