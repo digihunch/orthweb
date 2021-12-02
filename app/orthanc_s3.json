@@ -8,7 +8,7 @@
     "EnableIndex" : true,
     "EnableStorage" : false,
     "Host" : "${DB_ADDR}",
-    "Port" : "${DB_PORT}",
+    "Port" : 5432,
     "Database" : "orthancdb",
     "Username" : "${DB_USERNAME}",
     "Password" : "${DB_PASSWORD}",
