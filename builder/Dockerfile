@@ -7,5 +7,5 @@ RUN cmake -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DUSE_VCPKG_PACKAGES=OFF 
     CORES=`grep -c ^processor /proc/cpuinfo` && make -j$CORES
 
 FROM osimis/orthanc:21.11.0 as release
-COPY --from=build /build/libOrthancAwsS3Storage.so /usr/local/share/orthanc/plugins/
+COPY --from=build /build/libOrthancAwsS3Storage.so /usr/share/orthanc/plugins/
 RUN apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get -y upgrade

@@ -24,9 +24,8 @@
     "StorageStructure": "flat"
   },
   "Plugins" : [
-    "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLIndex.so",
-    "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLStorage.so",
-    "/usr/local/share/orthanc/plugins/libOrthancWebViewer.so",
-    "/usr/local/share/orthanc/plugins/libOrthancAwsS3Storage.so"
+    "/usr/share/orthanc/plugins-available/libOrthancPostgreSQLIndex.so",
+    "/usr/share/orthanc/plugins-available/libOrthancWebViewer.so",
+    "/usr/share/orthanc/plugins/libOrthancAwsS3Storage.so"
   ]
 }

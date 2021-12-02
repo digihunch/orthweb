@@ -15,7 +15,7 @@ cat /tmp/private.key /tmp/certificate.crt > $ComName.pem && rm /tmp/private.key 
 chown ec2-user:ec2-user $ComName.pem
 echo SITE_KEY_CERT_FILE=$ComName.pem > .env
 chown ec2-user:ec2-user .env
-if [[ -f "/home/ec2-user/s3_integration" ]]; then
+if [[ -f "/home/ec2-user/.s3_integration" ]]; then
   echo DOCKER_IMAGE=digihunch/orthanc >> .env
   echo ORTHANC_CONFIG_FILE=orthanc_s3.json >> .env
 else
