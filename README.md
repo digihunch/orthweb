@@ -47,7 +47,7 @@ To Validate DICOM capability, we can test with C-ECHO and C-STORE. We can use an
 
 Remember to enable TLS. Then you will be able to verify the node (i.e. C-ECHO) and send existing studies from Horos to Orthanc (C-STORE).
 
-To Validate the the web server, simply visit the website with the default credential. For example, https://ec2-102-203-105-112.compute-1.amazonaws.com:8042. The web browser might flag the site as insecure with invalid authority. This is due to the use of self-signed certificate in the demo. In a production deployment, you should bring your own DNS name with matching SSL certificate so that web browser will recognize it as secure. 
+To Validate the the web server, simply visit the website with the default credential. For example, https://ec2-102-203-105-112.compute-1.amazonaws.com:443. The web browser might flag the site as insecure with invalid authority. This is due to the use of self-signed certificate in the demo. In a production deployment, you should bring your own DNS name with matching SSL certificate so that web browser will recognize it as secure. 
 
 The basic validation steps are carried out from the perspective of end user. In the next section, I provide some guidelines for advanced validation from the point of IT professional. For application validation, you will need an imaging informatics professional. 
 
