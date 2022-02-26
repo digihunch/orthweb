@@ -70,18 +70,18 @@ sudo tail -F /var/log/cloud-init-output.log
 ```
 Which should say Orthanc has started. The files related to Orthanc deployment are in directory /home/ec2-user/orthweb/app:
 * orthanc.json: the Orthanc configuration file
-* dicomtls.conf: the Nginx configuration file
+* envoy.yaml: the Envoy configuration file
 * compute-1.amazonaws.com.pem: the file that stores the self-signed certificate and key that are generated for deployment.
 * docker-compose.yml: the file that drives Docker
 
 ### DICOM Validation
-We will use a command-line utility called [dcm4che3](https://sourceforge.net/projects/dcm4che/files/dcm4che3/) as a command-line for DICOM testing. Because TLS is turned on for DICOM traffic, we will also need the automatically generated certificate and convert it to a compatible (JKS) format. 
+We will use a command-line utility called [dcm4che3](https://sourceforge.net/projects/dcm4che/files/dcm4che3/) for DICOM testing. Because Orthanc requires TLS with DICOM traffic, and dcm4che is a Java application, we will also need to pull out the automatically generated certificate and convert it to a compatible (JKS) format for dcm4che to use.
 1. On the server, from the .pem file in /home/ec2-user/orthweb/app/, copy the certificate content (between the lines "BEGIN CERTIFICATE" and "END CERTIFICATE" inclusive), and paste it to a file named site.crt on your MacBook.
 2. Import the certificate file int a java trust store, with the command below and give it a password, say Password123!
 ```sh
 keytool -import -alias orthweb -file site.crt -storetype JKS -noprompt -keystore server.truststore -storepass Password123!
 ```
-We are taking this step because storescu, the utility we use in the next step is a java application that only recognize the format of server.truststore
+The server.truststore file is JKS format for storescu, the dcm4che utility in Java, to use in the next step.
 
 3. Then we can use this truststore file in C-ECHO and C-STORE. The dcm4che3 utility uses storescu to perform C-ECHO against the server. For example:
 ```sh
@@ -215,9 +215,9 @@ Orthweb is built on AWS as cloud platform, and uses Docker on EC2 to host applic
 | Networking | Vanilla Setup                | Vanilla Setup                        |
 | HA/DR      | N/A. requiring custom design to add Load Balancer and AutoScaling | N/A, requiring custom design         |
 
-Orthweb currently uses Nginx to proxy DICOM traffic. This is because Orthanc originally does not support DICOM over TLS. This is not the case anymore since Orthanc release 1.9.0. However, the native DICOM TLS configuration isn't as straightforward as using Nginx as proxy.
+Originally, Orthanc did not support DICOM traffic over TLS. So Orthweb used Nginx as a reverse proxy to terminate TLS traffic. Now Orthanc does have DICOM TLS support but it is not straightforward to configure. Orthweb also uses Envoy proxy instead of Nginx for better performance. Envoy acts as reverse proxy for both web traffic (https->https) and DICOM traffic (dicom tls -> dicom), with static configuration.
 
-Among many database backends supported by Orthanc, Orthweb use PostgreSQL database backend. It can be used to index patient data only, or store pixel data as well. The other way to store pixel data is to use the S3 bucket using the custom built S3 plugin.
+Orthweb use PostgreSQL database backend, even though it supports many kinds of databases. The PostgreSQL can be used to index patient data only, or store pixel data as well. The other way to store pixel data is to use the S3 bucket using the custom built S3 plugin.
 
 ## Security
 
