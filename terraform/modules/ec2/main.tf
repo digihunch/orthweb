@@ -23,8 +23,8 @@ resource "aws_security_group" "orthsecgrp" {
   }
   ingress {
     description = "Orthanc Web Portal"
-    from_port   = 8042
-    to_port     = 8042
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

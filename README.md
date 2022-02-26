@@ -77,15 +77,15 @@ Which should say Orthanc has started. The files related to Orthanc deployment ar
 ### DICOM Validation
 We will use a command-line utility called [dcm4che3](https://sourceforge.net/projects/dcm4che/files/dcm4che3/) as a command-line for DICOM testing. Because TLS is turned on for DICOM traffic, we will also need the automatically generated certificate and convert it to a compatible (JKS) format. 
 1. On the server, from the .pem file in /home/ec2-user/orthweb/app/, copy the certificate content (between the lines "BEGIN CERTIFICATE" and "END CERTIFICATE" inclusive), and paste it to a file named site.crt on your MacBook.
-2. Import the certificate file int a java trust store, with the command below
+2. Import the certificate file int a java trust store, with the command below and give it a password, say Password123!
 ```sh
-keytool -import -alias orthweb -file site.crt -storetype JKS -keystore server.truststore
+keytool -import -alias orthweb -file site.crt -storetype JKS -noprompt -keystore server.truststore -storepass Password123!
 ```
-At this step, it is mandatory to provide password. Let's say it is Password123. We also need to indicate that we trust this certificate.
+We are taking this step because storescu, the utility we use in the next step is a java application that only recognize the format of server.truststore
 
 3. Then we can use this truststore file in C-ECHO and C-STORE. The dcm4che3 utility uses storescu to perform C-ECHO against the server. For example:
 ```sh
-./storescu -c ORTHANC@ec2-102-203-105-112.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store path/to/server.truststore --trust-store-pass Password123
+./storescu -c ORTHANC@ec2-102-203-105-112.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123!
 ```
 The output should read Status code 0 in C-ECHO-RSP, followed by C-ECHO-RQ. For example, the output should contain some important lines such as:
 ```
@@ -110,7 +110,7 @@ The output should read Status code 0 in C-ECHO-RSP, followed by C-ECHO-RQ. For e
 ```
 4. We can use it to store DICOM part 10 file (usually .dcm extension) to the server, using storescu again:
 ```sh
-./storescu -c ORTHANC@ec2-102-203-105-112.compute-1.amazonaws.com:11112 MYFILE.DCM --tls12 --tls-aes --trust-store path/to/server.truststore --trust-store-pass Password123
+./storescu -c ORTHANC@ec2-102-203-105-112.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123! MYFILE.DCM
 ```
 The output log should contain the following:
 ```

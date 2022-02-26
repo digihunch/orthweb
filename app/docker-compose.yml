@@ -28,14 +28,15 @@ services:
       interval: 60s
       retries: 3
       start_period: 15s
-  nginx-proxy:
-    image: nginx
-    container_name: nginx
+  envoy-proxy:
+    image: envoyproxy/envoy:v1.21-latest
     ports:
-      - 11112:11112 
+      - 9901:9901
+      - 443:443
+      - 11112:11112
     volumes:
-      - ./dicomtls.conf:/etc/nginx/nginx.conf
-      - ./$SITE_KEY_CERT_FILE:/etc/nginx/conf.d/site.pem
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+      - ./$SITE_KEY_CERT_FILE:/etc/ssl/certs/site.pem
     networks:
       - orthnet
 secrets:
