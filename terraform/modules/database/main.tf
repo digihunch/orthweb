@@ -35,7 +35,7 @@ resource "aws_db_instance" "postgres" {
   engine_version                      = "12.2"
   instance_class                      = "db.t2.small" # t2.micro does not support encryption at rest
   identifier                          = "${var.resource_prefix}-orthancpostgres"
-  name                                = "orthancdb"
+  db_name                             = "orthancdb"
   username                            = local.db_creds.username
   password                            = local.db_creds.password
   port                                = "5432"

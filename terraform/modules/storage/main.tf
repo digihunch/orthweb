@@ -7,15 +7,18 @@ resource "aws_s3_bucket" "orthbucket" {
   bucket = "${var.resource_prefix}-orthbucket"
 
   force_destroy = true # remaining object does not stop bucket from being deleted
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = aws_kms_key.s3key.arn
-        sse_algorithm     = "aws:kms"
-      }
-    }
-  }
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-orthbucket" })
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "test" {
+  bucket = aws_s3_bucket.orthbucket.bucket
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.s3key.arn
+      sse_algorithm     = "aws:kms"
+    }
+  }  
+
 }
 
 resource "aws_s3_bucket_public_access_block" "orthbucketblockpublicaccess" {
