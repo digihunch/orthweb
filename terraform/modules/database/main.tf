@@ -32,7 +32,7 @@ resource "aws_db_instance" "postgres" {
   allocated_storage                   = 5
   storage_type                        = "standard" #magnetic drive minimum 5g storage
   engine                              = "postgres"
-  engine_version                      = "12.2"
+  engine_version                      = "14.2"
   instance_class                      = "db.t2.small" # t2.micro does not support encryption at rest
   identifier                          = "${var.resource_prefix}-orthancpostgres"
   db_name                             = "orthancdb"

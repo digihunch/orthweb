@@ -26,6 +26,7 @@ static_resources:
                   prefix: "/"
                 route:
                   cluster: service-https
+                  timeout: 3s
           http_filters:
           - name: envoy.filters.http.router
       transport_socket:
