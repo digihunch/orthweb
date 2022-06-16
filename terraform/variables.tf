@@ -18,3 +18,7 @@ variable "UseS3Storage" {
   type = bool
   default = false
 }
+variable "cli_cidr_block" {
+  type    = string
+  default = "0.0.0.0/0"
+}

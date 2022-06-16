@@ -13,7 +13,7 @@ resource "aws_security_group" "orthsecgrp" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.ssh_client_cidr_block]
   }
   ingress {
     from_port   = 8

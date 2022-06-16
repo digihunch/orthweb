@@ -1,6 +1,9 @@
 variable "public_key" {
   type = string
 }
+variable "ssh_client_cidr_block" {
+  type = string
+}
 variable "public_subnet_id" {
   type = string
 }
