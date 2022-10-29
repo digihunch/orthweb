@@ -7,9 +7,16 @@
 
 We use Terraform to create infrastructure on AWS, including VPC, subnets, secret manager, managed database (PostgreSQL), an EC2 instance and S3 bucket. The application is hosted in a Docker container on the EC2 instance.
 
-## Production Use
+## Use case
 
-Orthweb project demonstrates the idea of infrastructure-as-code, deployment automation and security configurations in compliance with HIPPA. It provisions just enough resources for demo, and it is not intended for production use. A solution for production and clinical use requires a holistic planning for scalability, high availability, disaster recovery, security compliance etc, as well as custom implementation. Please contact [Digi Hunch](https://www.digihunch.com/) for professional IT service.
+Orthweb project demonstrates the idea of infrastructure-as-code, deployment automation and security configurations in compliance with HIPPA. It provisions just enough resources for demo, and it is not intended for production use. 
+
+| You are | You have | How you provision infrastructure | How you install Orthanc |
+| ----------- | ----------- | --------- | ---------- |
+| Individual developer, tester or other party with interest | A single AWS account as sandbox | [Orthweb](https://github.com/digihunch/orthweb) project creates dedicated VPC and subnets with secure configuration | [Orthweb](https://github.com/digihunch/orthweb) project configures Orthanc installation automatically. |
+| Health organization, start-up or corporate | [Multiple AWS accounts](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html) for the organization | An infrastructure team configures landing zone with networks for multiple environments and ensures compliance. | An application Team configures Orthanc installation |
+
+Production use will require a compliant infrastructure environment as prerequisite.
 
 ## Prerequisite
 
