@@ -6,13 +6,8 @@ cd /home/ec2-user/orthweb/app
 chown ec2-user:ec2-user .env
 echo DOCKER_IMAGE_ORTHANC=${orthanc_image} >> .env
 echo DOCKER_IMAGE_ENVOY=${envoy_image} >> .env
-if ${s3_integration}; then
-  echo Orthanc configuration will index data in PostgreSQL and store image files in S3 bucket.
-  echo ORTHANC_CONFIG_FILE=orthanc_s3.json >> .env
-else
-  echo Orthanc configuration will index data and store image pixels in PostgreSQL.
-  echo ORTHANC_CONFIG_FILE=orthanc.json >> .env
-fi
+echo Orthanc configuration will index data in PostgreSQL and store image files in S3 bucket.
+echo ORTHANC_CONFIG_FILE=orthanc.json >> .env
 
 # Load app config
 echo "Pulling app configuration."

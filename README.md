@@ -28,16 +28,6 @@ Make sure **awscli** is configured and **Terraform CLI** is [installed](https://
 
 From command terminal, go to the [terraform](https://github.com/digihunch/orthweb/tree/main/terraform) directory and execute Terraform command from there. This section covers the environment variables needed prior to executing Terraform command. 
 
-### Use S3 for image storage
-
-By default, input variable `UseS3Storage` is set to true, you can override it by setting environment variable `TF_VAR_UseS3Storage` to false. The difference is where image data are stored:
-|UseS3Storage| Data Index | Image Storage | 
-|---|---|---|
-| true | PostgreSQL | S3 bucket |
-| false | PostgreSQL | PostgreSQL |  
-
-The S3 bucket will be created eitherway. The recommendation is to leave this variable undefined and store image data in S3 bucket.
-
 ### Customize Docker Image
 
 By default input variable `DockerImages` is set to the image refernce for Orthanc and Envoy. You may override it with your own choice of image or version by providing environment variable `TF_VAR_DockerImages`. You can leave this variable undefined unless you have your own choice of Docker images.
@@ -230,7 +220,7 @@ You may not be able to interpret the content without the database schema. It is 
 
 ### Storage Validation
 
-Storage validation can be performed simply by examining the content of S3 bucket. If S3 integration is turned on, once studies are sent to Orthanc, the corresponding DICOM file should appear in the S3 bucket. For example, we can run the following AWS CLI command from the EC2 instance:
+Storage validation can be performed simply by examining the content of S3 bucket. Once studies are sent to Orthanc, the corresponding DICOM file should appear in the S3 bucket. For example, we can run the following AWS CLI command from the EC2 instance:
 ```sh
 aws s3 ls s3://bucket-name
 2021-12-02 18:54:41     525848 87719ef0-cbb1-4249-a0ac-e68356d97a7a.dcm

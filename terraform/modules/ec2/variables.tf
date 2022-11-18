@@ -25,10 +25,6 @@ variable "s3_key_arn" {
 variable "ep_service_name" {
   type = string
 }
-variable "s3_integration" {
-  type = bool
-  default = false
-}
 variable "docker_images" {
   type = map(any)
 }

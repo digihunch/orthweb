@@ -6,7 +6,7 @@
   "SslCertificate" : "site.pem",
   "PostgreSQL" : {
     "EnableIndex" : true,
-    "EnableStorage" : true,
+    "EnableStorage" : false,
     "Host" : "${DB_ADDR}",
     "Port" : 5432,
     "Database" : "orthancdb",
@@ -15,9 +15,17 @@
     "EnableSsl" : true,
     "Lock" : false
   },
+  "AwsS3Storage" : {
+    "BucketName": "${S3_BUCKET}",
+    "Region" : "${S3_REGION}",
+    "ConnectionTimeout": 30,
+    "RequestTimeout": 1200,
+    "RootPath": "",
+    "StorageStructure": "flat"
+  },
   "Plugins" : [
     "/usr/share/orthanc/plugins-available/libOrthancPostgreSQLIndex.so",
-    "/usr/share/orthanc/plugins-available/libOrthancPostgreSQLStorage.so",
-    "/usr/share/orthanc/plugins-available/libOrthancWebViewer.so"
+    "/usr/share/orthanc/plugins-available/libOrthancWebViewer.so",
+    "/usr/share/orthanc/plugins-available/libOrthancAwsS3Storage.so"
   ]
 }
