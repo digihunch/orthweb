@@ -23,7 +23,7 @@ variable "DockerImages" {
   type = map(any)
   default = {
     OrthancImg = "osimis/orthanc:22.11.3"
-    EnvoyImg = "envoyproxy/envoy:v1.24.0"
+    EnvoyImg = "envoyproxy/envoy:v1.22.5"
   }
 }
 variable "cli_cidr_block" {
