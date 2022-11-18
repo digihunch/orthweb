@@ -45,7 +45,8 @@ data "template_file" "userdata2" {
     sec_name    = data.aws_secretsmanager_secret.secretDB.name
     s3_bucket   = data.aws_s3_bucket.orthbucket.bucket
     s3_integration = var.s3_integration
-    orthanc_image_version = var.orthanc_image_ver
+    orthanc_image = var.docker_images.OrthancImg
+    envoy_image = var.docker_images.EnvoyImg
   }
 }
 

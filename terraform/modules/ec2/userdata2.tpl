@@ -4,7 +4,8 @@ echo "Entering userdata2 script"
 # Load environment variable for docker compose
 cd /home/ec2-user/orthweb/app
 chown ec2-user:ec2-user .env
-echo DOCKER_IMAGE=osimis/orthanc:${orthanc_image_version} >> .env
+echo DOCKER_IMAGE_ORTHANC=${orthanc_image} >> .env
+echo DOCKER_IMAGE_ENVOY=${envoy_image} >> .env
 if ${s3_integration}; then
   echo Orthanc configuration will index data in PostgreSQL and store image files in S3 bucket.
   echo ORTHANC_CONFIG_FILE=orthanc_s3.json >> .env

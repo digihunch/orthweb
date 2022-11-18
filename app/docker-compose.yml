@@ -1,8 +1,8 @@
 version: "3.8"
 services:
   orthanc-backend:
-    image: $DOCKER_IMAGE
-    container_name: orthweb
+    image: $DOCKER_IMAGE_ORTHANC
+    container_name: orthanc
     command: /run/secrets/  # Path to the configuration files (stored as secrets)
     ports:
       - 4242:4242
@@ -29,7 +29,8 @@ services:
       retries: 3
       start_period: 15s
   envoy-proxy:
-    image: envoyproxy/envoy:v1.21-latest
+    image: $DOCKER_IMAGE_ENVOY 
+    container_name: envoy
     ports:
       - 9901:9901
       - 443:443

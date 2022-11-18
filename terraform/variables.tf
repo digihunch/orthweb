@@ -16,11 +16,15 @@ variable "Tags" {
 }
 variable "UseS3Storage" {
   type = bool
-  default = false
+  default = true
 }
-variable "OrthancImgVer" {
-  type = string
-  default = "22.11.3"
+variable "DockerImages" {
+  description = "Docker Images"
+  type = map(any)
+  default = {
+    OrthancImg = "osimis/orthanc:22.11.3"
+    EnvoyImg = "envoyproxy/envoy:v1.24.0"
+  }
 }
 variable "cli_cidr_block" {
   type    = string

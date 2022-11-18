@@ -3,50 +3,91 @@
  
 ## Overview
 
-**[Orthanc](https://www.orthanc-server.com/)** is an open-source application to ingest, store, display and distribute medical images. **[Orthweb](https://github.com/digihunch/orthweb)** is an open-source project to automatically configure Orthanc and associated resource on AWS. It configures Orthanc in 10 minutes. When the deployment is completed, the website is ready to serve both web and DICOM traffic.
+**[Orthanc](https://www.orthanc-server.com/)** is an open-source application to ingest, store, display and distribute medical images. **[Orthweb](https://github.com/digihunch/orthweb)** is an open-source deployment project to automatically configure Orthanc and associated resources on AWS. When the deployment is completed, the website is ready to serve both web and DICOM traffic.
 
-We use Terraform to create infrastructure on AWS, including VPC, subnets, secret manager, managed database (PostgreSQL), an EC2 instance and S3 bucket. The application is hosted in a Docker container on the EC2 instance.
+We use Terraform to create infrastructure on AWS, including VPC, subnets, secret manager, managed database (PostgreSQL), an EC2 instance and S3 bucket. For simplicity, the application is hosted in a Docker container running on a EC2 instance.
 
 ## Use case
 
-Orthweb project demonstrates the idea of infrastructure-as-code, deployment automation and security configurations. It provisions just enough resources for demo, and it is not intended for production use. 
+Orthweb project demonstrates the idea of infrastructure-as-code, deployment automation and security configurations. It provisions just enough resources for demo, and is not intended for production use. 
 
-How you can use this project depends on your role and goal.
+How you can use this project depends on your role and goal:
 
-| You are | You have | How you provision infrastructure | How you install Orthanc |
-| ----------- | ----------- | --------- | ---------- |
-| Individual developer, tester or other party with interest | A single AWS account as sandbox | [Orthweb](https://github.com/digihunch/orthweb) project creates dedicated VPC and subnets with secure configuration | [Orthweb](https://github.com/digihunch/orthweb) project configures Orthanc installation automatically. |
-| Health organization, start-up or corporate | [Multiple AWS accounts](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html) for the organization | An infrastructure team configures landing zone with networks for multiple environments and ensures compliance. | An application Team configures Orthanc installation. This project serves as a reference implementation. |
+| Your role and goal | How you provision infrastructure for Orthanc | How you install Orthanc |
+| ----------- | --------- | ---------- |
+| You are an individual developer, student or other party with interest. You have a single AWS account as sandbox and want to quickly check out Orthanc with minimum configuration effort.| [Orthweb](https://github.com/digihunch/orthweb) project creates dedicated VPC and subnets with secure configuration | [Orthweb](https://github.com/digihunch/orthweb) project configures Orthanc installation automatically. |
+| You are a healthcare organization, start-up or corporate. Your organization has established [Multiple AWS accounts](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html) and networking. You want to configure Orthanc in a secure and compliant environment. | The infrastructure team configures [landing zone](https://docs.aws.amazon.com/prescriptive-guidance/latest/migration-aws-environment/understanding-landing-zones.html) with secure and compliant networking foundation. | The application team configures Orthanc installation, taking [Orthweb](https://github.com/digihunch/orthweb) project as a reference. |
 
 ## Prerequisite
 
-Users need their own AWS account (Access Key ID and Secret Access Key with administrator privilege) to deploy this project.  The rest of this instruction is based on local execution of Terraform command from MacOS. Make sure **awscli** is configured and **Terraform CLI** is [installed](https://learn.hashicorp.com/tutorials/terraform/install-cli). There are more than one methods to authenticate Terraform against AWS.  The easiest [setup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#shared-credentials-file) is to use the [credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) for [awscli]((https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)). To connect to the server console, it is also required to [configure](https://help.dreamhost.com/hc/en-us/articles/115001736671-Creating-a-new-Key-pair-in-Mac-OS-X-or-Linux) an SSH key pair. 
+You need your own AWS IAM user (Access Key ID and Secret Access Key with administrator privilege) to deploy this project.  The rest of this instruction is based on local execution of Terraform command. All the steps were tested on MacBook. With adjustment however, the project also work on Windows and from Terraform Cloud.
 
-## Deployment
+Make sure **awscli** is configured and **Terraform CLI** is [installed](https://learn.hashicorp.com/tutorials/terraform/install-cli). There are more than one methods to authenticate Terraform against AWS.  The easiest [setup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#shared-credentials-file) is to use the [credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) for [awscli]((https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)). To authenticat yourself to the EC2 instance over, it is also required to [configure](https://help.dreamhost.com/hc/en-us/articles/115001736671-Creating-a-new-Key-pair-in-Mac-OS-X-or-Linux) and use an RSA key pair. 
 
-From command terminal, go to the [terraform](https://github.com/digihunch/orthweb/tree/main/terraform) directory and execute Terraform command from there. Optionally, if you want the SSH port open to one public IP only for additional security, run:
+## Preparation
+
+From command terminal, go to the [terraform](https://github.com/digihunch/orthweb/tree/main/terraform) directory and execute Terraform command from there. This section covers the environment variables needed prior to executing Terraform command. 
+
+### Use S3 for image storage
+
+By default, input variable `UseS3Storage` is set to true, you can override it by setting environment variable `TF_VAR_UseS3Storage` to false. The difference is where image data are stored:
+|UseS3Storage| Data Index | Image Storage | 
+|---|---|---|
+| true | PostgreSQL | S3 bucket |
+| false | PostgreSQL | PostgreSQL |  
+
+The S3 bucket will be created eitherway. The recommendation is to leave this variable undefined and store image data in S3 bucket.
+
+### Customize Docker Image
+
+By default input variable `DockerImages` is set to the image refernce for Orthanc and Envoy. You may override it with your own choice of image or version by providing environment variable `TF_VAR_DockerImages`. You can leave this variable undefined unless you have your own choice of Docker images.
+
+### Secure SSH access
+You need to connect to the EC2 instance (server) for administrative work over SSH. This project helps you secure the SSH access by limiting the incoming IP address, and configuring RSA key authentication.
+
+#### Limiting SSH client IP
+
+When running terraform command, the value of environment variable `TF_VAR_cli_cidr_block` will be passed to input variable `cli_cidr_block` of Terraform. This is for you to optionally restrict access to EC2 instance from a specified range of IP addresses. For example, if you want your public IP the only IP to connect to the server via SSH, set it to your public IP with /32.
+
 > export TF_VAR_cli_cidr_block=$(curl http://checkip.amazonaws.com)/32
 
-When running terraform command, the value of this environment variable TF_VAR_cli_cidr_block will be taken as input variable cli_cidr_block by Terraform. If not provided, port 22 will be open to the default value of 0.0.0.0/0. The dig command returns the public IP of the environment where Terraform is run. 
+If this variable not provided, Terraform will default it to default CIDR value of 0.0.0.0/0) and the server's SSH port is wide open.
 
-1. Initialize terraform modules, and plan for deployment, with command:
+#### RSA key pair for SSH authentication
+We use SSH protocol with [RSA key](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html) authentication. So when provisioning the server, the Terraform template will tell the server to whitelist your public key. You can provide your public key data in one of the two ways:
 
-> terraform init && terraform plan
+You can provide public key data in environment variable:
+```sh
+export TF_VAR_pubkey_data="mockpublickeydatawhichissuperlongdonotputyourprivatekeyherepleaseabcxyzpubkklsss"
+```
+The value will be passed to input variable `pubkey_data`. This is helpful when Terraform executes from a machine different than your SSH client.
 
-This command will initialize Terraform template (e.g. download AWS provider) and then plan out the resources to deploy. It should print out the resources about to deploy.
+Alternatively, you can provide path to public key file in variable `pubkey_path`. If not provided, the Terraform template uses default path for public key file (~/.ssh/id_rsa.pub on MacOS or Linux). If you run Terraform and SSH CLI from the same host, you can just [create SSH key pair](https://support.atlassian.com/bitbucket-cloud/docs/set-up-an-ssh-key/) and leave both variables above undefined.
 
-3. Execute the deployment plan, by running:
+## Deployment
+With the preparatory work done, we can deploy Orthanc in a couple commands:
+
+First, initialize terraform modules, and plan for deployment, with command:
+
+> terraform init
+> terraform plan
+
+The first command will initialize Terraform template (e.g. download AWS provider). The second command plans out the resources to deploy, and prints them out.
+
+Second, execute the deployment plan, by running:
 
 > terraform apply
 
-In this step Terraform interact with your AWS account to provision the resources and configure the website, which can take as long as 15 minutes. Upon successful deployment, the output displays three entries:
+In this step Terraform interact with your AWS account to provision the resources and configure the website, which can take as long as 15 minutes. You need to say `yes` to the prompt. Upon successful deployment, the output displays three entries:
 * **hostinfo**: the EC2 host information in the format of ec2-user@ec2-102-203-105-112.compute-1.amazonaws.com
 	* ec2-user is the username to SSH to server, refer to advanced validation below for how to connect to the server.
 	* The part after the "@" sign is the website FQDN. Refer to basic validation below for how to visit the site.
-* **dbinfo**: the PostgreSQL URL and port, in the format of postgresdbinstance.us-east-1.rds.amazonaws.com:5432, only accessible with appropriate permissions;
-* **s3bucket**: the URL to the S3 bucket created in the format of bucket-name.s3.amazonaws.com, only accessible with appropriate permissions;
+* **dbinfo**: the PostgreSQL URL and port, in the format of postgresdbinstance.us-east-1.rds.amazonaws.com:5432, which is not publicly accessible;
+* **s3bucket**: the URL to the S3 bucket created in the format of bucket-name.s3.amazonaws.com, only accessible with appropriate IAM permissions;
 
-Now that site is up, we can validate the site with the steps outlined in the sections below. Once your demo is completed, you may remove all the resources, with command:
+Now that site is up, we can validate the site with the steps outlined in the sections below. 
+
+Last, once your demo is completed, you may remove all the resources, with command:
 > terraform destroy
 
 ## Basic Validation
@@ -66,12 +107,8 @@ The basic validation steps are carried out from the perspective of end user. In 
 The advanced validation is carried out in four perspectives: Hosting server, DICOM connectivity, Database and Storage. 
 
 ### Server Validation
-We use SSH protocol with [RSA key](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html) authentication to connect to EC2 instance. The terraform template in this project requires public key provided to the input variable named pubkey_data. It uses the key content from  local public key file (~/.ssh/id_rsa.pub). If you prefers explicitly use a different public key data, you can provide it as environment variable before running apply command:
-```sh
-export TF_VAR_pubkey_data="fakepublickeyabcxyzpubkklsss"
-terraform plan
-```
-This technique is for the convenience of tester, because as the server is provisioned, the user will be able to SSH to the server with a simple SSH command:
+
+We can connect to the server over SSH. Since we configured IP and public key whitelisting, the following command should just work:
 ```sh
 ssh ec2-user@ec2-user@ec2-102-203-105-112.compute-1.amazonaws.com
 ```
@@ -200,49 +237,23 @@ aws s3 ls s3://bucket-name
 ```
 The bucket is not publicly assissible and is protected by bucket policy configured during resource provisioning.
 
-
-## Options to store images
-
-The open-source Orthanc project does not include the plugin for storing images on S3 bucket. So I use custom Orthanc image based on [Osimis Orthanc image](https://hub.docker.com/r/osimis/orthanc), if S3 integration is turned on. 
-
-This project also includes the builder for Digi Hunch [custom Orthanc image](https://hub.docker.com/repository/docker/digihunch/orthanc) in the *build* directory. I use Github Action to build and push the image to my Docker registry. 
-
-The EC2 initialization script automatically apply the configuration for the Orthanc image and Orthanc.json files, based on whether `UseS3Storage` variable is set to true.
-
-
 ##  Architecture
 
-Depending on the value of input variable `UseS3Storage`, the images can be stored in two places:
-|UseS3Storage| Data Index | Image Storage | 
-|---|---|---|
-| true | PostgreSQL | S3 bucket |
-| false | PostgreSQL | PostgreSQL |  
-
-The S3 bucket will be created regardlessly. If it stores images in S3 bucket, the architecture can be illustrated in the diagram below:
+The architecture can be illustrated in the diagram below:
 
 ![Diagram](resources/Orthweb.png)
 
 Orthweb is built on AWS as cloud platform, and uses Docker on EC2 to host application. The alternative to EC2 is ECS but ECS has some [limitations](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561). Docker on EC2 is sufficient for typical imaging workload. [This](https://ably.com/blog/no-we-dont-use-kubernetes) blog discusses how Docker on EC2 in Autoscaling group suits the need of most workloads without the complexity of Kubernetes. Orthweb has a sibling project [Korthweb](https://github.com/digihunch/korthweb) under development, which deploys Orthanc on Kubernetes platform.
 
-|            | Orthweb Demo                 | Korthweb Demo                        |
-|------------|------------------------------|--------------------------------------|
-| App        | Docker on EC2                | Kubernetes                           |
-| Database   | Managed PostgreSQL           | Managed PostgresSQL or custom design |
-| Storage    | Managed PostgreSQL or S3     | Managed PostgreSQL or Object storage |
-| Networking | Vanilla Setup                | Vanilla Setup                        |
-| HA/DR      | N/A. requiring custom design to add Load Balancer and AutoScaling | N/A, requiring custom design         |
-
 Originally, Orthanc did not support DICOM traffic over TLS. So Orthweb used Nginx as a reverse proxy to terminate TLS traffic. Now Orthanc does have DICOM TLS support but it is not straightforward to configure. Orthweb also uses Envoy proxy instead of Nginx for better performance. Envoy acts as reverse proxy for both web traffic (https->https) and DICOM traffic (dicom tls -> dicom), with static configuration.
-
-Orthweb use PostgreSQL database backend, even though it supports many kinds of databases. The PostgreSQL can be used to index patient data only, or store pixel data as well. The other way to store pixel data is to use the S3 bucket using the custom built S3 plugin.
 
 ## Security
 
-Despite of a demo project, Orthweb project takes security seriously for HIPPA compliance. It uses self-signed certificate in the demo but in production deployment it should be replaced with certificates signed by CA. Below are the points of configurations for security compliance:
+Orthweb project implements secure configuration as far as it can. For example, it configures a self-signed certificate in the demo. In production deployment however you should bring your own certificates signed by CA. Below are the points of configurations for security compliance:
 
 1. Both DICOM and web traffic are encrypted in TLS. This requires peer DICOM AE to support DICOM TLS in order to connect with Orthanc.
-2. PostgreSQL data is encrypted at rest, and the database traffic between Orthanc application and database is encrypted in SSL.
-3. The S3 bucket has server side encryption. The traffic in transit between S3 bucket and Orthanc application is encrypted as well.
+2. PostgreSQL data is encrypted at rest, and the database traffic between Orthanc application and database is encrypted in SSL. The database endpoint is not open to public.
+3. The S3 bucket has server side encryption. The traffic in transit between S3 bucket and Orthanc application is encrypted as well. The S3 endpoint is not open to public.
 4. The password for database are generated dynamically and stored in AWS Secret Manager in AWS. The EC2 instance is granted access to the secret, which allows the cloud-init script to fetch the secret and launch container with it. 
 5. The demo-purpose self-signed X509 certificate is dynamically generated using openssl11 during bootstrapping, in compliance with [Mac requirement](https://support.apple.com/en-us/HT210176).
 

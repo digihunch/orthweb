@@ -33,9 +33,9 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_OrthancImgVer"></a> [OrthancImgVer](#input\_OrthancImgVer) | n/a | `string` | `"22.11.3"` | no |
+| <a name="input_DockerImages"></a> [DockerImages](#input\_DockerImages) | Docker Images | `map(any)` | <pre>{<br>  "EnvoyImg": "envoyproxy/envoy:v1.21-latest",<br>  "OrthancImg": "osimis/orthanc:22.11.3"<br>}</pre> | no |
 | <a name="input_Tags"></a> [Tags](#input\_Tags) | Tags for every resource. | `map(any)` | <pre>{<br>  "Environment": "Dev",<br>  "Owner": "my@email.com"<br>}</pre> | no |
-| <a name="input_UseS3Storage"></a> [UseS3Storage](#input\_UseS3Storage) | n/a | `bool` | `false` | no |
+| <a name="input_UseS3Storage"></a> [UseS3Storage](#input\_UseS3Storage) | n/a | `bool` | `true` | no |
 | <a name="input_cli_cidr_block"></a> [cli\_cidr\_block](#input\_cli\_cidr\_block) | n/a | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_pubkey_data"></a> [pubkey\_data](#input\_pubkey\_data) | n/a | `string` | `null` | no |
 | <a name="input_pubkey_path"></a> [pubkey\_path](#input\_pubkey\_path) | n/a | `string` | `"~/.ssh/id_rsa.pub"` | no |
