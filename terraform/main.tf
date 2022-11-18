@@ -19,8 +19,8 @@ module "network" {
 
 module "secretmanager" {
   source            = "./modules/secmgr"
-  public_subnet1_id = module.network.vpc_info.public_subnet1_id
-  public_subnet2_id = module.network.vpc_info.public_subnet2_id
+  private_subnet1_id = module.network.vpc_info.private_subnet1_id
+  private_subnet2_id = module.network.vpc_info.private_subnet2_id
   resource_tags     = var.Tags
   resource_prefix   = random_pet.prefix.id
 }
@@ -52,10 +52,11 @@ module "ec2" {
   s3_bucket_name   = module.storage.s3_info.bucket_name
   db_secret_arn    = module.secretmanager.secret_info.db_secret_arn
   s3_key_arn       = module.storage.s3_info.key_arn
-  ep_service_name  = module.secretmanager.secret_info.ep_service_name
+  secret_ep_service_name  = module.secretmanager.secret_info.ep_service_name
   public_subnet_id = module.network.vpc_info.public_subnet1_id
+  s3_ep_service_name = module.network.vpc_info.s3_vpc_ep_service_name
   docker_images = var.DockerImages
-  depends_on       = [module.iam_role, module.database, module.storage]
+  depends_on       = [module.iam_role, module.database, module.storage, module.network]
   resource_tags    = var.Tags
   resource_prefix  = random_pet.prefix.id
 }

@@ -1,13 +1,13 @@
-data "aws_subnet" "public_subnet1" {
-  id = var.public_subnet1_id
+data "aws_subnet" "private_subnet1" {
+  id = var.private_subnet1_id
 }
 
-data "aws_subnet" "public_subnet2" {
-  id = var.public_subnet2_id
+data "aws_subnet" "private_subnet2" {
+  id = var.private_subnet2_id
 }
 
 data "aws_vpc" "mainVPC" {
-  id = data.aws_subnet.public_subnet1.vpc_id
+  id = data.aws_subnet.private_subnet1.vpc_id
 }
 
 data "aws_region" "this" {}

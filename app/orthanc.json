@@ -18,6 +18,7 @@
   "AwsS3Storage" : {
     "BucketName": "${S3_BUCKET}",
     "Region" : "${S3_REGION}",
+    "Endpoint" : "${S3_ENDPOINT}",
     "ConnectionTimeout": 30,
     "RequestTimeout": 1200,
     "RootPath": "",

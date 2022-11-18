@@ -62,3 +62,5 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
   })
   depends_on = [aws_s3_bucket_public_access_block.orthbucketblockpublicaccess]
 }
+
+## VPC endpoint is declared in the VPC module

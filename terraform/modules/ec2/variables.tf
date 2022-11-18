@@ -22,7 +22,10 @@ variable "db_secret_arn" {
 variable "s3_key_arn" {
   type = string
 }
-variable "ep_service_name" {
+variable "secret_ep_service_name" {
+  type = string
+}
+variable "s3_ep_service_name" {
   type = string
 }
 variable "docker_images" {

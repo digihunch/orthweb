@@ -28,7 +28,12 @@ data "aws_secretsmanager_secret" "secretDB" {
 
 data "aws_vpc_endpoint" "secmgr" {
   vpc_id       = data.aws_subnet.public_subnet.vpc_id
-  service_name = var.ep_service_name
+  service_name = var.secret_ep_service_name
+}
+
+data "aws_vpc_endpoint" "s3" {
+  vpc_id       = data.aws_subnet.public_subnet.vpc_id
+  service_name = var.s3_ep_service_name
 }
 
 data "aws_subnet" "public_subnet" {
@@ -41,8 +46,9 @@ data "template_file" "userdata2" {
     db_address  = data.aws_db_instance.postgres.address
     db_port     = data.aws_db_instance.postgres.port
     aws_region  = data.aws_region.this.name
-    sm_endpoint = data.aws_vpc_endpoint.secmgr.dns_entry[0]["dns_name"]
+    sm_endpoint = data.aws_vpc_endpoint.secmgr.dns_entry[0].dns_name
     sec_name    = data.aws_secretsmanager_secret.secretDB.name
+    s3_endpoint = data.aws_vpc_endpoint.s3.dns_entry[0].dns_name
     s3_bucket   = data.aws_s3_bucket.orthbucket.bucket
     orthanc_image = var.docker_images.OrthancImg
     envoy_image = var.docker_images.EnvoyImg
