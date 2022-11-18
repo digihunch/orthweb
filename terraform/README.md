@@ -1,17 +1,16 @@
-<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.1.6 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.4 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.40.0 |
 | <a name="requirement_template"></a> [template](#requirement\_template) | >= 2.2.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_random"></a> [random](#provider\_random) | n/a |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.4.3 |
 
 ## Modules
 
@@ -34,8 +33,10 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_OrthancImgVer"></a> [OrthancImgVer](#input\_OrthancImgVer) | n/a | `string` | `"22.11.3"` | no |
 | <a name="input_Tags"></a> [Tags](#input\_Tags) | Tags for every resource. | `map(any)` | <pre>{<br>  "Environment": "Dev",<br>  "Owner": "my@email.com"<br>}</pre> | no |
 | <a name="input_UseS3Storage"></a> [UseS3Storage](#input\_UseS3Storage) | n/a | `bool` | `false` | no |
+| <a name="input_cli_cidr_block"></a> [cli\_cidr\_block](#input\_cli\_cidr\_block) | n/a | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_pubkey_data"></a> [pubkey\_data](#input\_pubkey\_data) | n/a | `string` | `null` | no |
 | <a name="input_pubkey_path"></a> [pubkey\_path](#input\_pubkey\_path) | n/a | `string` | `"~/.ssh/id_rsa.pub"` | no |
 
@@ -46,4 +47,3 @@
 | <a name="output_dbinfo"></a> [dbinfo](#output\_dbinfo) | n/a |
 | <a name="output_hostinfo"></a> [hostinfo](#output\_hostinfo) | n/a |
 | <a name="output_s3bucket"></a> [s3bucket](#output\_s3bucket) | n/a |
-<!-- END_TF_DOCS -->

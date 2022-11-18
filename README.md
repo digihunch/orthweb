@@ -25,7 +25,7 @@ Users need their own AWS account (Access Key ID and Secret Access Key with admin
 ## Deployment
 
 From command terminal, go to the [terraform](https://github.com/digihunch/orthweb/tree/main/terraform) directory and execute Terraform command from there. Optionally, if you want the SSH port open to one public IP only for additional security, run:
-> export TF_VAR_cli_cidr_block=$(dig +short myip.opendns.com @resolver1.opendns.com)/32
+> export TF_VAR_cli_cidr_block=$(curl http://checkip.amazonaws.com)/32
 
 When running terraform command, the value of this environment variable TF_VAR_cli_cidr_block will be taken as input variable cli_cidr_block by Terraform. If not provided, port 22 will be open to the default value of 0.0.0.0/0. The dig command returns the public IP of the environment where Terraform is run. 
 
