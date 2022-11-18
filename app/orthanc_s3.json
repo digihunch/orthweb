@@ -26,6 +26,6 @@
   "Plugins" : [
     "/usr/share/orthanc/plugins-available/libOrthancPostgreSQLIndex.so",
     "/usr/share/orthanc/plugins-available/libOrthancWebViewer.so",
-    "/usr/share/orthanc/plugins/libOrthancAwsS3Storage.so"
+    "/usr/share/orthanc/plugins-available/libOrthancAwsS3Storage.so"
   ]
 }

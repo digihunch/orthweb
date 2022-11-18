@@ -16,10 +16,10 @@ chown ec2-user:ec2-user $ComName.pem
 echo SITE_KEY_CERT_FILE=$ComName.pem > .env
 chown ec2-user:ec2-user .env
 if [[ -f "/home/ec2-user/.s3_integration" ]]; then
-  echo DOCKER_IMAGE=digihunch/orthanc >> .env
+  echo DOCKER_IMAGE=osimis/orthanc >> .env
   echo ORTHANC_CONFIG_FILE=orthanc_s3.json >> .env
 else
-  echo DOCKER_IMAGE=jodogne/orthanc-plugins >> .env
+  echo DOCKER_IMAGE=osimis/orthanc >> .env
   echo ORTHANC_CONFIG_FILE=orthanc.json >> .env
 fi
 runuser -l ec2-user -c "
