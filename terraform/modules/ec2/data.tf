@@ -35,8 +35,8 @@ data "aws_subnet" "public_subnet" {
   id = var.public_subnet_id
 }
 
-data "template_file" "myuserdata" {
-  template = file("${path.module}/myuserdata.tpl")
+data "template_file" "userdata2" {
+  template = file("${path.module}/userdata2.tpl")
   vars = {
     db_address  = data.aws_db_instance.postgres.address
     db_port     = data.aws_db_instance.postgres.port
@@ -45,6 +45,7 @@ data "template_file" "myuserdata" {
     sec_name    = data.aws_secretsmanager_secret.secretDB.name
     s3_bucket   = data.aws_s3_bucket.orthbucket.bucket
     s3_integration = var.s3_integration
+    orthanc_image_version = var.orthanc_image_ver
   }
 }
 
@@ -52,10 +53,14 @@ data "template_cloudinit_config" "orthconfig" {
   base64_encode = true
   part {
     content_type = "text/x-shellscript"
-    content      = data.template_file.myuserdata.rendered
+    content      = file("${path.module}/userdata1.sh")
   }
   part {
     content_type = "text/x-shellscript"
-    content      = file("${path.module}/custom_userdata.sh")
+    content      = data.template_file.userdata2.rendered
+  }
+  part {
+    content_type = "text/x-shellscript"
+    content      = file("${path.module}/userdata3.sh")
   }
 }

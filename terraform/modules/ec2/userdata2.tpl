@@ -1,30 +1,17 @@
 #! /bin/bash
-echo "Entering script myuserdata"
-yum update -y
-yum install postgresql docker git jq openssl11 -y
+echo "Entering userdata2 script"
 
-# Configure docker
-usermod -a -G docker ec2-user   
-# this allows non-root user to run docker cli command but only takes effect after current user session
-
-# Tell docker bridge to use a address pool than 172.17.x.x 
-cat << EOF > /etc/docker/daemon.json
-{
-  "default-address-pools":
-  [
-    {"base":"10.10.0.0/16","size":24}
-  ]
-}
-EOF
-
-systemctl restart docker
-chmod 666 /var/run/docker.sock
-
-
-# Configure docker-compose
-curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-
+# Load environment variable for docker compose
+cd /home/ec2-user/orthweb/app
+chown ec2-user:ec2-user .env
+echo DOCKER_IMAGE=osimis/orthanc:${orthanc_image_version} >> .env
+if ${s3_integration}; then
+  echo Orthanc configuration will index data in PostgreSQL and store image files in S3 bucket.
+  echo ORTHANC_CONFIG_FILE=orthanc_s3.json >> .env
+else
+  echo Orthanc configuration will index data and store image pixels in PostgreSQL.
+  echo ORTHANC_CONFIG_FILE=orthanc.json >> .env
+fi
 
 # Load app config
 echo "Pulling app configuration."
@@ -35,6 +22,5 @@ runuser -l ec2-user -c '(echo -n DB_USERNAME=;aws secretsmanager get-secret-valu
 runuser -l ec2-user -c '(echo -n DB_PASSWORD=;aws secretsmanager get-secret-value --secret-id ${sec_name} --query SecretString --output text --endpoint-url https://${sm_endpoint} | jq -r .password) >> .orthanc.env'
 runuser -l ec2-user -c '(echo -n S3_BUCKET=;echo ${s3_bucket}) >> .orthanc.env'
 runuser -l ec2-user -c '(echo -n S3_REGION=;echo ${aws_region}) >> .orthanc.env'
-runuser -l ec2-user -c 'if ${s3_integration}; then touch .s3_integration; fi'
 
-echo "Leaving script myuserdata"
+echo "Leaving userdata2 script"

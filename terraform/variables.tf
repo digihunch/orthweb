@@ -18,6 +18,10 @@ variable "UseS3Storage" {
   type = bool
   default = false
 }
+variable "OrthancImgVer" {
+  type = string
+  default = "22.11.3"
+}
 variable "cli_cidr_block" {
   type    = string
   default = "0.0.0.0/0"

@@ -9,14 +9,14 @@ We use Terraform to create infrastructure on AWS, including VPC, subnets, secret
 
 ## Use case
 
-Orthweb project demonstrates the idea of infrastructure-as-code, deployment automation and security configurations in compliance with HIPPA. It provisions just enough resources for demo, and it is not intended for production use. 
+Orthweb project demonstrates the idea of infrastructure-as-code, deployment automation and security configurations. It provisions just enough resources for demo, and it is not intended for production use. 
+
+How you can use this project depends on your role and goal.
 
 | You are | You have | How you provision infrastructure | How you install Orthanc |
 | ----------- | ----------- | --------- | ---------- |
 | Individual developer, tester or other party with interest | A single AWS account as sandbox | [Orthweb](https://github.com/digihunch/orthweb) project creates dedicated VPC and subnets with secure configuration | [Orthweb](https://github.com/digihunch/orthweb) project configures Orthanc installation automatically. |
-| Health organization, start-up or corporate | [Multiple AWS accounts](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html) for the organization | An infrastructure team configures landing zone with networks for multiple environments and ensures compliance. | An application Team configures Orthanc installation |
-
-Production use will require a compliant infrastructure environment as prerequisite.
+| Health organization, start-up or corporate | [Multiple AWS accounts](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html) for the organization | An infrastructure team configures landing zone with networks for multiple environments and ensures compliance. | An application Team configures Orthanc installation. This project serves as a reference implementation. |
 
 ## Prerequisite
 
@@ -201,18 +201,24 @@ aws s3 ls s3://bucket-name
 The bucket is not publicly assissible and is protected by bucket policy configured during resource provisioning.
 
 
-## Custom Orthanc image Builder
+## Options to store images
 
 The open-source Orthanc project does not include the plugin for storing images on S3 bucket. So I use custom Orthanc image based on [Osimis Orthanc image](https://hub.docker.com/r/osimis/orthanc), if S3 integration is turned on. 
 
 This project also includes the builder for Digi Hunch [custom Orthanc image](https://hub.docker.com/repository/docker/digihunch/orthanc) in the *build* directory. I use Github Action to build and push the image to my Docker registry. 
 
-The EC2 initialization script automatically apply the configuration for the Orthanc image and Orthanc.json files, based on whether UseS3Storage variable is set to true.
+The EC2 initialization script automatically apply the configuration for the Orthanc image and Orthanc.json files, based on whether `UseS3Storage` variable is set to true.
 
 
 ##  Architecture
 
-The architecture can be illustrated in the diagram below:
+Depending on the value of input variable `UseS3Storage`, the images can be stored in two places:
+|UseS3Storage| Data Index | Image Storage | 
+|---|---|---|
+| true | PostgreSQL | S3 bucket |
+| false | PostgreSQL | PostgreSQL |  
+
+The S3 bucket will be created regardlessly. If it stores images in S3 bucket, the architecture can be illustrated in the diagram below:
 
 ![Diagram](resources/Orthweb.png)
 

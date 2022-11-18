@@ -25,6 +25,9 @@ variable "s3_key_arn" {
 variable "ep_service_name" {
   type = string
 }
+variable "orthanc_image_ver" {
+  type = string
+}
 variable "s3_integration" {
   type = bool
   default = false
