@@ -4,6 +4,9 @@ variable "private_subnet1_id" {
 variable "private_subnet2_id" {
   type = string
 }
+variable "role_name" {
+  type = string
+}
 variable "resource_prefix" {
   type = string
 }

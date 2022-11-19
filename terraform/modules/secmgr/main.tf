@@ -20,6 +20,35 @@ EOF
   depends_on    = [aws_secretsmanager_secret.secretDB]
 }
 
+resource "aws_secretsmanager_secret_policy" "secretmgrSecretPolicy" {
+  secret_arn = aws_secretsmanager_secret.secretDB.arn
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Id = "${var.resource_prefix}-OrthSecretPolicy"
+    Statement = [
+      {
+        Sid = "RestrictGetSecretValueoperation"
+        Effect = "Deny"
+        Principal = "*"
+        Action = "secretsmanager:GetSecretValue"
+        Resource = [
+          aws_secretsmanager_secret.secretDB.arn
+        ]
+        Condition = {
+          StringNotLike = {
+            "aws:userId" = [
+              "${data.aws_iam_role.instance_role.unique_id}:*", # instance role
+              "${data.aws_caller_identity.current.account_id}", # root user
+              "${data.aws_caller_identity.current.user_id}"     # deployment user
+            ]
+          }
+        }
+      }
+    ]
+  })
+}
+
+
 resource "aws_security_group" "secmgrepsecgroup" {
   name        = "${var.resource_prefix}-secmgr_vpcep_sg"
   description = "security group for secret manager vpc endpoint"

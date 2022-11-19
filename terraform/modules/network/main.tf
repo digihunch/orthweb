@@ -69,12 +69,12 @@ resource "aws_main_route_table_association" "vpc_rt_assoc" {
 resource "aws_security_group" "s3_ep_secgroup" {
   name        = "${var.resource_prefix}-s3_vpcep_sg"
   description = "security group for S3 vpc endpoint"
-  vpc_id      = data.aws_vpc.mainVPC.id
+  vpc_id      = aws_vpc.orthmain.id
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = [data.aws_vpc.mainVPC.cidr_block]
+    cidr_blocks = [var.vpc_cidr_block]
   }
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-S3EndPointSecurityGroup" })
 }

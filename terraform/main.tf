@@ -21,6 +21,7 @@ module "secretmanager" {
   source            = "./modules/secmgr"
   private_subnet1_id = module.network.vpc_info.private_subnet1_id
   private_subnet2_id = module.network.vpc_info.private_subnet2_id
+  role_name       = module.iam_role.role_info.ec2_iam_role_name
   resource_tags     = var.Tags
   resource_prefix   = random_pet.prefix.id
 }
