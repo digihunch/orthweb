@@ -36,6 +36,11 @@ static_resources:
                 route:
                   cluster: service-https
                   timeout: 3s
+                  hash_policy:
+                    - header:
+                        header_name: Origin
+                    - connection_properties:
+                        source_ip: true
           http_filters:
           - name: envoy.filters.http.router
             typed_config:
@@ -59,6 +64,7 @@ static_resources:
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
           stat_prefix: downstream_cx_total
+          #hash_policy:
           access_log:
           - name: envoy.access_loggers.file
             typed_config:
@@ -80,7 +86,7 @@ static_resources:
   clusters:
   - name: service-https
     type: STRICT_DNS
-    lb_policy: ROUND_ROBIN
+    lb_policy: RING_HASH 
     load_assignment:
       cluster_name: service-https
       endpoints:
@@ -111,7 +117,7 @@ static_resources:
             value: Basic b3J0aGFuYzpvcnRoYW5j
   - name: service-dicomtls
     type: STRICT_DNS
-    lb_policy: ROUND_ROBIN
+    lb_policy: RING_HASH 
     load_assignment:
       cluster_name: service-dicomtls
       endpoints:
