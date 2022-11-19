@@ -3,7 +3,7 @@ echo "Entering userdata1 script"
 yum update -y
 yum install postgresql docker git jq openssl11 -y
 
-# Configure docker
+## Configure Docker daemon
 usermod -a -G docker ec2-user   
 # this allows non-root user to run docker cli command but only takes effect after current user session
 
@@ -20,11 +20,19 @@ EOF
 systemctl restart docker
 chmod 666 /var/run/docker.sock
 
-# Configure docker-compose
+## Configure Docker Compose
 curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 
-# configure self-signed certificate
+## Create new user
+groupadd -g 101 envoy
+useradd envoy -u 101 -g 101 -m
+runuser -l envoy -c "
+  setfacl -m u:ec2-user:rx /home/envoy
+"
+# we create a directroy on host with owner's uid/gid identical to the uid/gid of main process in envoy container. This will allow us to map host directory for container to write logs to a host directory (in addition to stdout). We also set ACL to allow ec2-user on the host to read/execute in envoy user's directory, for the convenience of ec2-user.
+
+## configure self-signed certificate
 ComName=`curl -s http://169.254.169.254/latest/meta-data/public-hostname|cut -d. -f2-`
 openssl11 req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/private.key -out /tmp/certificate.crt -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ComName/emailAddress=info@digihunch.com -addext extendedKeyUsage=serverAuth -addext subjectAltName=DNS:orthweb.digihunch.com,DNS:$ComName
 

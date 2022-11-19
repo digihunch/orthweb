@@ -2,11 +2,7 @@ version: "3.8"
 services:
   orthanc-backend:
     image: $DOCKER_IMAGE_ORTHANC
-    # container_name: orthanc # Do not set container_name when replicas is more than 1.
     command: /run/secrets/    # Path to the configuration files (stored as secrets)
-    # ports:                  # No need to expose orthanc ports to host because Envoy will be directing traffic
-    #  - 4242:4242
-    #  - 8042:8042
     env_file:
       - /home/ec2-user/.orthanc.env
     secrets:
@@ -23,11 +19,8 @@ services:
       - orthnet
     extra_hosts:
       - host.docker.internal:host-gateway
-   # healthcheck:  # TODO: re-implement health check in Envoy for mutliple replica
-   #   test: "wget --header='Authorization: Basic b3J0aGFuYzpvcnRoYW5j' https://127.0.0.1:8042/app/explorer.html --no-check-certificate || exit 1"
-   #   interval: 60s
-   #   retries: 3
-   #   start_period: 15s
+    healthcheck:
+      disable: true  # Healthcheck is driven by Envoy, see envoy.yaml for healthcheck configuration
   envoy-proxy:
     image: $DOCKER_IMAGE_ENVOY 
     container_name: envoy
@@ -44,6 +37,7 @@ services:
     volumes:
       - ./envoy.yaml:/etc/envoy/envoy.yaml
       - ./$SITE_KEY_CERT_FILE:/etc/ssl/certs/site.pem
+      - /home/envoy:/home/envoy
     networks:
       - orthnet
 secrets:
