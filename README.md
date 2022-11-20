@@ -5,7 +5,9 @@
 
  **[Orthweb](https://github.com/digihunch/orthweb)** helps Orthanc administrators deploy **[Orthanc](https://www.orthanc-server.com/)** on AWS. Bring your own AWS account, this project will automatically set up the Orthanc server ready to serve both HTTP and DICOM traffic.
 
-With Orthanc shipped in Docker container, the **[Orthweb](https://github.com/digihunch/orthweb)** project orchestrates numerous underlying cloud resources from AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) with an opinionated and consistent configuration towards end-to-end automation, high availability and best-effort security.
+With Orthanc shipped in Docker container, the **[Orthweb](https://github.com/digihunch/orthweb)** project orchestrates numerous underlying cloud resources from AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) with an opinionated and consistent configuration towards end-to-end automation, high availability and best-effort security. **Orthweb** also provides scaling high availability.
+
+For administrators with Kubernetes skills and complex use cases , Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb) exemplifies Orthanc deployment on Kubernetes.
 
 ## Use case
 
@@ -225,7 +227,7 @@ The bucket is not publicly assissible and is protected by bucket policy configur
 
 ##  Architecture
 
-Orthweb uses Docker Compose to orchestrate multiple Orthanc containers along with an Envoy proxy container. I did not choose ECS due to a [limitation](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) and concerns with platform lock-in. This is sufficient for typical Orthanc workload, although many raises the question about hosting on Kubernetes. For that, Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb) helps administrators deploy Orthanc on Kubernetes.
+Orthweb uses Docker Compose to orchestrate multiple Orthanc containers along with an Envoy proxy container. I did not choose ECS due to a [limitation](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) and concerns with platform lock-in. To scale up, you may increase the number of replica for Orthanc containers. This scaling model is sufficient for typical Orthanc workload. 
 
 The Orthweb architecture can be illustrated in the diagram below:
 
