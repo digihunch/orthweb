@@ -27,19 +27,25 @@ data "aws_secretsmanager_secret" "secretDB" {
 }
 
 data "aws_vpc_endpoint" "secmgr" {
-  vpc_id       = data.aws_subnet.public_subnet.vpc_id
-  service_name = var.secret_ep_service_name
+  vpc_id       = var.vpc_config.vpc_id
+  service_name = var.vpc_config.secret_ep_service_name
 }
 
 data "aws_vpc_endpoint" "s3" {
-  vpc_id       = data.aws_subnet.public_subnet.vpc_id
-  service_name = var.s3_ep_service_name
+  vpc_id       = var.vpc_config.vpc_id
+  service_name = var.vpc_config.s3_ep_service_name
 }
 
-data "aws_subnet" "public_subnet" {
-  id = var.public_subnet_id
+data "aws_eip" "orthweb_eip" {
+  id = var.vpc_config.floating_eip_allocation_id
 }
 
+data "aws_eip" "public1_eip" {
+  id = var.vpc_config.public1_eip_allocation_id
+}
+data "aws_eip" "public2_eip" {
+  id = var.vpc_config.public2_eip_allocation_id
+}
 data "template_file" "userdata2" {
   template = file("${path.module}/userdata2.tpl")
   vars = {
@@ -52,6 +58,7 @@ data "template_file" "userdata2" {
     s3_bucket   = data.aws_s3_bucket.orthbucket.bucket
     orthanc_image = var.docker_images.OrthancImg
     envoy_image = var.docker_images.EnvoyImg
+    floating_eip_dns = data.aws_eip.orthweb_eip.public_dns
   }
 }
 

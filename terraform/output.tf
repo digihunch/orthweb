@@ -1,9 +1,12 @@
-output "hostinfo" {
-  value = "ec2-user@${module.ec2.bastion_info.public_dns}"
+output "primary_host" {
+  value = "ec2-user@${module.ec2.primary_host_info.public_dns} (SSH)"
 }
-output "dbinfo" {
-  value = module.database.db_info.db_endpoint
+output "site_address" {
+  value = "${module.ec2.eip_info.eip_dns} (HTTPS and DICOM TLS)"
 }
-output "s3bucket" {
-  value = module.storage.s3_info.bucket_domain_name
+output "db_endpoint" {
+  value = "${module.database.db_info.db_endpoint} (private access)"
+}
+output "s3_bucket" {
+  value = "${module.storage.s3_info.bucket_domain_name} (private access)"
 }

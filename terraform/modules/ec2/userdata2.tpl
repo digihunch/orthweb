@@ -22,4 +22,5 @@ runuser -l ec2-user -c '(echo -n S3_ENDPOINT=;echo ${s3_endpoint} | sed "s/^*/bu
 runuser -l ec2-user -c '(echo -n S3_BUCKET=;echo ${s3_bucket}) >> .orthanc.env'
 runuser -l ec2-user -c '(echo -n S3_REGION=;echo ${aws_region}) >> .orthanc.env'
 
+echo "Site will be available as ${floating_eip_dns}"
 echo "Leaving userdata2 script"

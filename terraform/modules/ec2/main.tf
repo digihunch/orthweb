@@ -3,24 +3,29 @@ resource "aws_key_pair" "runner-pubkey" {
   public_key = var.public_key
 }
 
-resource "aws_security_group" "orthsecgrp" {
-  name        = "${var.resource_prefix}-orth_sg"
-  description = "security group for orthanc"
-  vpc_id      = data.aws_subnet.public_subnet.vpc_id
-
-  ingress {
-    description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.ssh_client_cidr_block]
-  }
+resource "aws_security_group" "ec2-secgrp" {
+  name        = "${var.resource_prefix}-ec2-sg"
+  description = "security group for ec2 instance"
+  vpc_id      = var.vpc_config.vpc_id
   ingress {
     from_port   = 8
     to_port     = 0
     protocol    = "icmp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-EC2SecurityGroup" })
+}
+
+resource "aws_security_group" "business-traffic-secgrp" {
+  name        = "${var.resource_prefix}-business-traffic-sg"
+  description = "security group for business traffic"
+  vpc_id      = var.vpc_config.vpc_id
   ingress {
     description = "Orthanc Web Portal"
     from_port   = 443
@@ -35,13 +40,21 @@ resource "aws_security_group" "orthsecgrp" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-BusinessTrafficSecurityGroup" })
+}
+
+resource "aws_security_group" "management-traffic-secgrp" {
+  name        = "${var.resource_prefix}-management-traffic-sg"
+  description = "security group for management traffic"
+  vpc_id      = var.vpc_config.vpc_id
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.ssh_client_cidr_block]
   }
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-WorkloadSecurityGroup" })
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-ManagementTrafficSecurityGroup" })
 }
 
 resource "aws_iam_instance_profile" "inst_profile" {
@@ -122,14 +135,44 @@ resource "aws_iam_role_policy" "s3_access_policy" {
 EOF
 }
 
-resource "aws_instance" "orthweb" {
+resource "aws_network_interface" "primary_management" {
+  subnet_id       = var.vpc_config.public_subnet1_id 
+  security_groups = [aws_security_group.ec2-secgrp.id,aws_security_group.management-traffic-secgrp.id]
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Management-Interface" })
+  depends_on = [aws_security_group.ec2-secgrp,aws_security_group.management-traffic-secgrp]
+}
+
+resource "aws_network_interface" "primary_business" {
+  subnet_id         = var.vpc_config.public_subnet1_id 
+  security_groups   = [aws_security_group.ec2-secgrp.id,aws_security_group.business-traffic-secgrp.id]
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Business-Interface" })
+  depends_on = [aws_security_group.ec2-secgrp,aws_security_group.business-traffic-secgrp]
+}
+
+resource "aws_instance" "orthweb_primary" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t2.medium"
   user_data              = data.template_cloudinit_config.orthconfig.rendered
   key_name               = aws_key_pair.runner-pubkey.key_name
-  vpc_security_group_ids = [aws_security_group.orthsecgrp.id]
-  subnet_id              = var.public_subnet_id
+
+  # Do not change the order of IP association
+  network_interface {
+    device_index = 0  # Docker daemon binds container process to eth0 by default. 
+    network_interface_id = aws_network_interface.primary_business.id
+  }
+  network_interface {
+    device_index = 1 # sshd binds to all interfaces by default.
+    network_interface_id = aws_network_interface.primary_management.id
+  }
   iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
-  tags                   = merge(var.resource_tags, { Name = "${var.resource_prefix}-EC2-Instance" })
+  tags                   = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Instance" })
 }
 
+resource "aws_eip_association" "public1_eip_assoc" {
+  allocation_id = data.aws_eip.public1_eip.id
+  network_interface_id = aws_network_interface.primary_management.id
+}
+resource "aws_eip_association" "floating_eip_assoc" {
+  allocation_id = data.aws_eip.orthweb_eip.id
+  network_interface_id = aws_network_interface.primary_business.id
+}

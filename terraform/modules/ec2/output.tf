@@ -1,5 +1,10 @@
-output "bastion_info" {
+output "primary_host_info" {
   value = {
-    public_dns = aws_instance.orthweb.public_dns
+    public_dns = data.aws_eip.public1_eip.public_dns 
+  }
+}
+output "eip_info" {
+  value = {
+    eip_dns = data.aws_eip.orthweb_eip.public_dns
   }
 }

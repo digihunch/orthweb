@@ -31,17 +31,17 @@ module "database" {
   private_subnet1_id = module.network.vpc_info.private_subnet1_id
   private_subnet2_id = module.network.vpc_info.private_subnet2_id
   db_secret_id       = module.secretmanager.secret_info.db_secret_id
-  depends_on         = [module.secretmanager]
   resource_tags      = var.Tags
   resource_prefix    = random_pet.prefix.id
+  depends_on         = [module.secretmanager]
 }
 
 module "storage" {
   source          = "./modules/storage"
   role_name       = module.iam_role.role_info.ec2_iam_role_name
-  depends_on      = [module.iam_role]
   resource_tags   = var.Tags
   resource_prefix = random_pet.prefix.id
+  depends_on      = [module.iam_role]
 }
 
 module "ec2" {
@@ -53,11 +53,18 @@ module "ec2" {
   s3_bucket_name   = module.storage.s3_info.bucket_name
   db_secret_arn    = module.secretmanager.secret_info.db_secret_arn
   s3_key_arn       = module.storage.s3_info.key_arn
-  secret_ep_service_name  = module.secretmanager.secret_info.ep_service_name
-  public_subnet_id = module.network.vpc_info.public_subnet1_id
-  s3_ep_service_name = module.network.vpc_info.s3_vpc_ep_service_name
+  vpc_config = {
+    vpc_id = module.network.vpc_info.vpc_id
+    public_subnet1_id = module.network.vpc_info.public_subnet1_id
+    public_subnet2_id = module.network.vpc_info.public_subnet2_id
+    s3_ep_service_name = module.network.vpc_info.s3_vpc_ep_service_name
+    secret_ep_service_name  = module.secretmanager.secret_info.ep_service_name
+    floating_eip_allocation_id = module.network.eip_info.floating_allocation_id
+    public1_eip_allocation_id = module.network.eip_info.public1_allocation_id
+    public2_eip_allocation_id = module.network.eip_info.public2_allocation_id
+  }
   docker_images = var.DockerImages
-  depends_on       = [module.iam_role, module.database, module.storage, module.network]
   resource_tags    = var.Tags
   resource_prefix  = random_pet.prefix.id
+  depends_on       = [module.iam_role, module.database, module.storage, module.network]
 }

@@ -7,7 +7,7 @@ yum install postgresql docker git jq openssl11 -y
 usermod -a -G docker ec2-user   
 # this allows non-root user to run docker cli command but only takes effect after current user session
 
-# Tell docker bridge to use a address pool than 172.17.x.x 
+# Tell docker bridge to use an address pool other than 172.17.x.x, which is in conflict with our VPC's CIDR
 cat << EOF > /etc/docker/daemon.json
 {
   "default-address-pools":
@@ -24,7 +24,7 @@ chmod 666 /var/run/docker.sock
 curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 
-## Create new user
+## Create new user in line with the envoy user in envoy proxy's image
 groupadd -g 101 envoy
 useradd envoy -u 101 -g 101 -m
 runuser -l envoy -c "
@@ -32,7 +32,7 @@ runuser -l envoy -c "
 "
 # we create a directroy on host with owner's uid/gid identical to the uid/gid of main process in envoy container. This will allow us to map host directory for container to write logs to a host directory (in addition to stdout). We also set ACL to allow ec2-user on the host to read/execute in envoy user's directory, for the convenience of ec2-user.
 
-## configure self-signed certificate
+## configure self-signed certificate for compute-1.amazonaws.com
 ComName=`curl -s http://169.254.169.254/latest/meta-data/public-hostname|cut -d. -f2-`
 openssl11 req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/private.key -out /tmp/certificate.crt -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ComName/emailAddress=info@digihunch.com -addext extendedKeyUsage=serverAuth -addext subjectAltName=DNS:orthweb.digihunch.com,DNS:$ComName
 

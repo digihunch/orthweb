@@ -89,3 +89,15 @@ resource "aws_vpc_endpoint" "s3_ep" {
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-EndPointForS3" })
 }
 
+resource "aws_eip" "public1_eip" {
+  vpc = true
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Public1-EIP" })
+}
+resource "aws_eip" "public2_eip" {
+  vpc = true
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Public2-EIP" })
+}
+resource "aws_eip" "orthweb_eip" {
+  vpc = true
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Floating-EIP" })
+}

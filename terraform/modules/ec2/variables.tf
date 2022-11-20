@@ -4,8 +4,20 @@ variable "public_key" {
 variable "ssh_client_cidr_block" {
   type = string
 }
-variable "public_subnet_id" {
-  type = string
+
+variable "vpc_config" {
+  description = "VPC configuration"
+  type = map(any)
+  default = {
+    vpc_id = null
+    public_subnet1_id = null 
+    public_subnet2_id = null 
+    secret_ep_service_name = null
+    s3_ep_service_name = null
+    floating_eip_allocation_id = null
+    public1_eip_allocation_id = null 
+    public2_eip_allocation_id = null
+  }
 }
 variable "db_instance_id" {
   type = string
@@ -20,12 +32,6 @@ variable "db_secret_arn" {
   type = string
 }
 variable "s3_key_arn" {
-  type = string
-}
-variable "secret_ep_service_name" {
-  type = string
-}
-variable "s3_ep_service_name" {
   type = string
 }
 variable "docker_images" {
