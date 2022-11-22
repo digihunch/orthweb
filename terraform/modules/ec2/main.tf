@@ -176,3 +176,44 @@ resource "aws_eip_association" "floating_eip_assoc" {
   allocation_id = data.aws_eip.orthweb_eip.id
   network_interface_id = aws_network_interface.primary_business.id
 }
+
+
+## secondary instance
+resource "aws_network_interface" "secondary_management" {
+  subnet_id       = var.vpc_config.public_subnet2_id 
+  security_groups = [aws_security_group.ec2-secgrp.id,aws_security_group.management-traffic-secgrp.id]
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Management-Interface" })
+  depends_on = [aws_security_group.ec2-secgrp,aws_security_group.management-traffic-secgrp]
+}
+
+resource "aws_network_interface" "secondary_business" {
+  subnet_id         = var.vpc_config.public_subnet2_id 
+  security_groups   = [aws_security_group.ec2-secgrp.id,aws_security_group.business-traffic-secgrp.id]
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Business-Interface" })
+  depends_on = [aws_security_group.ec2-secgrp,aws_security_group.business-traffic-secgrp]
+}
+
+resource "aws_instance" "orthweb_secondary" {
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t2.medium"
+  user_data              = data.template_cloudinit_config.orthconfig.rendered
+  key_name               = aws_key_pair.runner-pubkey.key_name
+
+  # Do not change the order of IP association
+  network_interface {
+    device_index = 0  # Docker daemon binds container process to eth0 by default. 
+    network_interface_id = aws_network_interface.secondary_business.id
+  }
+  network_interface {
+    device_index = 1 # sshd binds to all interfaces by default.
+    network_interface_id = aws_network_interface.secondary_management.id
+  }
+  iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
+  tags                   = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Instance" })
+}
+
+resource "aws_eip_association" "public2_eip_assoc" {
+  allocation_id = data.aws_eip.public2_eip.id
+  network_interface_id = aws_network_interface.secondary_management.id
+}
+
