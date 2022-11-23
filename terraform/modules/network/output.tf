@@ -11,8 +11,6 @@ output "vpc_info" {
 
 output "eip_info" {
   value = {
-    public1_allocation_id = aws_eip.public1_eip.allocation_id 
-    public2_allocation_id = aws_eip.public2_eip.allocation_id 
     floating_allocation_id = aws_eip.orthweb_eip.allocation_id 
   }
 }

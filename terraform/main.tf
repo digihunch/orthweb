@@ -59,9 +59,9 @@ module "ec2" {
     public_subnet2_id = module.network.vpc_info.public_subnet2_id
     s3_ep_service_name = module.network.vpc_info.s3_vpc_ep_service_name
     secret_ep_service_name  = module.secretmanager.secret_info.ep_service_name
-    floating_eip_allocation_id = module.network.eip_info.floating_allocation_id
-    public1_eip_allocation_id = module.network.eip_info.public1_allocation_id
-    public2_eip_allocation_id = module.network.eip_info.public2_allocation_id
+    eip_allocation_id = module.network.eip_info.floating_allocation_id
+#    public1_eip_allocation_id = module.network.eip_info.public1_allocation_id
+#    public2_eip_allocation_id = module.network.eip_info.public2_allocation_id
   }
   docker_images = var.DockerImages
   resource_tags    = var.Tags

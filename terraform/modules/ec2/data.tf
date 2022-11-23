@@ -37,15 +37,9 @@ data "aws_vpc_endpoint" "s3" {
 }
 
 data "aws_eip" "orthweb_eip" {
-  id = var.vpc_config.floating_eip_allocation_id
+  id = var.vpc_config.eip_allocation_id
 }
 
-data "aws_eip" "public1_eip" {
-  id = var.vpc_config.public1_eip_allocation_id
-}
-data "aws_eip" "public2_eip" {
-  id = var.vpc_config.public2_eip_allocation_id
-}
 data "template_file" "userdata2" {
   template = file("${path.module}/userdata2.tpl")
   vars = {

@@ -33,7 +33,7 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_DockerImages"></a> [DockerImages](#input\_DockerImages) | Docker Images | `map(any)` | <pre>{<br>  "EnvoyImg": "envoyproxy/envoy:v1.21-latest",<br>  "OrthancImg": "osimis/orthanc:22.11.3"<br>}</pre> | no |
+| <a name="input_DockerImages"></a> [DockerImages](#input\_DockerImages) | Docker Images | `map(any)` | <pre>{<br>  "EnvoyImg": "envoyproxy/envoy:v1.22.5",<br>  "OrthancImg": "osimis/orthanc:22.11.3"<br>}</pre> | no |
 | <a name="input_Tags"></a> [Tags](#input\_Tags) | Tags for every resource. | `map(any)` | <pre>{<br>  "Environment": "Dev",<br>  "Owner": "my@email.com"<br>}</pre> | no |
 | <a name="input_cli_cidr_block"></a> [cli\_cidr\_block](#input\_cli\_cidr\_block) | n/a | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_pubkey_data"></a> [pubkey\_data](#input\_pubkey\_data) | n/a | `string` | `null` | no |
@@ -43,6 +43,7 @@
 
 | Name | Description |
 |------|-------------|
-| <a name="output_dbinfo"></a> [dbinfo](#output\_dbinfo) | n/a |
-| <a name="output_hostinfo"></a> [hostinfo](#output\_hostinfo) | n/a |
-| <a name="output_s3bucket"></a> [s3bucket](#output\_s3bucket) | n/a |
+| <a name="output_db_endpoint"></a> [db\_endpoint](#output\_db\_endpoint) | n/a |
+| <a name="output_host_info"></a> [host\_info](#output\_host\_info) | n/a |
+| <a name="output_s3_bucket"></a> [s3\_bucket](#output\_s3\_bucket) | n/a |
+| <a name="output_site_address"></a> [site\_address](#output\_site\_address) | n/a |

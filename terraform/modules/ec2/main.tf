@@ -1,4 +1,5 @@
 resource "aws_key_pair" "runner-pubkey" {
+  count = (var.public_key == "") ? 0 : 1 
   key_name   = "${var.resource_prefix}-runner-pubkey"
   public_key = var.public_key
 }
@@ -41,20 +42,6 @@ resource "aws_security_group" "business-traffic-secgrp" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-BusinessTrafficSecurityGroup" })
-}
-
-resource "aws_security_group" "management-traffic-secgrp" {
-  name        = "${var.resource_prefix}-management-traffic-sg"
-  description = "security group for management traffic"
-  vpc_id      = var.vpc_config.vpc_id
-  ingress {
-    description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.ssh_client_cidr_block]
-  }
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-ManagementTrafficSecurityGroup" })
 }
 
 resource "aws_iam_instance_profile" "inst_profile" {
@@ -135,14 +122,7 @@ resource "aws_iam_role_policy" "s3_access_policy" {
 EOF
 }
 
-resource "aws_network_interface" "primary_management" {
-  subnet_id       = var.vpc_config.public_subnet1_id 
-  security_groups = [aws_security_group.ec2-secgrp.id,aws_security_group.management-traffic-secgrp.id]
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Management-Interface" })
-  depends_on = [aws_security_group.ec2-secgrp,aws_security_group.management-traffic-secgrp]
-}
-
-resource "aws_network_interface" "primary_business" {
+resource "aws_network_interface" "primary_nic" {
   subnet_id         = var.vpc_config.public_subnet1_id 
   security_groups   = [aws_security_group.ec2-secgrp.id,aws_security_group.business-traffic-secgrp.id]
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Business-Interface" })
@@ -153,40 +133,24 @@ resource "aws_instance" "orthweb_primary" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t2.medium"
   user_data              = data.template_cloudinit_config.orthconfig.rendered
-  key_name               = aws_key_pair.runner-pubkey.key_name
+  key_name               = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
 
-  # Do not change the order of IP association
   network_interface {
-    device_index = 0  # Docker daemon binds container process to eth0 by default. 
-    network_interface_id = aws_network_interface.primary_business.id
+    device_index = 0
+    network_interface_id = aws_network_interface.primary_nic.id
   }
-  network_interface {
-    device_index = 1 # sshd binds to all interfaces by default.
-    network_interface_id = aws_network_interface.primary_management.id
-  }
+
   iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
   tags                   = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Instance" })
 }
 
-resource "aws_eip_association" "public1_eip_assoc" {
-  allocation_id = data.aws_eip.public1_eip.id
-  network_interface_id = aws_network_interface.primary_management.id
-}
 resource "aws_eip_association" "floating_eip_assoc" {
   allocation_id = data.aws_eip.orthweb_eip.id
-  network_interface_id = aws_network_interface.primary_business.id
+  network_interface_id = aws_network_interface.primary_nic.id
 }
-
 
 ## secondary instance
-resource "aws_network_interface" "secondary_management" {
-  subnet_id       = var.vpc_config.public_subnet2_id 
-  security_groups = [aws_security_group.ec2-secgrp.id,aws_security_group.management-traffic-secgrp.id]
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Management-Interface" })
-  depends_on = [aws_security_group.ec2-secgrp,aws_security_group.management-traffic-secgrp]
-}
-
-resource "aws_network_interface" "secondary_business" {
+resource "aws_network_interface" "secondary_nic" {
   subnet_id         = var.vpc_config.public_subnet2_id 
   security_groups   = [aws_security_group.ec2-secgrp.id,aws_security_group.business-traffic-secgrp.id]
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Business-Interface" })
@@ -197,23 +161,13 @@ resource "aws_instance" "orthweb_secondary" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t2.medium"
   user_data              = data.template_cloudinit_config.orthconfig.rendered
-  key_name               = aws_key_pair.runner-pubkey.key_name
+  key_name               = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
 
-  # Do not change the order of IP association
   network_interface {
-    device_index = 0  # Docker daemon binds container process to eth0 by default. 
-    network_interface_id = aws_network_interface.secondary_business.id
-  }
-  network_interface {
-    device_index = 1 # sshd binds to all interfaces by default.
-    network_interface_id = aws_network_interface.secondary_management.id
+    device_index = 0
+    network_interface_id = aws_network_interface.secondary_nic.id
   }
   iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
   tags                   = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Instance" })
-}
-
-resource "aws_eip_association" "public2_eip_assoc" {
-  allocation_id = data.aws_eip.public2_eip.id
-  network_interface_id = aws_network_interface.secondary_management.id
 }
 

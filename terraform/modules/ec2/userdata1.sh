@@ -1,7 +1,9 @@
 #! /bin/bash
 echo "Entering userdata1 script"
+## Install required packages and SSM agent.
 yum update -y
 yum install postgresql docker git jq openssl11 -y
+sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
 
 ## Configure Docker daemon
 usermod -a -G docker ec2-user   

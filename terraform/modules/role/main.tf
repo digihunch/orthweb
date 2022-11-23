@@ -18,6 +18,10 @@ resource "aws_iam_role" "ec2_iam_role" {
   ]
 }
 EOF
-
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-IAMRole" })
+}
+
+resource "aws_iam_role_policy_attachment" "ec2-iam-role-ssm-policy-attach" {
+  role       = aws_iam_role.ec2_iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore" 
 }
