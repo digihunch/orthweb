@@ -9,22 +9,29 @@ With Orthanc application shipped in Docker container, the **[Orthweb](https://gi
 
 ## Use case
 
-**Orthweb** demonstrates the idea of infrastructure-as-code, deployment automation and security options to host **Orthanc**. It is however not intended for production. How you can benefit from **Orthweb** depends on your role and goal.
+**Orthweb** demonstrates the idea of infrastructure-as-code, deployment automation and security options to host **Orthanc**. It is however not intended for production. 
+
+<details><summary>How you can benefit from Orthweb depends on your role and goal </summary>
+<p>
 
 | Your role and goal | How you provision infrastructure for Orthanc | How you install Orthanc |
 | ----------- | --------- | ---------- |
 | You are a developer, sales, doctor, student, etc. You have your own AWS account, and just want to check out Orthanc website in 15 minutes.| [Orthweb](https://github.com/digihunch/orthweb) project creates its own networking and security layer. | [Orthweb](https://github.com/digihunch/orthweb) project installs Orthanc automatically. |
 | You are a healthcare organization, start-up or corporate. Your organization has established [Multiple AWS accounts](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html) and networking. You want to configure Orthanc in a compliant environment for production. | The infrastructure team configures [landing zone](https://docs.aws.amazon.com/prescriptive-guidance/latest/migration-aws-environment/understanding-landing-zones.html) with secure and compliant networking foundation. | The application team configures Orthanc installation, taking [Orthweb](https://github.com/digihunch/orthweb) as a reference. |
 
-For those with Kubernetes skills and complex use cases, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb) for deployment on Kubernetes.
 
+</p>
+</details>
+
+For those with Kubernetes skills and complex use cases, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb) for deployment on Kubernetes.
 
 Follow the rest of this hands-on guide to understand how **Orthweb** works. Skip to the end of the guide for architecture.
 
 ## Prerequisite
 Whether on Linux, Mac or Windows, you need a command terminal to start deployment.
-<details><summary>Required tools</summary>
+<details><summary>Expand for required tools</summary>
 <p>
+
 * Make sure **[awscli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)** is installed and [configured](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure) so you can connect to your AWS account with as your IAM user (using `Access Key ID` and `Secret Access Key` with administrator privilege). If you will need to SSH to the EC2 instance, you also need to install [session manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html);
 * Make sure **Terraform CLI** is [installed](https://learn.hashicorp.com/tutorials/terraform/install-cli). In the Orthweb template, Terraform also uses your IAM credential to [authenticate into AWS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#shared-credentials-file). 
 </p>
@@ -32,33 +39,69 @@ Whether on Linux, Mac or Windows, you need a command terminal to start deploymen
 The guide is based on local execution of Terraform commands from MacBook. However, the project can be easily adjusted to work on Windows or even from managed Terraform environment (e.g. Scalr, Terraform Cloud). 
 
 ## Preparation
-If you already have your own RSA key pair for SSH, or your role does not involve administering the EC2 instance, skip the rest of this section. This section covers the environment variables needed prior to running Terraform command. 
+If you need to inspect or troubleshoot the Orthanc deployment, you will need to take the preparatory steps here. Otherwise, you can skip to the next section.
+
+In this section, we set Terraform input variable to facilitate troubleshooting.
 
 ### Secure SSH access
-For server administration, you connect to the EC2 instance over SSH. This project mandates [RSA key](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html) authentication, and optionally restricts SSH client IP address.
+There are two ways to SSH to the EC2 instances. To Use your own choice of command console from your computer. In this case, you must configure your [RSA key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html) on the EC2 instances.
 
-#### RSA key pair for SSH authentication
-You need to [create your RSA key pair](https://help.dreamhost.com/hc/en-us/articles/115001736671-Creating-a-new-Key-pair-in-Mac-OS-X-or-Linux). Your public key will be stored as file `~/.ssh/id_rsa.pub` on MacOS or Linux by default. No action is needed if you use default public key location. Orthweb terraform template picks up the file at default path. When provisioning the EC2 instance later, it will tell the server to whitelist this public key. 
+<details><summary>Configure RSA key pair for SSH authentication </summary>
+<p>
 
-If your public key is kept in a non-default file location, you can provide path to public key file in environment variable `TF_VAR_pubkey_path`. If you want to just pass in the public key value, you can provide public key data in the `TF_VAR_pubkey_data` environment variable:
+You need to [create your RSA key pair](https://help.dreamhost.com/hc/en-us/articles/115001736671-Creating-a-new-Key-pair-in-Mac-OS-X-or-Linux). Your public key will be stored as file `~/.ssh/id_rsa.pub` on MacOS or Linux by default. Here is how the template determines what to send to EC2 as authorized public key:
+
+1. If you specify public key data in the input variable `pubkey_data`, then it will added as authorized public key when the EC2 instances are created.
+2. If `pubkey_data` is not specified, then it looks for the file path specified in input variable `pubkey_path` for public key
+3. If `pubkey_path` is not specified, then it uses default public key path `~/.ssh/id_rsa.pub` and pass the public key
+4. If no file is found at the default public key path, then the template will not send a public key. The EC2 instances to be provisioned will not have an authorized public key. Your only option to SSH to the instance is using AWS web console.
+
+Terraform template picks up environment variable prefixed with `TF_VAR_` and pass them in as Terraform's [input variable](https://developer.hashicorp.com/terraform/language/values/variables#environment-variables) without the prefix in the name. For example, if you set environment as below before running `terraform init`, then Terraform will pick up the value for input variables `pubkey_data` and `pubkey_path`:
 ```sh
-export TF_VAR_pubkey_data="mockpublickeydatawhichissuperlongdonotputyourprivatekeyherepleaseabcxyzpubkklsss"
+export
+TF_VAR_pubkey_data="mockpublickeydatawhichissuperlongdonotputyourprivatekeyherepleaseabcxyzpubkklsss"
+TF_VAR_pubkey_path="/tmp/mykey.pub"
 ```
-Terraform template picks up environment variable prefixed with `TF_VAR_` and pass them in as Terraform's [input variable](https://developer.hashicorp.com/terraform/language/values/variables#environment-variables) without the prefix in the name.
 
-#### Limiting SSH client IP
-Many admins prefers to restrict access to EC2 instance from a specific range of IP addresses. You can leverage the `cli_cidr_block` variable in Orthweb Terraform template. For example, if you want your public IP the only IP to SSH to the EC2 instances, set environment variable with the following CIDR expression:
+Your SSH client works in tandem with session-manager-plugin. You can add the following section to your local SSH configuration file (i.e. `~/.ssh/config`) so it allows the session manager proxies the SSH session for hostnames matching `i-*` and `mi-*`.
 
-> export TF_VAR_cli_cidr_block=$(curl http://checkip.amazonaws.com)/32
+```
+host i-* mi-*
+    ProxyCommand sh -c "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"
+    IdentityFile ~/.ssh/id_rsa
+    User ec2-user
+```
+Then you will be able to directly ssh to an instance by its instance ID, even if the instance does not have a public IP. It will use Linux user `ec2-user`, which as the authorized public key pre-loaded.
 
-Note that if this variable not provided, it defaults to `0.0.0.0/0`, which opens the server's SSH port on the Internet.
+</p>
+</details>
+
+Alternatively, you can use the web-based command console. 
+
+<details><summary>Steps to connect using System Manager </summary>
+<p>
+
+Log on to AWS console, from `AWS System Manager` in your region, on the lef-hand pannel, under `Node Management`, select `Fleet Manager`. You should see your instances listed. Select the Node by the name, select `Node actions` and then `Start terminal session` (under `Connect`). It will take you to a web-based command console and logged in as `ssm-user`. You can switch to our `ec2-user` with sudo commands:
+```bash
+sh-4.2$ sudo -s
+[root@ip-172-27-3-138 bin]# su - ec2-user
+Last login: Wed Nov 23 22:02:57 UTC 2022 from localhost on pts/0
+[ec2-user@ip-172-27-3-138 ~]$
+```
+</p>
+</details>
+
+Using system manager does not require preparing an RSA key pair for SSH session.
 
 ### Customize Docker Image
-The Orthweb Terraform template comes with working default values for Docker Images. You may override it with your own choice of image or version by declaring environment variable `TF_VAR_DockerImages`.
+The Orthweb Terraform template comes with working default values for Docker Images. If you ever need to use your own container image, you may override it by declaring environment variable `TF_VAR_DockerImages`.
 
 ## Deployment
 
 Now we can start deploying Orthanc. In your command terminal, go to the [`terraform`](https://github.com/digihunch/orthweb/tree/main/terraform) directory and start from there.
+
+<details><summary>Steps to deploy the Terraform template </summary>
+<p>
 
 First, initialize terraform modules, with `init` command:
 
@@ -72,47 +115,60 @@ The `plan` command will check current state in the cloud and print out the resou
 
 > terraform apply
 
-In this step Terraform interact with your AWS account to provision the resources and configure the website. You need to say `yes` to the prompt. This process can take as long as 15 minutes due to the amount of resources to be created. Upon successful deployment, the output shall display four entries as output:
-|key|example|protocol|purpose|
-|--|--|--|--|
-|**site_address**|ec2-102-203-105-112.compute-1.amazonaws.com|HTTPS/DICOM-TLS|Business traffic: HTTPS on port 443 and DICOM-TLS on port 11112. Reachable from the Internet.|
-|**primary_host**|ec2-user@ec2-44-205-32-174.compute-1.amazonaws.com|SSH|For management traffic: SSH on port 22. Reachable from whitelisted public IPs.|
-|s3_bucket|simple-cricket-orthbucket.s3.amazonaws.com|HTTPS-S3| For orthanc to store and fetch images. Access is restricted.|
-|db_endpoint|simple-cricket-orthancpostgres.cqfpmkrutlau.us-east-1.rds.amazonaws.com:5432|TLS-POSTGRESQL| For orthanc to index data. Access is restricted.|
+In this step Terraform interact with your AWS account to provision the resources and configure the website. You need to say `yes` to the prompt. 
+</p>
+</details>
 
-The site will come up a couple minutes after the output is printed. We can validate the site with the steps outlined in the sections below. After the evaluation is completed, it is important to remove all the resources because the running resources incurs cost on your AWS bill. To delete resources, use `destroy` command:
+The `apply` step can take as long as 15 minutes due to the amount of resources being created. Upon successful deployment, the output shall display four entries as output.
+<details><summary>Example output </summary>
+<p>
+
+|key|example value|protocol|purpose|
+|--|--|--|--|
+|**site_address**|ec2-34-231-182-143.compute-1.amazonaws.com|HTTPS/DICOM-TLS|Business traffic: HTTPS on port 443 and DICOM-TLS on port 11112. Reachable from the Internet.|
+|**host_info**|Primary:i-02d92d2c1c046ea62    Secondary:i-076b93808575da71e|SSH|For management traffic. |
+|**s3_bucket**|crucial-mayfly-orthbucket.s3.amazonaws.com|HTTPS-S3| For orthanc to store and fetch images. Access is restricted.|
+|**db_endpoint**|crucial-mayfly-orthancpostgres.cqfpmkrutlau.us-east-1.rds.amazonaws.com:5432|TLS-POSTGRESQL| For orthanc to index data. Access is restricted.|
+
+</p>
+</details>
+
+The site shall come up a couple minutes after the output is printed. We can validate the site with the steps outlined in the sections below. After the evaluation is completed, delete resources with `destroy` command:
 > terraform destroy
 
+It is important to remember this step to stop incurring cost on your AWS bill.
+
 ## User Validation
-In this section, we validate the web site through the lens of Orthanc user.
+Now, we validate the website as an Orthanc user.
 
 To Validate DICOM capability, we can test with C-ECHO and C-STORE. We can use any DICOM compliant application. For example, [Horos](https://horosproject.org/) on MacOS is a UI-based application. In Preference->Locations, configure a new DICOM nodes with
-* Address: the site FQDN
+* Address: the site address as given above
 * AE title: ORTHANC
 * Port: 11112 (or otherwise configured)
 
 Remember to enable TLS. Then you will be able to verify the node (i.e. C-ECHO) and send existing studies from Horos to Orthanc (C-STORE).
 
-To Validate the the web server, simply visit the site address with the default credential. For example, `https://ec2-102-203-105-112.compute-1.amazonaws.com`. The web browser may flag the site as insecure because Orthweb creats a self-signed certificate during deployment. If you wish to use your own domain name, bring your own certificate.
+To Validate the the web service, simply visit the site address (with `https://` head) and put in the [default credential](https://book.orthanc-server.com/users/docker.html#running-the-orthanc-core) at the prompt. The web browser may flag the site as insecure because Orthweb creats a self-signed certificate during deployment.
 
 ## Technical Validation
-In this section, we cover a few checkpoints from system administrator's perspective, to ensure the system is functional.
+In this section, we go through a few checkpoints through a system administrator's lens, to ensure the system is functional and correctly configured.
 
 ### Server Validation
 
-We can connect to the server over SSH. Since we configured IP and public key whitelisting, the following command should just work:
-```sh
-ssh ec2-user@ec2-44-205-32-174.compute-1.amazonaws.com
-```
-Once logged on, we can check cloud init log:
+Now we SSH to the server as `ec2-user`, as instructed above. Once connected, we can check cloud init log:
 ```sh
 sudo tail -F /var/log/cloud-init-output.log
 ```
-Which should say Orthanc has started. The files related to Orthanc deployment are in directory /home/ec2-user/orthweb/app:
-* orthanc.json: the Orthanc configuration file
-* envoy.yaml: the Envoy configuration file
-* compute-1.amazonaws.com.pem: the file that stores the self-signed certificate and key that are generated for deployment.
-* docker-compose.yml: the file that drives Docker
+In the log, each container should say `Orthanc has started`. 
+
+The configuration files related to Orthanc deployment are in directory `/home/ec2-user/orthweb/app`, including:
+* `orthanc.json`: the Orthanc configuration file. Some values are specified as [environment variables](https://book.orthanc-server.com/users/configuration.html#environment-variables). Their value can be found in file `~/.orthanc.env`. For example, you can change `VERBOSE_ENABLED` to true and restart Docker compose for Orthanc verbose logging.
+* `envoy.yaml`: the configuration file for Envoy proxy. Changes to this file should take effect rightaway. However, it is helpful to restart Docker container and watch for Envoy logs in case of configuration error.
+* `compute-1.amazonaws.com.pem`: the file that contains the self-signed certificate and key that were generated during server bootstrapping. 
+* `docker-compose.yml`: the file that tells `Docker-compose` how to orchestrate Docker containers. Changes to this file requires Docker-compose to restart to take effect.
+* `.env`: the file that stores the environment variables being referenced in the `docker-compose.yml` file. Changes to this file requires Docker compose to restart to take effect.
+
+Based on envoy proxy configuration, some additional logging files are located in `/home/envoy/` for troubleshooting Envoy proxy.
 
 ### DICOM Validation
 To emulate DICOM activity, we use [dcm4che3](https://sourceforge.net/projects/dcm4che/files/dcm4che3/), a Java-based open-source utility. Since Orthweb implementation only takes DICOM traffic with TLS enabled, we need to add our site certificate to Java trust store (JKS format). Specifically:
@@ -230,6 +286,39 @@ aws s3 ls s3://bucket-name
 ```
 The bucket is not publicly assissible and is protected by bucket policy configured during resource provisioning.
 
+## Failover
+
+To perform a failover, simply re-associate the elastic IP (for the site address) to the secondary instance by instance Id. Use AWS CLI to complete this task.
+
+<details><summary> Steps to fail over</summary>
+<p>
+
+Find out the detail about the site address'es elastic IP.
+```sh
+aws ec2 describe-addresses
+```
+Notice that the InstanceId should be the output value for the Primary Instance. Also note down the AllocationId. Then assocate it with the secondary instance's Id. For example:
+```sh
+aws ec2 associate-address --allocation-id eipalloc-094b88bf021e6670a --instance-id i-076b93808575da71e
+```
+Now describe IP address again:
+```sh
+aws ec2 describe-addresses
+```
+You should find that now the secondary instance's ID is associated with the Elastic IP.
+
+</p>
+</details>
+
+You may perform the validation steps again after the failover. 
+
+To minimize cost, you may stop the secondary instance while the primary instance is functional. Start it only before fail-over For example:
+```sh
+aws ec2 stop-instances --instance-ids i-076b93808575da71e
+aws ec2 start-instances --instance-ids i-076b93808575da71e
+```
+The instance should be in a `stopped` state in order to be started again.
+
 ##  Architecture
 
 Orthweb uses Docker Compose to orchestrate multiple Orthanc containers along with an Envoy proxy container. I did not choose ECS due to a [limitation](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) and concerns with platform lock-in. To scale up, you may increase the number of replica for Orthanc containers. This scaling model is sufficient for typical Orthanc workload. 
@@ -238,12 +327,12 @@ The Orthweb architecture can be illustrated in the diagram below:
 
 ![Diagram](resources/Orthweb.png)
 
-The site's IP is associated with an Elastic Network Interface (ENI). It is connected to the primary EC2 instance hosted in availability zone 1. Business traffic (DICOM and HTTP) are routed to the Site IP at port 11112 and 443. Docker damon runs Envoy proxy who listens to those ports. Envoy is a modern proxy implementation with generally better configurability and performance than Nginx. The Envoy proxy, serves two different proxy routes: 
+The site's IP is associated with an Elastic Network Interface (ENI). It is connected to the primary EC2 instance hosted in availability zone 1. Business traffic (DICOM and HTTP) are routed to the Site IP at port 11112 and 443. Docker damon runs Envoy proxy who listens to those ports. The Envoy proxy, serves two different proxy routes: 
 * https on host port 443 -> https on container port 8043
 * dicom-tls on host port 11112 -> dicom on container port 4242 
 The envoy proxy is configured to spread traffic across three Orthanc containers, with session affinity configured. Each Orthanc container is able to connect to S3 and PostgreSQL database via their respect endpoint in the subnet.
 
-Should availability zone 1 becomes unavailable, system administrator can turn on the secondary EC2 instance in availability zone 2, and associate the ENI with site IP to it. This way we bring availability zone 2 to operation and redirect business traffic to it.
+Should availability zone 1 becomes unavailable, system administrator can turn on the secondary EC2 instance in availability zone 2, and associate the ENI with site IP to it, as instructed above in the `Failover` section. This way we bring availability zone 2 to operation and redirect business traffic to it.
 
 
 ## Security

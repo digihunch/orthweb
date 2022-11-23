@@ -35,7 +35,6 @@
 |------|-------------|------|---------|:--------:|
 | <a name="input_DockerImages"></a> [DockerImages](#input\_DockerImages) | Docker Images | `map(any)` | <pre>{<br>  "EnvoyImg": "envoyproxy/envoy:v1.22.5",<br>  "OrthancImg": "osimis/orthanc:22.11.3"<br>}</pre> | no |
 | <a name="input_Tags"></a> [Tags](#input\_Tags) | Tags for every resource. | `map(any)` | <pre>{<br>  "Environment": "Dev",<br>  "Owner": "my@email.com"<br>}</pre> | no |
-| <a name="input_cli_cidr_block"></a> [cli\_cidr\_block](#input\_cli\_cidr\_block) | n/a | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_pubkey_data"></a> [pubkey\_data](#input\_pubkey\_data) | n/a | `string` | `null` | no |
 | <a name="input_pubkey_path"></a> [pubkey\_path](#input\_pubkey\_path) | n/a | `string` | `"~/.ssh/id_rsa.pub"` | no |
 

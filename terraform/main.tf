@@ -47,7 +47,6 @@ module "storage" {
 module "ec2" {
   source           = "./modules/ec2"
   public_key       = var.pubkey_data != null ? var.pubkey_data : (fileexists(var.pubkey_path) ? file(var.pubkey_path) : "")
-  ssh_client_cidr_block      = var.cli_cidr_block
   role_name        = module.iam_role.role_info.ec2_iam_role_name
   db_instance_id   = module.database.db_info.db_instance_id
   s3_bucket_name   = module.storage.s3_info.bucket_name
@@ -60,8 +59,6 @@ module "ec2" {
     s3_ep_service_name = module.network.vpc_info.s3_vpc_ep_service_name
     secret_ep_service_name  = module.secretmanager.secret_info.ep_service_name
     eip_allocation_id = module.network.eip_info.floating_allocation_id
-#    public1_eip_allocation_id = module.network.eip_info.public1_allocation_id
-#    public2_eip_allocation_id = module.network.eip_info.public2_allocation_id
   }
   docker_images = var.DockerImages
   resource_tags    = var.Tags

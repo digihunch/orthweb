@@ -1,10 +1,6 @@
 variable "public_key" {
   type = string
 }
-variable "ssh_client_cidr_block" {
-  type = string
-}
-
 variable "vpc_config" {
   description = "VPC configuration"
   type = map(any)
@@ -15,8 +11,6 @@ variable "vpc_config" {
     secret_ep_service_name = null
     s3_ep_service_name = null
     eip_allocation_id = null
-    #public1_eip_allocation_id = null 
-    #public2_eip_allocation_id = null
   }
 }
 variable "db_instance_id" {

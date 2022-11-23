@@ -22,7 +22,3 @@ variable "DockerImages" {
     EnvoyImg = "envoyproxy/envoy:v1.22.5"
   }
 }
-variable "cli_cidr_block" {
-  type    = string
-  default = "0.0.0.0/0"
-}
