@@ -3,28 +3,33 @@
  
 ## Overview
 
- **[Orthweb](https://github.com/digihunch/orthweb)** helps Orthanc administrators deploy **[Orthanc](https://www.orthanc-server.com/)** on AWS. Bring your own AWS account, this project will automatically set up the Orthanc server ready to serve both HTTP and DICOM traffic.
+ **[Orthweb](https://github.com/digihunch/orthweb)** helps Orthanc administrators deploy **[Orthanc](https://www.orthanc-server.com/)** on AWS. From your own AWS account, this project automatically sets up the Orthanc server for HTTP and DICOM in 10 minutes.
 
-With Orthanc shipped in Docker container, the **[Orthweb](https://github.com/digihunch/orthweb)** project orchestrates numerous underlying cloud resources from AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) with an opinionated and consistent configuration towards end-to-end automation, high availability and best-effort security. **Orthweb** also provides scaling high availability.
-
-For administrators with Kubernetes skills and complex use cases , Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb) exemplifies Orthanc deployment on Kubernetes.
+With Orthanc application shipped in Docker container, the **[Orthweb](https://github.com/digihunch/orthweb)** project orchestrates numerous underlying cloud resources from AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) with an opinionated and consistent configuration towards end-to-end automation, high availability and best-effort security.
 
 ## Use case
 
-**Orthweb** demonstrates the idea of infrastructure-as-code, deployment automation and security options to host **Orthanc**. It is however not intended for production. How you can benefit from **Orthweb** depends on your role and goal:
+**Orthweb** demonstrates the idea of infrastructure-as-code, deployment automation and security options to host **Orthanc**. It is however not intended for production. How you can benefit from **Orthweb** depends on your role and goal.
 
 | Your role and goal | How you provision infrastructure for Orthanc | How you install Orthanc |
 | ----------- | --------- | ---------- |
 | You are a developer, sales, doctor, student, etc. You have your own AWS account, and just want to check out Orthanc website in 15 minutes.| [Orthweb](https://github.com/digihunch/orthweb) project creates its own networking and security layer. | [Orthweb](https://github.com/digihunch/orthweb) project installs Orthanc automatically. |
 | You are a healthcare organization, start-up or corporate. Your organization has established [Multiple AWS accounts](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html) and networking. You want to configure Orthanc in a compliant environment for production. | The infrastructure team configures [landing zone](https://docs.aws.amazon.com/prescriptive-guidance/latest/migration-aws-environment/understanding-landing-zones.html) with secure and compliant networking foundation. | The application team configures Orthanc installation, taking [Orthweb](https://github.com/digihunch/orthweb) as a reference. |
 
+For those with Kubernetes skills and complex use cases, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb) for deployment on Kubernetes.
+
+
 Follow the rest of this hands-on guide to understand how **Orthweb** works. Skip to the end of the guide for architecture.
 
 ## Prerequisite
-
-The guide is based on local execution of Terraform commands from MacBook. However, the project can be easily modified to work on Windows Laptop or from Terraform Cloud.
-
-Make sure **awscli** is configured and **Terraform CLI** is [installed](https://learn.hashicorp.com/tutorials/terraform/install-cli). You need your own IAM user (Access Key ID and Secret Access Key with administrator privilege) in AWS. Terraform also uses your IAM credential to [authenticate into AWS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#shared-credentials-file). So you need to configure the [credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) for [awscli]((https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)). 
+Whether on Linux, Mac or Windows, you need a command terminal to start deployment.
+<details><summary>Required tools</summary>
+<p>
+* Make sure **[awscli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)** is installed and [configured](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure) so you can connect to your AWS account with as your IAM user (using `Access Key ID` and `Secret Access Key` with administrator privilege). If you will need to SSH to the EC2 instance, you also need to install [session manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html);
+* Make sure **Terraform CLI** is [installed](https://learn.hashicorp.com/tutorials/terraform/install-cli). In the Orthweb template, Terraform also uses your IAM credential to [authenticate into AWS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#shared-credentials-file). 
+</p>
+</details>
+The guide is based on local execution of Terraform commands from MacBook. However, the project can be easily adjusted to work on Windows or even from managed Terraform environment (e.g. Scalr, Terraform Cloud). 
 
 ## Preparation
 If you already have your own RSA key pair for SSH, or your role does not involve administering the EC2 instance, skip the rest of this section. This section covers the environment variables needed prior to running Terraform command. 
