@@ -16,9 +16,9 @@ variable "Tags" {
 }
 variable "DockerImages" {
   description = "Docker Images"
-  type = map(any)
+  type        = map(any)
   default = {
     OrthancImg = "osimis/orthanc:22.11.3"
-    EnvoyImg = "envoyproxy/envoy:v1.22.5"
+    EnvoyImg   = "envoyproxy/envoy:v1.22.5"
   }
 }

@@ -43,15 +43,15 @@ data "aws_eip" "orthweb_eip" {
 data "template_file" "userdata2" {
   template = file("${path.module}/userdata2.tpl")
   vars = {
-    db_address  = data.aws_db_instance.postgres.address
-    db_port     = data.aws_db_instance.postgres.port
-    aws_region  = data.aws_region.this.name
-    sm_endpoint = data.aws_vpc_endpoint.secmgr.dns_entry[0].dns_name
-    sec_name    = data.aws_secretsmanager_secret.secretDB.name
-    s3_endpoint = data.aws_vpc_endpoint.s3.dns_entry[0].dns_name
-    s3_bucket   = data.aws_s3_bucket.orthbucket.bucket
-    orthanc_image = var.docker_images.OrthancImg
-    envoy_image = var.docker_images.EnvoyImg
+    db_address       = data.aws_db_instance.postgres.address
+    db_port          = data.aws_db_instance.postgres.port
+    aws_region       = data.aws_region.this.name
+    sm_endpoint      = data.aws_vpc_endpoint.secmgr.dns_entry[0].dns_name
+    sec_name         = data.aws_secretsmanager_secret.secretDB.name
+    s3_endpoint      = data.aws_vpc_endpoint.s3.dns_entry[0].dns_name
+    s3_bucket        = data.aws_s3_bucket.orthbucket.bucket
+    orthanc_image    = var.docker_images.OrthancImg
+    envoy_image      = var.docker_images.EnvoyImg
     floating_eip_dns = data.aws_eip.orthweb_eip.public_dns
   }
 }

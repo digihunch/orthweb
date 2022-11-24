@@ -1,5 +1,5 @@
 resource "aws_key_pair" "runner-pubkey" {
-  count = (var.public_key == "") ? 0 : 1 
+  count      = (var.public_key == "") ? 0 : 1
   key_name   = "${var.resource_prefix}-runner-pubkey"
   public_key = var.public_key
 }
@@ -123,51 +123,51 @@ EOF
 }
 
 resource "aws_network_interface" "primary_nic" {
-  subnet_id         = var.vpc_config.public_subnet1_id 
-  security_groups   = [aws_security_group.ec2-secgrp.id,aws_security_group.business-traffic-secgrp.id]
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Business-Interface" })
-  depends_on = [aws_security_group.ec2-secgrp,aws_security_group.business-traffic-secgrp]
+  subnet_id       = var.vpc_config.public_subnet1_id
+  security_groups = [aws_security_group.ec2-secgrp.id, aws_security_group.business-traffic-secgrp.id]
+  tags            = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Business-Interface" })
+  depends_on      = [aws_security_group.ec2-secgrp, aws_security_group.business-traffic-secgrp]
 }
 
 resource "aws_instance" "orthweb_primary" {
-  ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t2.medium"
-  user_data              = data.template_cloudinit_config.orthconfig.rendered
-  key_name               = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
+  ami           = data.aws_ami.amazon_linux.id
+  instance_type = "t2.medium"
+  user_data     = data.template_cloudinit_config.orthconfig.rendered
+  key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
 
   network_interface {
-    device_index = 0
+    device_index         = 0
     network_interface_id = aws_network_interface.primary_nic.id
   }
 
-  iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
-  tags                   = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Instance" })
+  iam_instance_profile = aws_iam_instance_profile.inst_profile.name
+  tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Instance" })
 }
 
 resource "aws_eip_association" "floating_eip_assoc" {
-  allocation_id = data.aws_eip.orthweb_eip.id
+  allocation_id        = data.aws_eip.orthweb_eip.id
   network_interface_id = aws_network_interface.primary_nic.id
 }
 
 ## secondary instance
 resource "aws_network_interface" "secondary_nic" {
-  subnet_id         = var.vpc_config.public_subnet2_id 
-  security_groups   = [aws_security_group.ec2-secgrp.id,aws_security_group.business-traffic-secgrp.id]
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Business-Interface" })
-  depends_on = [aws_security_group.ec2-secgrp,aws_security_group.business-traffic-secgrp]
+  subnet_id       = var.vpc_config.public_subnet2_id
+  security_groups = [aws_security_group.ec2-secgrp.id, aws_security_group.business-traffic-secgrp.id]
+  tags            = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Business-Interface" })
+  depends_on      = [aws_security_group.ec2-secgrp, aws_security_group.business-traffic-secgrp]
 }
 
 resource "aws_instance" "orthweb_secondary" {
-  ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t2.medium"
-  user_data              = data.template_cloudinit_config.orthconfig.rendered
-  key_name               = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
+  ami           = data.aws_ami.amazon_linux.id
+  instance_type = "t2.medium"
+  user_data     = data.template_cloudinit_config.orthconfig.rendered
+  key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
 
   network_interface {
-    device_index = 0
+    device_index         = 0
     network_interface_id = aws_network_interface.secondary_nic.id
   }
-  iam_instance_profile   = aws_iam_instance_profile.inst_profile.name
-  tags                   = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Instance" })
+  iam_instance_profile = aws_iam_instance_profile.inst_profile.name
+  tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Instance" })
 }
 

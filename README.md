@@ -9,9 +9,9 @@ With Orthanc application shipped in Docker container, the **[Orthweb](https://gi
 
 ## Use case
 
-**Orthweb** demonstrates the idea of infrastructure-as-code, deployment automation and security options to host **Orthanc**. It is however not intended for production. 
+**Orthweb** demonstrates the idea of infrastructure-as-code, deployment automation and security options to host **Orthanc**. It is however not intended for production. How you can benefit from Orthweb depends on: 
 
-<details><summary>How you can benefit from Orthweb depends on your role and goal </summary>
+<details><summary>Your role and goal </summary>
 <p>
 
 | Your role and goal | How you provision infrastructure for Orthanc | How you install Orthanc |
@@ -28,8 +28,8 @@ For those with Kubernetes skills and complex use cases, check out Orthweb's sist
 Follow the rest of this hands-on guide to understand how **Orthweb** works. Skip to the end of the guide for architecture.
 
 ## Prerequisite
-Whether on Linux, Mac or Windows, you need a command terminal to start deployment.
-<details><summary>Expand for required tools</summary>
+Whether on Linux, Mac or Windows, you need a command terminal to start deployment, with:
+<details><summary>Required tools</summary>
 <p>
 
 * Make sure **[awscli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)** is installed and [configured](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure) so you can connect to your AWS account with as your IAM user (using `Access Key ID` and `Secret Access Key` with administrator privilege). If you will need to SSH to the EC2 instance, you also need to install [session manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html);
@@ -125,10 +125,10 @@ The `apply` step can take as long as 15 minutes due to the amount of resources b
 
 |key|example value|protocol|purpose|
 |--|--|--|--|
-|**site_address**|ec2-34-231-182-143.compute-1.amazonaws.com|HTTPS/DICOM-TLS|Business traffic: HTTPS on port 443 and DICOM-TLS on port 11112. Reachable from the Internet.|
+|**site_address**|ec2-54-243-91-148.compute-1.amazonaws.com|HTTPS/DICOM-TLS|Business traffic: HTTPS on port 443 and DICOM-TLS on port 11112. Reachable from the Internet.|
 |**host_info**|Primary:i-02d92d2c1c046ea62    Secondary:i-076b93808575da71e|SSH|For management traffic. |
-|**s3_bucket**|crucial-mayfly-orthbucket.s3.amazonaws.com|HTTPS-S3| For orthanc to store and fetch images. Access is restricted.|
-|**db_endpoint**|crucial-mayfly-orthancpostgres.cqfpmkrutlau.us-east-1.rds.amazonaws.com:5432|TLS-POSTGRESQL| For orthanc to index data. Access is restricted.|
+|**s3_bucket**|wealthy-lemur-orthbucket.s3.amazonaws.com|HTTPS-S3| For orthanc to store and fetch images. Access is restricted.|
+|**db_endpoint**|wealthy-lemur-orthancpostgres.cqfpmkrutlau.us-east-1.rds.amazonaws.com:5432|TLS-POSTGRESQL| For orthanc to index data. Access is restricted.|
 
 </p>
 </details>
@@ -162,11 +162,17 @@ sudo tail -F /var/log/cloud-init-output.log
 In the log, each container should say `Orthanc has started`. 
 
 The configuration files related to Orthanc deployment are in directory `/home/ec2-user/orthweb/app`, including:
+
+<details><summary>configuration files: </summary>
+<p>
+
 * `orthanc.json`: the Orthanc configuration file. Some values are specified as [environment variables](https://book.orthanc-server.com/users/configuration.html#environment-variables). Their value can be found in file `~/.orthanc.env`. For example, you can change `VERBOSE_ENABLED` to true and restart Docker compose for Orthanc verbose logging.
 * `envoy.yaml`: the configuration file for Envoy proxy. Changes to this file should take effect rightaway. However, it is helpful to restart Docker container and watch for Envoy logs in case of configuration error.
 * `compute-1.amazonaws.com.pem`: the file that contains the self-signed certificate and key that were generated during server bootstrapping. 
 * `docker-compose.yml`: the file that tells `Docker-compose` how to orchestrate Docker containers. Changes to this file requires Docker-compose to restart to take effect.
 * `.env`: the file that stores the environment variables being referenced in the `docker-compose.yml` file. Changes to this file requires Docker compose to restart to take effect.
+</p>
+</details>
 
 Based on envoy proxy configuration, some additional logging files are located in `/home/envoy/` for troubleshooting Envoy proxy.
 
@@ -182,63 +188,91 @@ In the next few stpes, the dcm4che utility will trust the certificates imported 
 
 3. Then we can reference this truststore file in C-ECHO and C-STORE. The dcm4che3 utility uses storescu to perform C-ECHO against the server. For example:
 ```sh
-./storescu -c ORTHANC@ec2-102-203-105-112.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123!
+./storescu -c ORTHANC@ec2-54-243-91-148.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123!
 ```
 The output should read Status code 0 in C-ECHO-RSP, followed by C-ECHO-RQ. For example, the output should contain some important lines such as:
+<details><summary>C-ECHO log segment:</summary>
+<p>
+
 ```
-23:21:27,506 INFO  - STORESCU->ORTHANC(1) << 1:C-ECHO-RQ[pcid=1
+19:26:54.908 DEBUG - STORESCU->ORTHANC(1): enter state: Sta6 - Association established and ready for data transfer
+Connected to ORTHANC in 252ms
+19:26:54.923 INFO  - STORESCU->ORTHANC(1) << 1:C-ECHO-RQ[pcid=1
   cuid=1.2.840.10008.1.1 - Verification SOP Class
   tsuid=1.2.840.10008.1.2 - Implicit VR Little Endian]
-23:21:27,534 DEBUG - STORESCU->ORTHANC(1) << 1:C-ECHO-RQ Command:
+19:26:54.924 DEBUG - STORESCU->ORTHANC(1) << 1:C-ECHO-RQ Command:
 (0000,0002) UI [1.2.840.10008.1.1] AffectedSOPClassUID
 (0000,0100) US [48] CommandField
 (0000,0110) US [1] MessageID
 (0000,0800) US [257] CommandDataSetType
 
-23:21:27,570 INFO  - STORESCU->ORTHANC(1) >> 1:C-ECHO-RSP[pcid=1, status=0H
+19:26:54.985 INFO  - STORESCU->ORTHANC(1) >> 1:C-ECHO-RSP[pcid=1, status=0H
   cuid=1.2.840.10008.1.1 - Verification SOP Class
   tsuid=1.2.840.10008.1.2 - Implicit VR Little Endian]
-23:21:27,570 DEBUG - STORESCU->ORTHANC(1) >> 1:C-ECHO-RSP Command:
+19:26:54.985 DEBUG - STORESCU->ORTHANC(1) >> 1:C-ECHO-RSP Command:
 (0000,0002) UI [1.2.840.10008.1.1] AffectedSOPClassUID
 (0000,0100) US [32816] CommandField
 (0000,0120) US [1] MessageIDBeingRespondedTo
 (0000,0800) US [257] CommandDataSetType
 (0000,0900) US [0] Status
+
+19:26:54.986 INFO  - STORESCU->ORTHANC(1) << A-RELEASE-RQ
+19:26:54.986 DEBUG - STORESCU->ORTHANC(1): enter state: Sta7 - Awaiting A-RELEASE-RP PDU
+19:26:55.011 INFO  - STORESCU->ORTHANC(1) >> A-RELEASE-RP
+19:26:55.011 INFO  - STORESCU->ORTHANC(1): close Socket[addr=ec2-54-243-91-148.compute-1.amazonaws.com/54.243.91.148,port=11112,localport=52073]
+19:26:55.014 DEBUG - STORESCU->ORTHANC(1): enter state: Sta1 - Idle
 ```
+</p>
+</details>
+
 4. We can use it to store DICOM part 10 file (usually .dcm extension) to the server, using storescu again:
 ```sh
-./storescu -c ORTHANC@ec2-102-203-105-112.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123! MYFILE.DCM
+./storescu -c ORTHANC@ec2-54-243-91-148.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123! MY.DCM
 ```
 The output log should contain the following:
+
+<details><summary>C-STORE log segment:</summary>
+<p>
+
 ```
-22:02:19,529 DEBUG - STORESCU->ORTHANC(1): enter state: Sta6 - Association established and ready for data transfer
-Connected to ORTHANC in 392ms
-22:02:19,532 INFO  - STORESCU->ORTHANC(1) << 1:C-STORE-RQ[pcid=7, prior=0
+19:24:34.157 DEBUG - STORESCU->ORTHANC(1): enter state: Sta6 - Association established and ready for data transfer
+Connected to ORTHANC in 469ms
+19:24:34.163 INFO  - STORESCU->ORTHANC(1) << 1:C-STORE-RQ[pcid=7, prior=0
   cuid=1.2.840.10008.5.1.4.1.1.12.1 - X-Ray Angiographic Image Storage
-  iuid=1.3.12.2.1107.5.4.3.321890.19960124.162922.29 - ?
+  iuid=1.3.12.2.1107.5.4.3.284980.19951129.170916.9 - ?
   tsuid=1.2.840.10008.1.2.4.50 - JPEG Baseline (Process 1)]
-22:02:19,547 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Command:
+19:24:34.163 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Command:
 (0000,0002) UI [1.2.840.10008.5.1.4.1.1.12.1] AffectedSOPClassUID
 (0000,0100) US [1] CommandField
 (0000,0110) US [1] MessageID
 (0000,0700) US [0] Priority
 (0000,0800) US [0] CommandDataSetType
-(0000,1000) UI [1.3.12.2.1107.5.4.3.321890.19960124.162922.29] AffectedSOPInst
+(0000,1000) UI [1.3.12.2.1107.5.4.3.284980.19951129.170916.9] AffectedSOPInsta
 
-22:02:19,549 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Dataset sending...
-22:02:22,160 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Dataset sent
-22:02:22,449 INFO  - STORESCU->ORTHANC(1) >> 1:C-STORE-RSP[pcid=7, status=0H
+19:24:34.183 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Dataset sending...
+19:24:34.551 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Dataset sent
+19:24:35.961 INFO  - STORESCU->ORTHANC(1) >> 1:C-STORE-RSP[pcid=7, status=0H
   cuid=1.2.840.10008.5.1.4.1.1.12.1 - X-Ray Angiographic Image Storage
-  iuid=1.3.12.2.1107.5.4.3.321890.19960124.162922.29 - ?
+  iuid=1.3.12.2.1107.5.4.3.284980.19951129.170916.9 - ?
   tsuid=1.2.840.10008.1.2.4.50 - JPEG Baseline (Process 1)]
-22:02:22,449 DEBUG - STORESCU->ORTHANC(1) >> 1:C-STORE-RSP Command:
+19:24:35.961 DEBUG - STORESCU->ORTHANC(1) >> 1:C-STORE-RSP Command:
 (0000,0002) UI [1.2.840.10008.5.1.4.1.1.12.1] AffectedSOPClassUID
 (0000,0100) US [32769] CommandField
 (0000,0120) US [1] MessageIDBeingRespondedTo
 (0000,0800) US [257] CommandDataSetType
 (0000,0900) US [0] Status
-(0000,1000) UI [1.3.12.2.1107.5.4.3.321890.19960124.162922.29] AffectedSOPInst
+(0000,1000) UI [1.3.12.2.1107.5.4.3.284980.19951129.170916.9] AffectedSOPInsta
+
+.19:24:35.963 INFO  - STORESCU->ORTHANC(1) << A-RELEASE-RQ
+19:24:35.963 DEBUG - STORESCU->ORTHANC(1): enter state: Sta7 - Awaiting A-RELEASE-RP PDU
+19:24:35.990 INFO  - STORESCU->ORTHANC(1) >> A-RELEASE-RP
+19:24:35.991 INFO  - STORESCU->ORTHANC(1): close Socket[addr=ec2-54-243-91-148.compute-1.amazonaws.com/54.243.91.148,port=11112,localport=52058]
+19:24:35.999 DEBUG - STORESCU->ORTHANC(1): enter state: Sta1 - Idle
+Sent 1 objects (=0.551MB) in 1.806s (=0.305MB/s)
 ```
+</p>
+</details>
+
 C-STORE-RSP status 0 indicates successful image transfer, and the image is viewable from web portal. 
 
 ### Database Validation
@@ -248,6 +282,9 @@ RDS will be accessible from the EC2 instance, on port 5432. The database URL and
 psql --host=postgresdbinstance.us-east-1.rds.amazonaws.com --port 5432 --username=myuser --dbname=orthancdb
 ```
 Then you are in the PostgreSQL command console and can check the tables using SQL, for example:
+<details><summary>psql output:</summary>
+<p>
+
 ```sh
 orthancdb=> \dt;
                 List of relations
@@ -275,6 +312,9 @@ orthancdb=> select * from attachedfiles;
   4 |        1 | 87719ef0-cbb1-4249-a0ac-e68356d97a7a |         525848 |           525848 |               1 | bd07bf5f2f1287da0f0038638002e9b1 | bd07bf5f2f1287da0f0038638002e9b1 |        0
 (1 row)
 ```
+</p>
+</details>
+
 You may not be able to interpret the content without the database schema. It is also not recommended to edit the tables directly bypassing the application logic.
 
 ### Storage Validation
@@ -333,7 +373,6 @@ The site's IP is associated with an Elastic Network Interface (ENI). It is conne
 The envoy proxy is configured to spread traffic across three Orthanc containers, with session affinity configured. Each Orthanc container is able to connect to S3 and PostgreSQL database via their respect endpoint in the subnet.
 
 Should availability zone 1 becomes unavailable, system administrator can turn on the secondary EC2 instance in availability zone 2, and associate the ENI with site IP to it, as instructed above in the `Failover` section. This way we bring availability zone 2 to operation and redirect business traffic to it.
-
 
 ## Security
 

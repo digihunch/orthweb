@@ -7,7 +7,7 @@ resource "aws_s3_bucket" "orthbucket" {
   bucket = "${var.resource_prefix}-orthbucket"
 
   force_destroy = true # remaining object does not stop bucket from being deleted
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-orthbucket" })
+  tags          = merge(var.resource_tags, { Name = "${var.resource_prefix}-orthbucket" })
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "test" {
@@ -17,7 +17,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "test" {
       kms_master_key_id = aws_kms_key.s3key.arn
       sse_algorithm     = "aws:kms"
     }
-  }  
+  }
 
 }
 

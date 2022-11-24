@@ -24,13 +24,13 @@ resource "aws_secretsmanager_secret_policy" "secretmgrSecretPolicy" {
   secret_arn = aws_secretsmanager_secret.secretDB.arn
   policy = jsonencode({
     Version = "2012-10-17"
-    Id = "${var.resource_prefix}-OrthSecretPolicy"
+    Id      = "${var.resource_prefix}-OrthSecretPolicy"
     Statement = [
       {
-        Sid = "RestrictGetSecretValueoperation"
-        Effect = "Deny"
+        Sid       = "RestrictGetSecretValueoperation"
+        Effect    = "Deny"
         Principal = "*"
-        Action = "secretsmanager:GetSecretValue"
+        Action    = "secretsmanager:GetSecretValue"
         Resource = [
           aws_secretsmanager_secret.secretDB.arn
         ]
