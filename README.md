@@ -18,10 +18,7 @@ With Orthanc application shipped in Docker container, the **[Orthweb](https://gi
 | ----------- | --------- | ---------- |
 | You are a developer, sales, doctor, student, etc. You have your own AWS account, and just want to check out Orthanc website in 15 minutes.| [Orthweb](https://github.com/digihunch/orthweb) project creates its own networking and security layer. | [Orthweb](https://github.com/digihunch/orthweb) project installs Orthanc automatically. |
 | You are a healthcare organization, start-up or corporate. Your organization has established [Multiple AWS accounts](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html) and networking. You want to configure Orthanc in a compliant environment for production. | The infrastructure team configures [landing zone](https://docs.aws.amazon.com/prescriptive-guidance/latest/migration-aws-environment/understanding-landing-zones.html) with secure and compliant networking foundation. | The application team configures Orthanc installation, taking [Orthweb](https://github.com/digihunch/orthweb) as a reference. |
-
-
-</p>
-</details>
+</p></details>
 
 For those with Kubernetes skills and complex use cases, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb) for deployment on Kubernetes.
 
@@ -44,10 +41,9 @@ If you need to inspect or troubleshoot the Orthanc deployment, you will need to 
 In this section, we set Terraform input variable to facilitate troubleshooting.
 
 ### Secure SSH access
-There are two ways to SSH to the EC2 instances. To Use your own choice of command console from your computer. In this case, you must configure your [RSA key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html) on the EC2 instances.
+There are two ways to SSH to the EC2 instances. To use your own choice of command terminal, you must configure your [RSA key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html) on the EC2 instances. Alternatively, without your own RSA key pair, you may use web-based command terminal from AWS console.
 
-<details><summary>Configure RSA key pair for SSH authentication </summary>
-<p>
+<details><summary>Configure RSA key pair to use your own command terminal </summary><p>
 
 You need to [create your RSA key pair](https://help.dreamhost.com/hc/en-us/articles/115001736671-Creating-a-new-Key-pair-in-Mac-OS-X-or-Linux). Your public key will be stored as file `~/.ssh/id_rsa.pub` on MacOS or Linux by default. Here is how the template determines what to send to EC2 as authorized public key:
 
@@ -73,13 +69,9 @@ host i-* mi-*
 ```
 Then you will be able to directly ssh to an instance by its instance ID, even if the instance does not have a public IP. It will use Linux user `ec2-user`, which as the authorized public key pre-loaded.
 
-</p>
-</details>
+</p></details>
 
-Alternatively, you can use the web-based command console. 
-
-<details><summary>Steps to connect using System Manager </summary>
-<p>
+<details><summary>Connect to AWS System Manager to use web terminal </summary><p>
 
 Log on to AWS console, from `AWS System Manager` in your region, on the lef-hand pannel, under `Node Management`, select `Fleet Manager`. You should see your instances listed. Select the Node by the name, select `Node actions` and then `Start terminal session` (under `Connect`). It will take you to a web-based command console and logged in as `ssm-user`. You can switch to our `ec2-user` with sudo commands:
 ```bash
@@ -88,40 +80,46 @@ sh-4.2$ sudo -s
 Last login: Wed Nov 23 22:02:57 UTC 2022 from localhost on pts/0
 [ec2-user@ip-172-27-3-138 ~]$
 ```
-</p>
-</details>
+</p></details>
 
-Using system manager does not require preparing an RSA key pair for SSH session.
+Both mechanisms are enabled by default in the Terraform template.
 
 ### Customize Docker Image
-The Orthweb Terraform template comes with working default values for Docker Images. If you ever need to use your own container image, you may override it by declaring environment variable `TF_VAR_DockerImages`.
+This project comes with working default. If you ever need to use your own container image or a different version, you may override the default by declaring environment variable `TF_VAR_DockerImages`, for example:
+<details><summary>Override Docker image reference </summary><p>
+
+```sh
+export TF_VAR_DockerImages="{\"EnvoyImg\":\"envoyproxy/envoy:v1.22.5\",\"OrthancImg\":\"osimis/orthanc:22.11.3\"}"
+```
+</p></details>
+
+This is helpful to test newer version of Orthanc or Envoy proxy.
 
 ## Deployment
 
-Now we can start deploying Orthanc. In your command terminal, go to the [`terraform`](https://github.com/digihunch/orthweb/tree/main/terraform) directory and start from there.
+Now we can start deploying Orthanc. From your command terminal, go to directory [`terraform`](https://github.com/digihunch/orthweb/tree/main/terraform) and run `terraform` commands from there:
 
-<details><summary>Steps to deploy the Terraform template </summary>
-<p>
+<details><summary>Deploy the Terraform template </summary><p>
 
-First, initialize terraform modules, with `init` command:
+First, initialize terraform modules:
 
 > terraform init
 
-The `init` command will initialize Terraform template, download providers, etc. If no error, we can run `plan` command:
+The `init` command will initialize Terraform template, download providers, etc. If no error, we can plan the deployment:
 
 > terraform plan
 
-The `plan` command will check current state in the cloud and print out the resources it is going to deploy. If the plan looks good, we can execute the deployment plan, by running:
+The `plan` command will check current state in the cloud and print out the resources to deploy. If the plan looks good, we can apply the deployment plan:
 
 > terraform apply
 
-In this step Terraform interact with your AWS account to provision the resources and configure the website. You need to say `yes` to the prompt. 
-</p>
-</details>
+You need to say `yes` to the prompt. Terraform kicks off the deployment.  
+</p></details>
 
-The `apply` step can take as long as 15 minutes due to the amount of resources being created. Upon successful deployment, the output shall display four entries as output.
-<details><summary>Example output </summary>
-<p>
+During deployment, Terraform provider interacts with your AWS account to provision the resources. Out of those resources, the EC2 instances contains a bootstrapping script which configures the Orthanc website as it is provisioned. The entire deployment process can take as long as 15 minutes.
+
+Upon successful deployment, the output shall display four entries as output, as show below:
+<details><summary>Output keys </summary><p>
 
 |key|example value|protocol|purpose|
 |--|--|--|--|
@@ -129,14 +127,18 @@ The `apply` step can take as long as 15 minutes due to the amount of resources b
 |**host_info**|Primary:i-02d92d2c1c046ea62    Secondary:i-076b93808575da71e|SSH|For management traffic. |
 |**s3_bucket**|wealthy-lemur-orthbucket.s3.amazonaws.com|HTTPS-S3| For orthanc to store and fetch images. Access is restricted.|
 |**db_endpoint**|wealthy-lemur-orthancpostgres.cqfpmkrutlau.us-east-1.rds.amazonaws.com:5432|TLS-POSTGRESQL| For orthanc to index data. Access is restricted.|
+</p></details>
 
-</p>
-</details>
 
-The site shall come up a couple minutes after the output is printed. We can validate the site with the steps outlined in the sections below. After the evaluation is completed, delete resources with `destroy` command:
+The EC2 instances will take a couple extra minutes after the output is printed, to finish  configuring Orthanc. We can validate the site with the steps outlined in the sections below. 
+
+After the evaluation is completed, delete resources with `destroy` command:
+<details><summary>Delete deployment </summary><p>
+
 > terraform destroy
+</p></details>
 
-It is important to remember this step to stop incurring cost on your AWS bill.
+It is important to remember this last step to stop incurring cost on your AWS bill.
 
 ## User Validation
 Now, we validate the website as an Orthanc user.
@@ -171,26 +173,33 @@ The configuration files related to Orthanc deployment are in directory `/home/ec
 * `compute-1.amazonaws.com.pem`: the file that contains the self-signed certificate and key that were generated during server bootstrapping. 
 * `docker-compose.yml`: the file that tells `Docker-compose` how to orchestrate Docker containers. Changes to this file requires Docker-compose to restart to take effect.
 * `.env`: the file that stores the environment variables being referenced in the `docker-compose.yml` file. Changes to this file requires Docker compose to restart to take effect.
-</p>
-</details>
+</p></details>
 
 Based on envoy proxy configuration, some additional logging files are located in `/home/envoy/` for troubleshooting Envoy proxy.
 
 ### DICOM Validation
-To emulate DICOM activity, we use [dcm4che3](https://sourceforge.net/projects/dcm4che/files/dcm4che3/), a Java-based open-source utility. Since Orthweb implementation only takes DICOM traffic with TLS enabled, we need to add our site certificate to Java trust store (JKS format). Specifically:
+To emulate DICOM activity, we use [dcm4che3](https://sourceforge.net/projects/dcm4che/files/dcm4che3/), a Java-based open-source utility. Since Orthweb implementation only takes DICOM traffic with TLS enabled, we need to add our site certificate to Java trust store (JKS format), so that `dcm4che3` can trust the Orthanc website to send [DIMSE](https://dicom.nema.org/dicom/2013/output/chtml/part07/sect_7.5.html) commands:
+
+<details><summary>Import site certificate to Java trust store </summary><p>
 
 1. On the server, find the .pem file in `/home/ec2-user/orthweb/app/` directory, copy the certificate content (between the lines "BEGIN CERTIFICATE" and "END CERTIFICATE" inclusive), and paste it to a file named `site.crt` on your MacBook.
 2. Import the certificate file into a java trust store (e.g. `server.truststore`), with the command below and give it a password, say Password123!
 ```sh
 keytool -import -alias orthweb -file site.crt -storetype JKS -noprompt -keystore server.truststore -storepass Password123!
 ```
+</p></details>
 In the next few stpes, the dcm4che utility will trust the certificates imported in this step.
 
-3. Then we can reference this truststore file in C-ECHO and C-STORE. The dcm4che3 utility uses storescu to perform C-ECHO against the server. For example:
+We can reference this truststore file when we use `dcm4che3` to issue `C-ECHO` and `C-STORE` commands. 
+
+The `dcm4che3` utility uses `storescu` executable to perform `C-ECHO` against the server. For example:
+<details><summary>storescu command for C-ECHO </summary><p>
+
 ```sh
 ./storescu -c ORTHANC@ec2-54-243-91-148.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123!
 ```
-The output should read Status code 0 in C-ECHO-RSP, followed by C-ECHO-RQ. For example, the output should contain some important lines such as:
+</p></details>
+The output should read Status code 0 in `C-ECHO-RSP`, followed by `C-ECHO-RQ`. Here is an example of the output from `storescu`:
 <details><summary>C-ECHO log segment:</summary>
 <p>
 
@@ -222,14 +231,16 @@ Connected to ORTHANC in 252ms
 19:26:55.011 INFO  - STORESCU->ORTHANC(1): close Socket[addr=ec2-54-243-91-148.compute-1.amazonaws.com/54.243.91.148,port=11112,localport=52073]
 19:26:55.014 DEBUG - STORESCU->ORTHANC(1): enter state: Sta1 - Idle
 ```
-</p>
-</details>
+</p></details>
 
-4. We can use it to store DICOM part 10 file (usually .dcm extension) to the server, using storescu again:
+In addition to C-ECHO, we can also store a DICOM part 10 file (usually .dcm extension containing images) to Orthanc server. Again we use `storescu` executable:
+<details><summary>storescu command to issue C-STORE</summary>
+<p>
 ```sh
 ./storescu -c ORTHANC@ec2-54-243-91-148.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123! MY.DCM
 ```
-The output log should contain the following:
+</p></details>
+Below is an example of what the output from `storescu` should look like:
 
 <details><summary>C-STORE log segment:</summary>
 <p>
@@ -270,20 +281,20 @@ Connected to ORTHANC in 469ms
 19:24:35.999 DEBUG - STORESCU->ORTHANC(1): enter state: Sta1 - Idle
 Sent 1 objects (=0.551MB) in 1.806s (=0.305MB/s)
 ```
-</p>
-</details>
+</p></details>
 
-C-STORE-RSP status 0 indicates successful image transfer, and the image is viewable from web portal. 
+C-STORE-RSP status 0 indicates successful image transfer, and the image should viewable from the Orthanc site address. 
 
 ### Database Validation
 
-RDS will be accessible from the EC2 instance, on port 5432. The database URL and password can be retrieved using AWS CLI command. Their values are also kept in file /home/ec2-user/.orthanc.env during initialization. To validate by psql client, run:
+RDS is accessible only from the EC2 instance on port 5432. You can get the database URL and credential from file `/home/ec2-user/.orthanc.env`. To validate by psql client, run:
+<details><summary>psql command</summary><p>
 ```sh
 psql --host=postgresdbinstance.us-east-1.rds.amazonaws.com --port 5432 --username=myuser --dbname=orthancdb
 ```
+</p></details>
 Then you are in the PostgreSQL command console and can check the tables using SQL, for example:
-<details><summary>psql output:</summary>
-<p>
+<details><summary>psql output</summary><p>
 
 ```sh
 orthancdb=> \dt;
@@ -312,28 +323,28 @@ orthancdb=> select * from attachedfiles;
   4 |        1 | 87719ef0-cbb1-4249-a0ac-e68356d97a7a |         525848 |           525848 |               1 | bd07bf5f2f1287da0f0038638002e9b1 | bd07bf5f2f1287da0f0038638002e9b1 |        0
 (1 row)
 ```
-</p>
-</details>
-
-You may not be able to interpret the content without the database schema. It is also not recommended to edit the tables directly bypassing the application logic.
+</p></details>
+This is as far as we can go in terms of validating database. Without the schema document, we are not able to interpret the content. It is also not recommended to tamper with the tables directly bypassing the application.
 
 ### Storage Validation
 
 Storage validation can be performed simply by examining the content of S3 bucket. Once studies are sent to Orthanc, the corresponding DICOM file should appear in the S3 bucket. For example, we can run the following AWS CLI command from the EC2 instance:
+<details><summary>CLI command to view buckets</summary><p>
+
 ```sh
 aws s3 ls s3://bucket-name
 2021-12-02 18:54:41     525848 87719ef0-cbb1-4249-a0ac-e68356d97a7a.dcm
 ```
+</p></details>
 The bucket is not publicly assissible and is protected by bucket policy configured during resource provisioning.
 
 ## Failover
 
 To perform a failover, simply re-associate the elastic IP (for the site address) to the secondary instance by instance Id. Use AWS CLI to complete this task.
 
-<details><summary> Steps to fail over</summary>
-<p>
+<details><summary> Steps to fail over</summary><p>
 
-Find out the detail about the site address'es elastic IP.
+Find out the detail about the site address' elastic IP.
 ```sh
 aws ec2 describe-addresses
 ```
@@ -346,17 +357,17 @@ Now describe IP address again:
 aws ec2 describe-addresses
 ```
 You should find that now the secondary instance's ID is associated with the Elastic IP.
+</p></details>
 
-</p>
-</details>
+To minimize cost, you may stop the secondary instance while the primary instance is functional. Start the secondary instance only when fail-over is needed. For example:
+<details><summary> CLI command to stop and start instance</summary><p>
 
-You may perform the validation steps again after the failover. 
 
-To minimize cost, you may stop the secondary instance while the primary instance is functional. Start it only before fail-over For example:
 ```sh
 aws ec2 stop-instances --instance-ids i-076b93808575da71e
 aws ec2 start-instances --instance-ids i-076b93808575da71e
 ```
+</p></details>
 The instance should be in a `stopped` state in order to be started again.
 
 ##  Architecture
@@ -368,16 +379,21 @@ The Orthweb architecture can be illustrated in the diagram below:
 ![Diagram](resources/Orthweb.png)
 
 The site's IP is associated with an Elastic Network Interface (ENI). It is connected to the primary EC2 instance hosted in availability zone 1. Business traffic (DICOM and HTTP) are routed to the Site IP at port 11112 and 443. Docker damon runs Envoy proxy who listens to those ports. The Envoy proxy, serves two different proxy routes: 
+<details><summary> Proxy routes</summary><p>
+
 * https on host port 443 -> https on container port 8043
-* dicom-tls on host port 11112 -> dicom on container port 4242 
+* dicom-tls on host port 11112 -> dicom on container port 4242
+</p></details>
+
 The envoy proxy is configured to spread traffic across three Orthanc containers, with session affinity configured. Each Orthanc container is able to connect to S3 and PostgreSQL database via their respect endpoint in the subnet.
 
-Should availability zone 1 becomes unavailable, system administrator can turn on the secondary EC2 instance in availability zone 2, and associate the ENI with site IP to it, as instructed above in the `Failover` section. This way we bring availability zone 2 to operation and redirect business traffic to it.
+Should availability zone 1 becomes unavailable, system administrator can turn on the secondary EC2 instance in availability zone 2, and associate the ENI with site IP to it, as instructed in the `Failover` section above. This way we bring availability zone 2 to operation and redirect business traffic to it.
 
 ## Security
 
 Orthweb project implements secure configuration as far as it can. For example, it configures a self-signed certificate in the demo. In production deployment however you should bring your own certificates signed by CA. Below are the points of configurations for security compliance:
 
+<details><summary>Security configurations</summary><p>
 1. Both DICOM and web traffic are encrypted in TLS. This requires peer DICOM AE to support DICOM TLS in order to connect with Orthanc.
 2. PostgreSQL data is encrypted at rest, and the database traffic between Orthanc application and database is encrypted in SSL. The database endpoint is not open to public.
 3. The S3 bucket has server side encryption. The traffic in transit between S3 bucket and Orthanc application is encrypted as well. The S3 endpoint is not open to public.
@@ -385,7 +401,11 @@ Orthweb project implements secure configuration as far as it can. For example, i
 5. The demo-purpose self-signed X509 certificate is dynamically generated using openssl11 during bootstrapping, in compliance with [Mac requirement](https://support.apple.com/en-us/HT210176).
 6. Secret Manager and S3 have their respective VPC interface endpoint in each subnet. Traffic to and from Secret Manager and S3 travels via end points.
 7. Secret Manager and S3 have resource-based IAM role to restrict access.
+</p></details>
 
-The handling of secret at some points of configurations has room for improvement.
+Currently there are also some limitation with secure configuration:
+
+<details><summary>Security configuration limitations</summary><p>
 1. Database password is generated at Terraform client and then sent to deployment server to create PostgreSQL. The generated password is also stored in state file of Terraform. To overcome this, we need a) Terraform tells AWS secrets manager to generate a password; and b) it tells other AWS service to resolve the newly created secret. As of May 2021, a) is doable but b) isn't due to a limitation with Terraform
 2. Secret management with Docker container: secret are presented to container process as environment variables, instead of file content. As per [this article](https://techbeacon.com/devops/how-keep-your-container-secrets-secure), this is not the best practice.
+</p></details>
