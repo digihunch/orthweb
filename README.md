@@ -234,16 +234,15 @@ Connected to ORTHANC in 252ms
 </p></details>
 
 In addition to C-ECHO, we can also store a DICOM part 10 file (usually .dcm extension containing images) to Orthanc server. Again we use `storescu` executable:
-<details><summary>storescu command to issue C-STORE</summary>
-<p>
+<details><summary>storescu command to issue C-STORE</summary><p>
+
 ```sh
 ./storescu -c ORTHANC@ec2-54-243-91-148.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123! MY.DCM
 ```
 </p></details>
 Below is an example of what the output from `storescu` should look like:
 
-<details><summary>C-STORE log segment:</summary>
-<p>
+<details><summary>C-STORE log segment:</summary><p>
 
 ```
 19:24:34.157 DEBUG - STORESCU->ORTHANC(1): enter state: Sta6 - Association established and ready for data transfer
@@ -289,6 +288,7 @@ C-STORE-RSP status 0 indicates successful image transfer, and the image should v
 
 RDS is accessible only from the EC2 instance on port 5432. You can get the database URL and credential from file `/home/ec2-user/.orthanc.env`. To validate by psql client, run:
 <details><summary>psql command</summary><p>
+
 ```sh
 psql --host=postgresdbinstance.us-east-1.rds.amazonaws.com --port 5432 --username=myuser --dbname=orthancdb
 ```
@@ -394,6 +394,7 @@ Should availability zone 1 becomes unavailable, system administrator can turn on
 Orthweb project implements secure configuration as far as it can. For example, it configures a self-signed certificate in the demo. In production deployment however you should bring your own certificates signed by CA. Below are the points of configurations for security compliance:
 
 <details><summary>Security configurations</summary><p>
+
 1. Both DICOM and web traffic are encrypted in TLS. This requires peer DICOM AE to support DICOM TLS in order to connect with Orthanc.
 2. PostgreSQL data is encrypted at rest, and the database traffic between Orthanc application and database is encrypted in SSL. The database endpoint is not open to public.
 3. The S3 bucket has server side encryption. The traffic in transit between S3 bucket and Orthanc application is encrypted as well. The S3 endpoint is not open to public.
@@ -406,6 +407,7 @@ Orthweb project implements secure configuration as far as it can. For example, i
 Currently there are also some limitation with secure configuration:
 
 <details><summary>Security configuration limitations</summary><p>
+
 1. Database password is generated at Terraform client and then sent to deployment server to create PostgreSQL. The generated password is also stored in state file of Terraform. To overcome this, we need a) Terraform tells AWS secrets manager to generate a password; and b) it tells other AWS service to resolve the newly created secret. As of May 2021, a) is doable but b) isn't due to a limitation with Terraform
 2. Secret management with Docker container: secret are presented to container process as environment variables, instead of file content. As per [this article](https://techbeacon.com/devops/how-keep-your-container-secrets-secure), this is not the best practice.
 </p></details>
