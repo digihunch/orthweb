@@ -50,8 +50,8 @@ data "template_file" "userdata2" {
     sec_name         = data.aws_secretsmanager_secret.secretDB.name
     s3_endpoint      = data.aws_vpc_endpoint.s3.dns_entry[0].dns_name
     s3_bucket        = data.aws_s3_bucket.orthbucket.bucket
-    orthanc_image    = var.docker_images.OrthancImg
-    envoy_image      = var.docker_images.EnvoyImg
+    orthanc_image    = var.deployment_options.OrthancImg
+    envoy_image      = var.deployment_options.EnvoyImg
     floating_eip_dns = data.aws_eip.orthweb_eip.public_dns
   }
 }

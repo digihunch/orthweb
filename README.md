@@ -84,12 +84,12 @@ Last login: Wed Nov 23 22:02:57 UTC 2022 from localhost on pts/0
 
 Both mechanisms are enabled by default in the Terraform template.
 
-### Customize Docker Image
-This project comes with working default. If you ever need to use your own container image or a different version, you may override the default by declaring environment variable `TF_VAR_DockerImages`, for example:
-<details><summary>Override Docker image reference </summary><p>
+### Customize deployment options
+This project comes with working default but you can customize it in certain ways. For example,  if you want to run with own container image, different versions, different instance type, you may override the default by declaring environment variable `TF_VAR_DeploymentOptions`, for example:
+<details><summary>Override Deployment Options </summary><p>
 
 ```sh
-export TF_VAR_DockerImages="{\"EnvoyImg\":\"envoyproxy/envoy:v1.22.5\",\"OrthancImg\":\"osimis/orthanc:22.11.3\"}"
+export TF_VAR_DeploymentOptions="{\"EnvoyImg\":\"envoyproxy/envoy:v1.22.5\",\"OrthancImg\":\"osimis/orthanc:22.11.3\",\"PrimaryInstanceType\"=\"t2.medium\",\"SecondaryInstanceType\"=\"t2.medium\"}"
 ```
 </p></details>
 

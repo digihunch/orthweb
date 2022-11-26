@@ -14,11 +14,13 @@ variable "Tags" {
     Owner       = "my@email.com"
   }
 }
-variable "DockerImages" {
-  description = "Docker Images"
+variable "DeploymentOptions" {
+  description = "Deployment Options"
   type        = map(any)
   default = {
-    OrthancImg = "osimis/orthanc:22.11.3"
-    EnvoyImg   = "envoyproxy/envoy:v1.22.5"
+    OrthancImg            = "osimis/orthanc:22.11.3"
+    EnvoyImg              = "envoyproxy/envoy:v1.22.5"
+    PrimaryInstanceType   = "t2.medium"
+    SecondaryInstanceType = "t2.medium"
   }
 }

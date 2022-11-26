@@ -28,7 +28,7 @@ variable "db_secret_arn" {
 variable "s3_key_arn" {
   type = string
 }
-variable "docker_images" {
+variable "deployment_options" {
   type = map(any)
 }
 variable "resource_prefix" {

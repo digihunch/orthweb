@@ -60,8 +60,8 @@ module "ec2" {
     secret_ep_service_name = module.secretmanager.secret_info.ep_service_name
     eip_allocation_id      = module.network.eip_info.floating_allocation_id
   }
-  docker_images   = var.DockerImages
-  resource_tags   = var.Tags
-  resource_prefix = random_pet.prefix.id
-  depends_on      = [module.iam_role, module.database, module.storage, module.network]
+  deployment_options = var.DeploymentOptions
+  resource_tags      = var.Tags
+  resource_prefix    = random_pet.prefix.id
+  depends_on         = [module.iam_role, module.database, module.storage, module.network]
 }

@@ -131,7 +131,7 @@ resource "aws_network_interface" "primary_nic" {
 
 resource "aws_instance" "orthweb_primary" {
   ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.medium"
+  instance_type = var.deployment_options.PrimaryInstanceType
   user_data     = data.template_cloudinit_config.orthconfig.rendered
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
 
@@ -159,7 +159,7 @@ resource "aws_network_interface" "secondary_nic" {
 
 resource "aws_instance" "orthweb_secondary" {
   ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.medium"
+  instance_type = var.deployment_options.SecondaryInstanceType
   user_data     = data.template_cloudinit_config.orthconfig.rendered
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
 
