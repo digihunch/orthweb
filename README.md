@@ -33,7 +33,7 @@ Whether on Linux, Mac or Windows, you need a command terminal to start deploymen
 * Make sure **Terraform CLI** is [installed](https://learn.hashicorp.com/tutorials/terraform/install-cli). In the Orthweb template, Terraform also uses your IAM credential to [authenticate into AWS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#shared-credentials-file). 
 </p>
 </details>
-The guide is based on local execution of Terraform commands from MacBook. However, the project can be easily adjusted to work on Windows or even from managed Terraform environment (e.g. Scalr, Terraform Cloud). 
+The guide is based on local Terraform execution, and were tested on MacBook (arm64 and x86_64) and WSL2 (Ubuntu) on Windows. However, the steps can be adjusted to work on Windows or from managed Terraform environment (e.g. Scalr, Terraform Cloud). 
 
 ## Preparation
 If you need to inspect or troubleshoot the Orthanc deployment, you will need to take the preparatory steps here. Otherwise, you can skip to the next section.
