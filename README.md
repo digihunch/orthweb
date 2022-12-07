@@ -3,7 +3,7 @@
  
 ## Overview
 
- **[Orthweb](https://github.com/digihunch/orthweb)** helps Orthanc administrators deploy **[Orthanc](https://www.orthanc-server.com/)** on AWS. From your own AWS account, this project automatically sets up the Orthanc server for HTTP and DICOM in 10 minutes.
+ **[Orthweb](https://github.com/digihunch/orthweb)** helps Orthanc administrators deploy **[Orthanc](https://www.orthanc-server.com/)** on AWS, with a self-contained, opionated Terraform template. From your own AWS account, this project automatically sets up the Orthanc server for HTTP and DICOM in 10 minutes.
 
 With Orthanc application shipped in Docker container, the **[Orthweb](https://github.com/digihunch/orthweb)** project orchestrates numerous underlying cloud resources from AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) with an opinionated and consistent configuration towards end-to-end automation, high availability and best-effort security.
 
@@ -19,6 +19,16 @@ With Orthanc application shipped in Docker container, the **[Orthweb](https://gi
 | You are a developer, sales, doctor, student, etc. You have your own AWS account, and just want to check out Orthanc website in 15 minutes.| [Orthweb](https://github.com/digihunch/orthweb) project creates its own networking and security layer. | [Orthweb](https://github.com/digihunch/orthweb) project installs Orthanc automatically. |
 | You are a healthcare organization, start-up or corporate. Your organization has established [Multiple AWS accounts](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html) and networking. You want to configure Orthanc in a compliant environment for production. | The infrastructure team configures [landing zone](https://docs.aws.amazon.com/prescriptive-guidance/latest/migration-aws-environment/understanding-landing-zones.html) with secure and compliant networking foundation. | The application team configures Orthanc installation, taking [Orthweb](https://github.com/digihunch/orthweb) as a reference. |
 </p></details>
+
+Orthweb defines a self-contained infrastructure stack. Here is a summary of current compliance status of the infrastructure, as reported by BridgeCrew:
+| Benchmark | Description |
+| ----------- | --------- |
+| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/general)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=INFRASTRUCTURE+SECURITY) | Infrastructure Security Compliance |
+| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/cis_aws)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=CIS+AWS+V1.2) | Center for Internet Security, AWS Compliance |
+| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/nist)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=NIST-800-53) | National Institute of Standards and Technology Compliance |
+| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/iso)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=ISO27001) | Information Security Management System, ISO/IEC 27001 Compliance |
+| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/soc2)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=SOC2) | Service Organization Control 2 Compliance |
+| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/hipaa)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=HIPPA) | Health Insurance Portability and Accountability Compliance |
 
 For those with Kubernetes skills and complex use cases, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb) for deployment on Kubernetes.
 
