@@ -9,8 +9,8 @@ output "vpc_info" {
   }
 }
 
-output "eip_info" {
-  value = {
-    floating_allocation_id = aws_eip.orthweb_eip.allocation_id
-  }
-}
+#output "eip_info" {
+#  value = {
+#    floating_allocation_id = aws_eip.orthweb_eip.allocation_id
+#  }
+#}

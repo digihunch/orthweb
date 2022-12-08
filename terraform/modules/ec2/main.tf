@@ -134,9 +134,18 @@ resource "aws_network_interface" "primary_nic" {
 resource "aws_instance" "orthweb_primary" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = var.deployment_options.PrimaryInstanceType
+#  ebs_optimized = true
   user_data     = data.template_cloudinit_config.orthconfig.rendered
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
-
+  monitoring = true
+#  metadata_options {
+#    http_endpoint = "enabled"
+#    http_tokens   = "required"
+#  }
+  root_block_device {
+    encrypted = true
+    kms_key_id = var.custom_key_arn
+  }
   network_interface {
     device_index         = 0
     network_interface_id = aws_network_interface.primary_nic.id
@@ -144,10 +153,16 @@ resource "aws_instance" "orthweb_primary" {
 
   iam_instance_profile = aws_iam_instance_profile.inst_profile.name
   tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Instance" })
+  depends_on = [aws_eip.orthweb_eip]
+}
+
+resource "aws_eip" "orthweb_eip" {
+  vpc  = true
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Floating-EIP" })
 }
 
 resource "aws_eip_association" "floating_eip_assoc" {
-  allocation_id        = data.aws_eip.orthweb_eip.id
+  allocation_id        = aws_eip.orthweb_eip.id
   network_interface_id = aws_network_interface.primary_nic.id
 }
 
@@ -162,9 +177,18 @@ resource "aws_network_interface" "secondary_nic" {
 resource "aws_instance" "orthweb_secondary" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = var.deployment_options.SecondaryInstanceType
+#  ebs_optimized = true
   user_data     = data.template_cloudinit_config.orthconfig.rendered
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
-
+  monitoring = true
+#  metadata_options {
+#    http_endpoint = "enabled"
+#    http_tokens   = "required"
+#  }
+  root_block_device {
+    encrypted = true
+    kms_key_id = var.custom_key_arn
+  }
   network_interface {
     device_index         = 0
     network_interface_id = aws_network_interface.secondary_nic.id

@@ -11,7 +11,7 @@ resource "aws_db_subnet_group" "default" {
 }
 
 resource "aws_security_group" "dbsecgroup" {
-  name        = "${var.resource_prefix}-orthdb_sg"
+  name        = "${var.resource_prefix}-orthdb-secgrp"
   description = "postgres security group"
   vpc_id      = data.aws_vpc.mainVPC.id
   ingress {
@@ -31,12 +31,27 @@ resource "aws_security_group" "dbsecgroup" {
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSecurityGroup" })
 }
 
+resource "aws_db_parameter_group" "dbparamgroup" {
+  name   = "${var.resource_prefix}-orthdb-paramgrp"
+  family = "postgres14"
+
+  parameter {
+    name="log_statement"
+    value="all"
+  }
+  parameter {
+    name="log_min_duration_statement"
+    value="1"
+  }
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBParameterGroup" })
+}
+
 resource "aws_db_instance" "postgres" {
   allocated_storage                   = 5
   storage_type                        = "standard" #magnetic drive minimum 5g storage
   engine                              = "postgres"
   engine_version                      = "14.2"
-  instance_class                      = "db.t3.small" # t2.micro does not support encryption at rest
+  instance_class                      = "db.t3.small"         # t2.micro does not support encryption at rest
   identifier                          = "${var.resource_prefix}-orthancpostgres"
   db_name                             = "orthancdb"
   username                            = local.db_creds.username
@@ -48,7 +63,11 @@ resource "aws_db_instance" "postgres" {
   final_snapshot_identifier           = "demodb"
   vpc_security_group_ids              = [aws_security_group.dbsecgroup.id]
   db_subnet_group_name                = aws_db_subnet_group.default.name
+  parameter_group_name = aws_db_parameter_group.dbparamgroup.name
   storage_encrypted                   = true
+  multi_az = true
+  auto_minor_version_upgrade = true
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
   #kms_key_id                          = aws_kms_key.dbkey.arn
   kms_key_id                          = var.custom_key_arn 
   tags                                = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBInstance" })

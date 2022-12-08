@@ -10,7 +10,7 @@ variable "vpc_config" {
     public_subnet2_id      = null
     secret_ep_service_name = null
     s3_ep_service_name     = null
-    eip_allocation_id      = null
+#    eip_allocation_id      = null
   }
 }
 variable "db_instance_id" {

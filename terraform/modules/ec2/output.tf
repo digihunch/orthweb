@@ -10,6 +10,6 @@ output "secondary_host_info" {
 }
 output "eip_info" {
   value = {
-    eip_dns = data.aws_eip.orthweb_eip.public_dns
+    eip_dns = aws_eip.orthweb_eip.public_dns
   }
 }

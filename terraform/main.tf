@@ -62,7 +62,7 @@ module "ec2" {
     public_subnet2_id      = module.network.vpc_info.public_subnet2_id
     s3_ep_service_name     = module.network.vpc_info.s3_vpc_ep_service_name
     secret_ep_service_name = module.secret.secret_info.ep_service_name
-    eip_allocation_id      = module.network.eip_info.floating_allocation_id
+#    eip_allocation_id      = module.network.eip_info.floating_allocation_id
   }
   deployment_options = var.DeploymentOptions
   resource_tags      = var.Tags

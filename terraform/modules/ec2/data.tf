@@ -36,9 +36,9 @@ data "aws_vpc_endpoint" "s3" {
   service_name = var.vpc_config.s3_ep_service_name
 }
 
-data "aws_eip" "orthweb_eip" {
-  id = var.vpc_config.eip_allocation_id
-}
+#data "aws_eip" "orthweb_eip" {
+#  id = var.vpc_config.eip_allocation_id
+#}
 
 data "template_file" "userdata2" {
   template = file("${path.module}/userdata2.tpl")
@@ -52,7 +52,7 @@ data "template_file" "userdata2" {
     s3_bucket        = data.aws_s3_bucket.orthbucket.bucket
     orthanc_image    = var.deployment_options.OrthancImg
     envoy_image      = var.deployment_options.EnvoyImg
-    floating_eip_dns = data.aws_eip.orthweb_eip.public_dns
+    floating_eip_dns = aws_eip.orthweb_eip.public_dns
   }
 }
 
