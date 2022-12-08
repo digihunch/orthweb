@@ -7,6 +7,9 @@ variable "private_subnet2_id" {
 variable "db_secret_id" {
   type = string
 }
+variable "custom_key_arn" {
+  type = string
+}
 variable "resource_prefix" {
   type = string
 }

@@ -1,7 +1,7 @@
-resource "aws_kms_key" "s3key" {
-  description             = "This key is used to encrypt bucket objects"
-  deletion_window_in_days = 10
-}
+#resource "aws_kms_key" "s3key" {
+#  description             = "This key is used to encrypt bucket objects"
+#  deletion_window_in_days = 10
+#}
 
 resource "aws_s3_bucket" "orthbucket" {
   bucket = "${var.resource_prefix}-orthbucket"
@@ -10,11 +10,19 @@ resource "aws_s3_bucket" "orthbucket" {
   tags          = merge(var.resource_tags, { Name = "${var.resource_prefix}-orthbucket" })
 }
 
+resource "aws_s3_bucket_versioning" "orthbucket_versioning" {
+  bucket = aws_s3_bucket.orthbucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "test" {
   bucket = aws_s3_bucket.orthbucket.bucket
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.s3key.arn
+      #kms_master_key_id = aws_kms_key.s3key.arn
+      kms_master_key_id = var.custom_key_arn
       sse_algorithm     = "aws:kms"
     }
   }

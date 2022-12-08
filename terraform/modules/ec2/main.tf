@@ -13,12 +13,14 @@ resource "aws_security_group" "ec2-secgrp" {
     to_port     = 0
     protocol    = "icmp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "allow ping from anywhere"
   }
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "allow outbound access"
   }
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-EC2SecurityGroup" })
 }
@@ -114,7 +116,7 @@ resource "aws_iam_role_policy" "s3_access_policy" {
       "Resource": [
         "${data.aws_s3_bucket.orthbucket.arn}",
         "${data.aws_s3_bucket.orthbucket.arn}/*",
-        "${var.s3_key_arn}"
+        "${var.custom_key_arn}"
       ]
     }
   ]

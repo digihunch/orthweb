@@ -4,8 +4,16 @@ resource "random_password" "password" {
   override_special = "!%*-_+:?"
 }
 
+resource "aws_kms_key" "customKey" {
+  description             = "This key is used to encrypt resources"
+  deletion_window_in_days = 10
+  enable_key_rotation    = true
+  tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-Custom-KMS-Key" })
+}
+
 resource "aws_secretsmanager_secret" "secretDB" {
   name = "${var.resource_prefix}DatabaseCreds"
+  kms_key_id = aws_kms_key.customKey.arn
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSecret" })
 }
 
@@ -58,6 +66,7 @@ resource "aws_security_group" "secmgrepsecgroup" {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = [data.aws_vpc.mainVPC.cidr_block]
+    description = "allow access from VPC"
   }
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-SecretManagerEndPointSecurityGroup" })
 }

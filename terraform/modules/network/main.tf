@@ -75,6 +75,7 @@ resource "aws_security_group" "s3_ep_secgroup" {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr_block]
+    description = "allow access to https from VPC"
   }
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-S3EndPointSecurityGroup" })
 }

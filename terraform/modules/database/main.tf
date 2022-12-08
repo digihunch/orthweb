@@ -1,8 +1,9 @@
-resource "aws_kms_key" "dbkey" {
-  description             = "This key is used to encrypt database storage"
-  deletion_window_in_days = 10
-  tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-DB-KMS-Key" })
-}
+#resource "aws_kms_key" "dbkey" {
+#  description             = "This key is used to encrypt database storage"
+#  deletion_window_in_days = 10
+#  enable_key_rotation    = true
+#  tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-DB-KMS-Key" })
+#}
 
 resource "aws_db_subnet_group" "default" {
   name       = "${var.resource_prefix}-dbsubnetgroup"
@@ -18,12 +19,14 @@ resource "aws_security_group" "dbsecgroup" {
     to_port     = 5432
     protocol    = "tcp"
     cidr_blocks = [data.aws_vpc.mainVPC.cidr_block]
+    description = "allow access to db port from VPC"
   }
   ingress {
     from_port   = 8
     to_port     = 0
     protocol    = "icmp"
     cidr_blocks = [data.aws_vpc.mainVPC.cidr_block]
+    description = "allow ping from VPC"
   }
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSecurityGroup" })
 }
@@ -46,7 +49,8 @@ resource "aws_db_instance" "postgres" {
   vpc_security_group_ids              = [aws_security_group.dbsecgroup.id]
   db_subnet_group_name                = aws_db_subnet_group.default.name
   storage_encrypted                   = true
-  kms_key_id                          = aws_kms_key.dbkey.arn
+  #kms_key_id                          = aws_kms_key.dbkey.arn
+  kms_key_id                          = var.custom_key_arn 
   tags                                = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBInstance" })
 }
 
