@@ -35,7 +35,9 @@ runuser -l envoy -c "
 # we create a directroy on host with owner's uid/gid identical to the uid/gid of main process in envoy container. This will allow us to map host directory for container to write logs to a host directory (in addition to stdout). We also set ACL to allow ec2-user on the host to read/execute in envoy user's directory, for the convenience of ec2-user.
 
 ## configure self-signed certificate for compute-1.amazonaws.com
-ComName=`curl -s http://169.254.169.254/latest/meta-data/public-hostname|cut -d. -f2-`
+TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
+ComName=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-hostname|cut -d. -f2-`
+
 openssl11 req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/private.key -out /tmp/certificate.crt -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ComName/emailAddress=info@digihunch.com -addext extendedKeyUsage=serverAuth -addext subjectAltName=DNS:orthweb.digihunch.com,DNS:$ComName
 
 runuser -l ec2-user -c " 

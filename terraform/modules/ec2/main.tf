@@ -134,14 +134,14 @@ resource "aws_network_interface" "primary_nic" {
 resource "aws_instance" "orthweb_primary" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = var.deployment_options.PrimaryInstanceType
-#  ebs_optimized = true
+  ebs_optimized = true
   user_data     = data.template_cloudinit_config.orthconfig.rendered
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
   monitoring = true
-#  metadata_options {
-#    http_endpoint = "enabled"
-#    http_tokens   = "required"
-#  }
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
   root_block_device {
     encrypted = true
     kms_key_id = var.custom_key_arn
@@ -177,14 +177,14 @@ resource "aws_network_interface" "secondary_nic" {
 resource "aws_instance" "orthweb_secondary" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = var.deployment_options.SecondaryInstanceType
-#  ebs_optimized = true
+  ebs_optimized = true
   user_data     = data.template_cloudinit_config.orthconfig.rendered
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
   monitoring = true
-#  metadata_options {
-#    http_endpoint = "enabled"
-#    http_tokens   = "required"
-#  }
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
   root_block_device {
     encrypted = true
     kms_key_id = var.custom_key_arn

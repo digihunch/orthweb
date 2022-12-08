@@ -20,7 +20,7 @@ variable "DeploymentOptions" {
   default = {
     OrthancImg            = "osimis/orthanc:22.11.3"
     EnvoyImg              = "envoyproxy/envoy:v1.22.5"
-    PrimaryInstanceType   = "t2.medium"
-    SecondaryInstanceType = "t2.medium"
+    PrimaryInstanceType   = "t3.medium"     # EBS-optimized instance type
+    SecondaryInstanceType = "t3.medium"     # EBS-optimized instance type
   }
 }

@@ -46,8 +46,28 @@ resource "aws_db_parameter_group" "dbparamgroup" {
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBParameterGroup" })
 }
 
+resource "aws_iam_role" "rds_monitoring_role" {
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid = "MonitoringRoleForRDS"
+        Principal = {
+          Service = "monitoring.rds.amazonaws.com"
+        }
+      },
+    ]
+  })
+  managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"]
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DB-Monitoring-IAM-role" })
+}
+
 resource "aws_db_instance" "postgres" {
   allocated_storage                   = 5
+  monitoring_interval  = 60
+  monitoring_role_arn = aws_iam_role.rds_monitoring_role.arn
   storage_type                        = "standard" #magnetic drive minimum 5g storage
   engine                              = "postgres"
   engine_version                      = "14.2"

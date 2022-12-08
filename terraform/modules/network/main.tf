@@ -5,6 +5,10 @@ resource "aws_vpc" "orthmain" {
   tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-MainVPC" })
 }
 
+resource "aws_default_security_group" "default_sg" {
+  vpc_id = aws_vpc.orthmain.id
+}
+
 resource "aws_subnet" "publicsubnet1" {
   vpc_id                  = aws_vpc.orthmain.id
   cidr_block              = var.public_subnet1_cidr_block
