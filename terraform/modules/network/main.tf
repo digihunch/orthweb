@@ -9,6 +9,13 @@ resource "aws_default_security_group" "default_sg" {
   vpc_id = aws_vpc.orthmain.id
 }
 
+resource "aws_flow_log" "mainVPCflowlog" {
+  log_destination      = var.vpc_flow_logging_bucket_arn
+  log_destination_type = "s3"
+  traffic_type         = "REJECT"
+  vpc_id               = aws_vpc.orthmain.id
+}
+
 resource "aws_subnet" "publicsubnet1" {
   vpc_id                  = aws_vpc.orthmain.id
   cidr_block              = var.public_subnet1_cidr_block
@@ -94,7 +101,3 @@ resource "aws_vpc_endpoint" "s3_ep" {
   tags               = merge(var.resource_tags, { Name = "${var.resource_prefix}-EndPointForS3" })
 }
 
-#resource "aws_eip" "orthweb_eip" {
-#  vpc  = true
-#  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Floating-EIP" })
-#}

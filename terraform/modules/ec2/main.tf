@@ -137,13 +137,13 @@ resource "aws_instance" "orthweb_primary" {
   ebs_optimized = true
   user_data     = data.template_cloudinit_config.orthconfig.rendered
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
-  monitoring = true
+  monitoring    = true
   metadata_options {
     http_endpoint = "enabled"
     http_tokens   = "required"
   }
   root_block_device {
-    encrypted = true
+    encrypted  = true
     kms_key_id = var.custom_key_arn
   }
   network_interface {
@@ -153,7 +153,7 @@ resource "aws_instance" "orthweb_primary" {
 
   iam_instance_profile = aws_iam_instance_profile.inst_profile.name
   tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Instance" })
-  depends_on = [aws_eip.orthweb_eip]
+  depends_on           = [aws_eip.orthweb_eip]
 }
 
 resource "aws_eip" "orthweb_eip" {
@@ -180,13 +180,13 @@ resource "aws_instance" "orthweb_secondary" {
   ebs_optimized = true
   user_data     = data.template_cloudinit_config.orthconfig.rendered
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
-  monitoring = true
+  monitoring    = true
   metadata_options {
     http_endpoint = "enabled"
     http_tokens   = "required"
   }
   root_block_device {
-    encrypted = true
+    encrypted  = true
     kms_key_id = var.custom_key_arn
   }
   network_interface {

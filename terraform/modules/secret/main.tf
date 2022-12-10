@@ -7,14 +7,43 @@ resource "random_password" "password" {
 resource "aws_kms_key" "customKey" {
   description             = "This key is used to encrypt resources"
   deletion_window_in_days = 10
-  enable_key_rotation    = true
-  tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-Custom-KMS-Key" })
+  enable_key_rotation     = true
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Id      = "${var.resource_prefix}-KMS-KeyPolicy"
+    Statement = [
+      {
+        Sid    = "Enable IAM User Permissions"
+        Effect = "Allow"
+        Principal = {
+          "AWS" : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+        }, {
+        Sid    = "Allow Cloud Watch to use the key"
+        Effect = "Allow"
+        Principal = {
+          "Service" : "logs.${data.aws_region.this.name}.amazonaws.com"
+        }
+        Action = [
+          "kms:Encrypt*",
+          "kms:Decrypt*",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:Describe*",
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Custom-KMS-Key" })
 }
 
 resource "aws_secretsmanager_secret" "secretDB" {
-  name = "${var.resource_prefix}DatabaseCreds"
+  name       = "${var.resource_prefix}DatabaseCreds"
   kms_key_id = aws_kms_key.customKey.arn
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSecret" })
+  tags       = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSecret" })
 }
 
 resource "aws_secretsmanager_secret_version" "sversion" {

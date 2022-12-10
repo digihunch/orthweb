@@ -10,7 +10,6 @@ variable "vpc_config" {
     public_subnet2_id      = null
     secret_ep_service_name = null
     s3_ep_service_name     = null
-#    eip_allocation_id      = null
   }
 }
 variable "db_instance_id" {
@@ -25,9 +24,6 @@ variable "role_name" {
 variable "db_secret_arn" {
   type = string
 }
-#variable "s3_key_arn" {
-#  type = string
-#}
 variable "custom_key_arn" {
   type = string
 }

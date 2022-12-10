@@ -36,10 +36,6 @@ data "aws_vpc_endpoint" "s3" {
   service_name = var.vpc_config.s3_ep_service_name
 }
 
-#data "aws_eip" "orthweb_eip" {
-#  id = var.vpc_config.eip_allocation_id
-#}
-
 data "template_file" "userdata2" {
   template = file("${path.module}/userdata2.tpl")
   vars = {

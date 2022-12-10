@@ -14,4 +14,6 @@ locals {
   db_creds = jsondecode(
     data.aws_secretsmanager_secret_version.dbcreds.secret_string
   )
+  db_log_exports        = ["postgresql", "upgrade"]
+  db_log_retention_days = 7
 }
