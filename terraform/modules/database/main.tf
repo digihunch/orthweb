@@ -1,6 +1,7 @@
-resource "aws_db_subnet_group" "default" {
+resource "aws_db_subnet_group" "dbsubnetgroup" {
   name       = "${var.resource_prefix}-dbsubnetgroup"
   subnet_ids = [var.private_subnet1_id, var.private_subnet2_id]
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSubnetGroup" })
 }
 
 resource "aws_security_group" "dbsecgroup" {
@@ -83,7 +84,7 @@ resource "aws_db_instance" "postgres" {
   iam_database_authentication_enabled = true
   final_snapshot_identifier           = "demodb"
   vpc_security_group_ids              = [aws_security_group.dbsecgroup.id]
-  db_subnet_group_name                = aws_db_subnet_group.default.name
+  db_subnet_group_name                = aws_db_subnet_group.dbsubnetgroup.name
   parameter_group_name                = aws_db_parameter_group.dbparamgroup.name
   storage_encrypted                   = true
   multi_az                            = true

@@ -153,17 +153,7 @@ resource "aws_instance" "orthweb_primary" {
 
   iam_instance_profile = aws_iam_instance_profile.inst_profile.name
   tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Instance" })
-  depends_on           = [aws_eip.orthweb_eip]
-}
-
-resource "aws_eip" "orthweb_eip" {
-  vpc  = true
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Floating-EIP" })
-}
-
-resource "aws_eip_association" "floating_eip_assoc" {
-  allocation_id        = aws_eip.orthweb_eip.id
-  network_interface_id = aws_network_interface.primary_nic.id
+  depends_on           = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
 }
 
 ## secondary instance
@@ -195,5 +185,16 @@ resource "aws_instance" "orthweb_secondary" {
   }
   iam_instance_profile = aws_iam_instance_profile.inst_profile.name
   tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Instance" })
+  depends_on = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
+}
+
+resource "aws_eip" "orthweb_eip" {
+  vpc  = true
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Floating-EIP" })
+}
+
+resource "aws_eip_association" "floating_eip_assoc" {
+  allocation_id        = aws_eip.orthweb_eip.id
+  network_interface_id = aws_network_interface.primary_nic.id
 }
 

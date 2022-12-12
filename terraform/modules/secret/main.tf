@@ -20,11 +20,15 @@ resource "aws_kms_key" "customKey" {
         }
         Action   = "kms:*"
         Resource = "*"
-        }, {
-        Sid    = "Allow Cloud Watch to use the key"
+      }, {
+        Sid    = "Allow Cloud Watch, VPC flow log and s3 access logging sources to use the key"
         Effect = "Allow"
         Principal = {
-          "Service" : "logs.${data.aws_region.this.name}.amazonaws.com"
+          "Service" : [
+            "logs.${data.aws_region.this.name}.amazonaws.com",
+            "delivery.logs.amazonaws.com",
+            "logging.s3.amazonaws.com"
+          ]
         }
         Action = [
           "kms:Encrypt*",

@@ -5,3 +5,7 @@ data "aws_region" "this" {}
 data "aws_iam_role" "instance_role" {
   name = var.role_name
 }
+locals {
+  access_log_prefix = "accesslog/orthbucket/"  
+}
+

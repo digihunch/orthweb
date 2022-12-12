@@ -75,7 +75,7 @@ resource "aws_s3_bucket" "logging_bucket" {
 resource "aws_s3_bucket_versioning" "orthweb_logging_versioning" {
   bucket = aws_s3_bucket.logging_bucket.id
   versioning_configuration {
-    status = "Disabled"
+    status = "Enabled"
   }
 }
 
@@ -103,63 +103,29 @@ resource "aws_s3_bucket_public_access_block" "orthwebloggingbucketblockpublicacc
   depends_on              = [aws_s3_bucket.logging_bucket] # explicit dependency to avoid errors on conflicting conditional operation
 }
 
-
 resource "aws_s3_bucket_policy" "orthweb_logging_policy" {
   bucket = aws_s3_bucket.logging_bucket.id
+  # https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-server-access-logging.html
   policy = jsonencode({
     Version = "2012-10-17"
     Id      = "${var.resource_prefix}-OrthwebLoggingBucketPolicy"
     Statement = [
       {
-        Sid       = "DenyExceptRootAccnt"
-        Effect    = "Deny"
-        Principal = "*"
-        Action    = "s3:*"
-        Resource = [
-          aws_s3_bucket.logging_bucket.arn,
-          "${aws_s3_bucket.logging_bucket.arn}/*",
+        Sid = "S3ServerAccessLogsPolicy"
+        Effect = "Allow"
+        Principal = {
+          Service = "logging.s3.amazonaws.com"
+        },
+        Action = [
+          "s3:PutObject"
         ]
+        Resource = "${aws_s3_bucket.logging_bucket.arn}/${local.access_log_prefix}*",
         Condition = {
-          StringNotLike = {
-            "aws:userId" = [
-              "${data.aws_caller_identity.current.account_id}", # root user
-              "${data.aws_caller_identity.current.user_id}"     # deployment user
-            ]
-          }
-        }
-      },
-      {
-        "Sid" : "AWSLogDeliveryWrite",
-        "Effect" : "Allow",
-        "Principal" : {
-          "Service" : "delivery.logs.amazonaws.com"
-        },
-        "Action" : "s3:PutObject",
-        "Resource" : "${aws_s3_bucket.logging_bucket.arn}/*",
-        "Condition" : {
-          "StringEquals" : {
-            "aws:SourceAccount" : "${data.aws_caller_identity.current.account_id}",
-            "s3:x-amz-acl" : "bucket-owner-full-control"
+          ArnLike = {
+            "aws:SourceArn" = "${aws_s3_bucket.orthbucket.arn}"
           },
-          "ArnLike" : {
-            "aws:SourceArn" : "arn:aws:logs:${data.aws_region.this.name}:${data.aws_caller_identity.current.account_id}:*"
-          }
-        }
-      },
-      {
-        "Sid" : "AWSLogDeliveryAclCheck",
-        "Effect" : "Allow",
-        "Principal" : {
-          "Service" : "delivery.logs.amazonaws.com"
-        },
-        "Action" : "s3:GetBucketAcl",
-        "Resource" : "${aws_s3_bucket.logging_bucket.arn}",
-        "Condition" : {
-          "StringEquals" : {
-            "aws:SourceAccount" : "${data.aws_caller_identity.current.account_id}"
-          },
-          "ArnLike" : {
-            "aws:SourceArn" : "arn:aws:logs:${data.aws_region.this.name}:${data.aws_caller_identity.current.account_id}:*"
+          StringEquals = {
+            "aws:SourceAccount" = "${data.aws_caller_identity.current.account_id}"
           }
         }
       }
@@ -168,9 +134,9 @@ resource "aws_s3_bucket_policy" "orthweb_logging_policy" {
   depends_on = [aws_s3_bucket_public_access_block.orthwebloggingbucketblockpublicaccess]
 }
 
-resource "aws_s3_bucket_logging" "example" {
+resource "aws_s3_bucket_logging" "bucket_logging_target_association" {
   bucket = aws_s3_bucket.orthbucket.id
 
   target_bucket = aws_s3_bucket.logging_bucket.id
-  target_prefix = "orthbucket_accesslog/"
+  target_prefix = local.access_log_prefix 
 }

@@ -2,7 +2,7 @@
 echo "Entering userdata1 script"
 ## Install required packages and SSM agent.
 yum update -y
-yum install postgresql docker git jq openssl11 -y
+yum install docker git jq openssl11 -y
 sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
 
 ## Configure Docker daemon
@@ -37,6 +37,7 @@ runuser -l envoy -c "
 ## configure self-signed certificate for compute-1.amazonaws.com
 TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
 ComName=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-hostname|cut -d. -f2-`
+#ComName=`curl -s http://169.254.169.254/latest/meta-data/public-hostname|cut -d. -f2-`
 
 openssl11 req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/private.key -out /tmp/certificate.crt -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ComName/emailAddress=info@digihunch.com -addext extendedKeyUsage=serverAuth -addext subjectAltName=DNS:orthweb.digihunch.com,DNS:$ComName
 

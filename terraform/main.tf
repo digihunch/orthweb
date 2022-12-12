@@ -25,6 +25,7 @@ module "network" {
   vpc_flow_logging_bucket_arn = module.storage.s3_info.logging_bucket_arn
   resource_tags               = var.Tags
   resource_prefix             = random_pet.prefix.id
+  #  depends_on = [module.storage]
 }
 
 module "secret" {
