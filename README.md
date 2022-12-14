@@ -1,6 +1,8 @@
 
 # Orthweb - Orthanc on AWS
- 
+
+[![License](https://img.shields.io/github/license/tmknom/terraform-aws-s3-access-log.svg)](https://opensource.org/licenses/Apache-2.0)
+
 ## Overview
 
  **[Orthweb](https://github.com/digihunch/orthweb)** helps Orthanc administrators deploy **[Orthanc](https://www.orthanc-server.com/)** on AWS, with self-contained, opionated and full-stack resources defined in Terraform. Bring your own AWS account, this project automatically sets up the Orthanc server for HTTP and DICOM in 10 minutes.
