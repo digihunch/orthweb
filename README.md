@@ -1,13 +1,18 @@
-
 # Orthweb - Orthanc on AWS
+<img style="float" align="right" src="resources/orthanc_logo.png">
 
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](https://aws.amazon.com/amazon-linux-2)
+[![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?logo=amazon-aws&logoColor=white)](https://portal.aws.amazon.com/)
 [![License](https://img.shields.io/github/license/tmknom/terraform-aws-s3-access-log.svg)](https://opensource.org/licenses/Apache-2.0)
-
+[![Latest Release](https://img.shields.io/github/v/release/digihunch/orthweb)](https://github.com/digihunch/orthweb/releases/latest) 
 ## Overview
 
- **[Orthweb](https://github.com/digihunch/orthweb)** helps Orthanc administrators deploy **[Orthanc](https://www.orthanc-server.com/)** on AWS, with self-contained, opionated and full-stack resources defined in Terraform. Bring your own AWS account, this project automatically sets up the Orthanc server for HTTP and DICOM in 10 minutes.
+ **[Orthweb](https://github.com/digihunch/orthweb)** helps imaging IT administrators operationalize **[Orthanc](https://www.orthanc-server.com/)** on AWS. It comes with self-contained, opionated and full-stack cloud resources defined in Terraform. Bring your own AWS account, and watch how **Orthweb** sets up the Orthanc server in 15 minutes to serve HTTP and DICOM traffic.
 
-Using the [Orthanc image](https://hub.docker.com/r/osimis/orthanc) released by [Osimis](https://www.osimis.io/), **[Orthweb](https://github.com/digihunch/orthweb)** project orchestrates numerous underlying cloud resources in AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) to build hosting infrastructure with end-to-end automation, high availability and security. Here is the summary of current compliance status of the infrastructure stack, reported by BridgeCrew:
+Using the [Orthanc image](https://hub.docker.com/r/osimis/orthanc) released by [Osimis](https://www.osimis.io/), the **[Orthweb](https://github.com/digihunch/orthweb)** project orchestrates numerous underlying cloud resources in AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) and host **Orthanc** application with end-to-end automation, high availability and security. Here is the summary of current compliance status of the infrastructure stack, reported by BridgeCrew:
 | Benchmark | Description |
 | ----------- | --------- |
 | [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/general)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=INFRASTRUCTURE+SECURITY) | Infrastructure Security Compliance |
@@ -30,11 +35,29 @@ Using the [Orthanc image](https://hub.docker.com/r/osimis/orthanc) released by [
 | You are a healthcare organization, start-up or corporate. Your organization has established [cloud foundation](https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/organizing-your-aws-environment.html). You want to configure Orthanc on top of it. | The infrastructure team configures [landing zone](https://docs.aws.amazon.com/prescriptive-guidance/latest/migration-aws-environment/understanding-landing-zones.html) with secure and compliant networking foundation. | The application team configures computing resource and with Orthanc installation, taking [Orthweb](https://github.com/digihunch/orthweb) as a reference. |
 </p></details>
 
-
-
-For those with Kubernetes skills and complex use cases, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb) for deployment on Kubernetes.
+For those with Kubernetes skills to solve complex use cases, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb).
 
 Follow the rest of this hands-on guide to understand how **Orthweb** works. Skip to the end of the guide for architecture.
+
+##  Architecture
+
+Orthweb uses Docker Compose to orchestrate multiple Orthanc containers along with an Envoy proxy container. I did not choose ECS due to a [limitation](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) and concerns with platform lock-in. To scale up, you may increase the number of replica for Orthanc containers. This scaling model is sufficient for typical Orthanc workload. 
+
+The Orthweb architecture can be illustrated in the diagram below:
+
+![Diagram](resources/Orthweb.png)
+
+The site's IP is associated with an Elastic Network Interface (ENI). It is connected to the primary EC2 instance hosted in availability zone 1. Business traffic (DICOM and HTTP) are routed to the Site IP at port 11112 and 443. Docker damon runs Envoy proxy who listens to those ports. The Envoy proxy, serves two different proxy routes: 
+<details><summary> Proxy routes</summary><p>
+
+* https on host port 443 -> https on container port 8043
+* dicom-tls on host port 11112 -> dicom on container port 4242
+</p></details>
+
+The envoy proxy is configured to spread traffic across three Orthanc containers, with session affinity configured. Each Orthanc container is able to connect to S3 and PostgreSQL database via their respect endpoint in the subnet.
+
+Should availability zone 1 becomes unavailable, system administrator can turn on the secondary EC2 instance in availability zone 2, and associate the ENI with site IP to it, as instructed in the `Failover` section above. This way we bring availability zone 2 to operation and redirect business traffic to it.
+
 
 ## Prerequisite
 Whether on Linux, Mac or Windows, you need a command terminal to start deployment, with:
@@ -194,7 +217,7 @@ To emulate DICOM activity, we use [dcm4che3](https://sourceforge.net/projects/dc
 
 <details><summary>Import site certificate to Java trust store </summary><p>
 
-1. On the server, find the .pem file in `/home/ec2-user/orthweb/app/` directory, copy the certificate content (between the lines "BEGIN CERTIFICATE" and "END CERTIFICATE" inclusive), and paste it to a file named `site.crt` on your MacBook.
+1. On the server, find the .pem file in `/home/ec2-user/orthweb/app/` directory, copy the certificate content (between the lines "BEGIN CERTIFICATE" and "END CERTIFICATE" inclusive), and paste it to a file named `site.crt` on your `:computer:`.
 2. Import the certificate file into a java trust store (e.g. `server.truststore`), with the command below and give it a password, say Password123!
 ```sh
 keytool -import -alias orthweb -file site.crt -storetype JKS -noprompt -keystore server.truststore -storepass Password123!
@@ -383,25 +406,6 @@ aws ec2 start-instances --instance-ids i-076b93808575da71e
 ```
 </p></details>
 The instance should be in a `stopped` state in order to be started again.
-
-##  Architecture
-
-Orthweb uses Docker Compose to orchestrate multiple Orthanc containers along with an Envoy proxy container. I did not choose ECS due to a [limitation](https://github.com/digihunch/orthweb/issues/1#issuecomment-852669561) and concerns with platform lock-in. To scale up, you may increase the number of replica for Orthanc containers. This scaling model is sufficient for typical Orthanc workload. 
-
-The Orthweb architecture can be illustrated in the diagram below:
-
-![Diagram](resources/Orthweb.png)
-
-The site's IP is associated with an Elastic Network Interface (ENI). It is connected to the primary EC2 instance hosted in availability zone 1. Business traffic (DICOM and HTTP) are routed to the Site IP at port 11112 and 443. Docker damon runs Envoy proxy who listens to those ports. The Envoy proxy, serves two different proxy routes: 
-<details><summary> Proxy routes</summary><p>
-
-* https on host port 443 -> https on container port 8043
-* dicom-tls on host port 11112 -> dicom on container port 4242
-</p></details>
-
-The envoy proxy is configured to spread traffic across three Orthanc containers, with session affinity configured. Each Orthanc container is able to connect to S3 and PostgreSQL database via their respect endpoint in the subnet.
-
-Should availability zone 1 becomes unavailable, system administrator can turn on the secondary EC2 instance in availability zone 2, and associate the ENI with site IP to it, as instructed in the `Failover` section above. This way we bring availability zone 2 to operation and redirect business traffic to it.
 
 ## Security
 
