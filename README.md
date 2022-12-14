@@ -300,7 +300,7 @@ RDS is accessible only from the EC2 instance on port 5432. You can get the datab
 <details><summary>psql command</summary><p>
 
 ```sh
-sudo yum-config-manager --add-repo https://yum.postgresql.org/
+sudo amazon-linux-extras enable postgresql14
 sudo yum install postgresql
 psql --host=postgresdbinstance.us-east-1.rds.amazonaws.com --port 5432 --username=myuser --dbname=orthancdb
 ```
