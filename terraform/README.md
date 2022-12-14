@@ -2,8 +2,8 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.4 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.40.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.5 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.45.0 |
 | <a name="requirement_template"></a> [template](#requirement\_template) | >= 2.2.0 |
 
 ## Providers
@@ -33,7 +33,7 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_DeploymentOptions"></a> [DeploymentOptions](#input\_DeploymentOptions) | Deployment Options | `map(any)` | <pre>{<br>  "EnvoyImg": "envoyproxy/envoy:v1.22.5",<br>  "OrthancImg": "osimis/orthanc:22.11.3",<br>  "PrimaryInstanceType": "t3.medium",<br>  "SecondaryInstanceType": "t3.medium"<br>}</pre> | no |
+| <a name="input_DeploymentOptions"></a> [DeploymentOptions](#input\_DeploymentOptions) | Deployment Options | `map(any)` | <pre>{<br>  "EnvoyImg": "envoyproxy/envoy:v1.22.5",<br>  "InstanceType": "t3.medium",<br>  "OrthancImg": "osimis/orthanc:22.11.3"<br>}</pre> | no |
 | <a name="input_Tags"></a> [Tags](#input\_Tags) | Tags for every resource. | `map(any)` | <pre>{<br>  "Environment": "Dev",<br>  "Owner": "my@email.com"<br>}</pre> | no |
 | <a name="input_pubkey_data"></a> [pubkey\_data](#input\_pubkey\_data) | n/a | `string` | `null` | no |
 | <a name="input_pubkey_path"></a> [pubkey\_path](#input\_pubkey\_path) | n/a | `string` | `"~/.ssh/id_rsa.pub"` | no |

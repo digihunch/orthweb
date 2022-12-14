@@ -20,7 +20,7 @@ resource "aws_kms_key" "customKey" {
         }
         Action   = "kms:*"
         Resource = "*"
-      }, {
+        }, {
         Sid    = "Allow Cloud Watch, VPC flow log and s3 access logging sources to use the key"
         Effect = "Allow"
         Principal = {

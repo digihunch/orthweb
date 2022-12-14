@@ -111,7 +111,7 @@ resource "aws_s3_bucket_policy" "orthweb_logging_policy" {
     Id      = "${var.resource_prefix}-OrthwebLoggingBucketPolicy"
     Statement = [
       {
-        Sid = "S3ServerAccessLogsPolicy"
+        Sid    = "S3ServerAccessLogsPolicy"
         Effect = "Allow"
         Principal = {
           Service = "logging.s3.amazonaws.com"
@@ -138,5 +138,5 @@ resource "aws_s3_bucket_logging" "bucket_logging_target_association" {
   bucket = aws_s3_bucket.orthbucket.id
 
   target_bucket = aws_s3_bucket.logging_bucket.id
-  target_prefix = local.access_log_prefix 
+  target_prefix = local.access_log_prefix
 }

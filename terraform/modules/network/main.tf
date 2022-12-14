@@ -7,25 +7,25 @@ resource "aws_vpc" "orthmain" {
 
 resource "aws_default_security_group" "default_sg" {
   vpc_id = aws_vpc.orthmain.id
-  tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-MainVPC-Default-SG" })
+  tags   = merge(var.resource_tags, { Name = "${var.resource_prefix}-MainVPC-Default-SG" })
 }
 
 resource "aws_flow_log" "mainVPCflowlog" {
-  log_destination      = var.vpc_flow_logging_bucket_arn
-  log_destination_type = "s3"
-  traffic_type         = "REJECT"
-  vpc_id               = aws_vpc.orthmain.id
-  max_aggregation_interval = 600 
+  log_destination          = var.vpc_flow_logging_bucket_arn
+  log_destination_type     = "s3"
+  traffic_type             = "REJECT"
+  vpc_id                   = aws_vpc.orthmain.id
+  max_aggregation_interval = 600
   destination_options {
     per_hour_partition = true
   }
-  tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-MainVPCFlowLog" })
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-MainVPCFlowLog" })
 }
 
 resource "aws_subnet" "publicsubnet1" {
   vpc_id                  = aws_vpc.orthmain.id
   cidr_block              = var.public_subnet1_cidr_block
-  map_public_ip_on_launch = true  ### revisit
+  map_public_ip_on_launch = true
   availability_zone       = data.aws_availability_zones.available.names[1]
   tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-PublicSubnet1" })
 }
@@ -33,7 +33,7 @@ resource "aws_subnet" "publicsubnet1" {
 resource "aws_subnet" "publicsubnet2" {
   vpc_id                  = aws_vpc.orthmain.id
   cidr_block              = var.public_subnet2_cidr_block
-  map_public_ip_on_launch = true  ### revisit 
+  map_public_ip_on_launch = true
   availability_zone       = data.aws_availability_zones.available.names[2]
   tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-PublicSubnet2" })
 }

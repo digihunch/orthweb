@@ -1,7 +1,7 @@
 resource "aws_db_subnet_group" "dbsubnetgroup" {
   name       = "${var.resource_prefix}-dbsubnetgroup"
   subnet_ids = [var.private_subnet1_id, var.private_subnet2_id]
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSubnetGroup" })
+  tags       = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSubnetGroup" })
 }
 
 resource "aws_security_group" "dbsecgroup" {

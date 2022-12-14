@@ -124,6 +124,31 @@ resource "aws_iam_role_policy" "s3_access_policy" {
 EOF
 }
 
+resource "aws_launch_template" "orthweb_launch_template" {
+  name          = "${var.resource_prefix}-ec2-launch-template"
+  key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
+  instance_type = var.deployment_options.InstanceType
+  user_data     = data.template_cloudinit_config.orthconfig.rendered
+  image_id      = data.aws_ami.amazon_linux.id
+  iam_instance_profile {
+    name = aws_iam_instance_profile.inst_profile.name
+  }
+  # Process in docker needs to get instance metadata to assume the IAM role for EC2 instance. With IMDSv2, we need set http_put_response_hop_limit to 2. Otherwise, process in Docker container will not be able to read/write to S3 bucket using the IAM role attached to the instance profile. Ref: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2
+  }
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size = 8
+      encrypted   = true
+      kms_key_id  = var.custom_key_arn
+    }
+  }
+}
+
 resource "aws_network_interface" "primary_nic" {
   subnet_id       = var.vpc_config.public_subnet1_id
   security_groups = [aws_security_group.ec2-secgrp.id, aws_security_group.business-traffic-secgrp.id]
@@ -132,28 +157,18 @@ resource "aws_network_interface" "primary_nic" {
 }
 
 resource "aws_instance" "orthweb_primary" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = var.deployment_options.PrimaryInstanceType
   ebs_optimized = true
-  user_data     = data.template_cloudinit_config.orthconfig.rendered
-  key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
   monitoring    = true
-  metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
-  }
-  root_block_device {
-    encrypted  = true
-    kms_key_id = var.custom_key_arn
-  }
   network_interface {
     device_index         = 0
     network_interface_id = aws_network_interface.primary_nic.id
   }
-
-  iam_instance_profile = aws_iam_instance_profile.inst_profile.name
-  tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Instance" })
-  depends_on           = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
+  launch_template {
+    id      = aws_launch_template.orthweb_launch_template.id
+    version = "$Latest"
+  }
+  tags       = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Instance" })
+  depends_on = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
 }
 
 ## secondary instance
@@ -165,26 +180,17 @@ resource "aws_network_interface" "secondary_nic" {
 }
 
 resource "aws_instance" "orthweb_secondary" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = var.deployment_options.SecondaryInstanceType
   ebs_optimized = true
-  user_data     = data.template_cloudinit_config.orthconfig.rendered
-  key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
   monitoring    = true
-  metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
-  }
-  root_block_device {
-    encrypted  = true
-    kms_key_id = var.custom_key_arn
-  }
   network_interface {
     device_index         = 0
     network_interface_id = aws_network_interface.secondary_nic.id
   }
-  iam_instance_profile = aws_iam_instance_profile.inst_profile.name
-  tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Instance" })
+  launch_template {
+    id      = aws_launch_template.orthweb_launch_template.id
+    version = "$Latest"
+  }
+  tags       = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Instance" })
   depends_on = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
 }
 
@@ -197,4 +203,3 @@ resource "aws_eip_association" "floating_eip_assoc" {
   allocation_id        = aws_eip.orthweb_eip.id
   network_interface_id = aws_network_interface.primary_nic.id
 }
-
