@@ -36,23 +36,7 @@ data "aws_vpc_endpoint" "s3" {
   service_name = var.vpc_config.s3_ep_service_name
 }
 
-data "template_file" "userdata2" {
-  template = file("${path.module}/userdata2.tpl")
-  vars = {
-    db_address       = data.aws_db_instance.postgres.address
-    db_port          = data.aws_db_instance.postgres.port
-    aws_region       = data.aws_region.this.name
-    sm_endpoint      = data.aws_vpc_endpoint.secmgr.dns_entry[0].dns_name
-    sec_name         = data.aws_secretsmanager_secret.secretDB.name
-    s3_endpoint      = data.aws_vpc_endpoint.s3.dns_entry[0].dns_name
-    s3_bucket        = data.aws_s3_bucket.orthbucket.bucket
-    orthanc_image    = var.deployment_options.OrthancImg
-    envoy_image      = var.deployment_options.EnvoyImg
-    floating_eip_dns = aws_eip.orthweb_eip.public_dns
-  }
-}
-
-data "template_cloudinit_config" "orthconfig" {
+data "cloudinit_config" "orthconfig" {
   base64_encode = true
   part {
     content_type = "text/x-shellscript"
@@ -60,7 +44,18 @@ data "template_cloudinit_config" "orthconfig" {
   }
   part {
     content_type = "text/x-shellscript"
-    content      = data.template_file.userdata2.rendered
+    content = templatefile("${path.module}/userdata2.tpl",{
+      db_address       = data.aws_db_instance.postgres.address,
+      db_port          = data.aws_db_instance.postgres.port,
+      aws_region       = data.aws_region.this.name,
+      sm_endpoint      = data.aws_vpc_endpoint.secmgr.dns_entry[0].dns_name,
+      sec_name         = data.aws_secretsmanager_secret.secretDB.name,
+      s3_endpoint      = data.aws_vpc_endpoint.s3.dns_entry[0].dns_name,
+      s3_bucket        = data.aws_s3_bucket.orthbucket.bucket,
+      orthanc_image    = var.deployment_options.OrthancImg,
+      envoy_image      = var.deployment_options.EnvoyImg,
+      floating_eip_dns = aws_eip.orthweb_eip.public_dns
+    })
   }
   part {
     content_type = "text/x-shellscript"

@@ -128,7 +128,7 @@ resource "aws_launch_template" "orthweb_launch_template" {
   name          = "${var.resource_prefix}-ec2-launch-template"
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
   instance_type = var.deployment_options.InstanceType
-  user_data     = data.template_cloudinit_config.orthconfig.rendered
+  user_data     = data.cloudinit_config.orthconfig.rendered
   image_id      = data.aws_ami.amazon_linux.id
   iam_instance_profile {
     name = aws_iam_instance_profile.inst_profile.name
