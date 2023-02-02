@@ -2,6 +2,10 @@
   "Name" : "Orthanc in Docker",
   "RemoteAccessAllowed" : true,
   "SslEnabled" : true,
+  "AuthenticationEnabled" : true,
+  "RegisteredUsers" : {
+    "admin" : "orthanc"
+  },
   "HttpsCACertificates": "/etc/ssl/certs/ca-certificates.crt",
   "SslCertificate" : "site.pem",
   "PostgreSQL" : {

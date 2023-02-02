@@ -34,13 +34,6 @@ runuser -l envoy -c "
 "
 # we create a directroy on host with owner's uid/gid identical to the uid/gid of main process in envoy container. This will allow us to map host directory for container to write logs to a host directory (in addition to stdout). We also set ACL to allow ec2-user on the host to read/execute in envoy user's directory, for the convenience of ec2-user.
 
-## configure self-signed certificate for compute-1.amazonaws.com
-TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
-ComName=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-hostname|cut -d. -f2-`
-#ComName=`curl -s http://169.254.169.254/latest/meta-data/public-hostname|cut -d. -f2-`
-
-openssl11 req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/private.key -out /tmp/certificate.crt -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ComName/emailAddress=info@digihunch.com -addext extendedKeyUsage=serverAuth -addext subjectAltName=DNS:orthweb.digihunch.com,DNS:$ComName
-
 runuser -l ec2-user -c " 
   cd /home/ec2-user/ && git init orthweb && cd orthweb && \
   git remote add origin https://github.com/digihunch/orthweb.git && \
@@ -49,9 +42,30 @@ runuser -l ec2-user -c "
   git pull --depth=1 origin main 
 "
 cd /home/ec2-user/orthweb/app
-cat /tmp/private.key /tmp/certificate.crt > $ComName.pem && rm /tmp/private.key /tmp/certificate.crt
-chown ec2-user:ec2-user $ComName.pem
-echo SITE_KEY_CERT_FILE=$ComName.pem > .env
+
+## configure self-signed certificate for compute-1.amazonaws.com
+TOKEN=`curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
+IssuerComName=issuer.orthweb.digihunch.com
+ServerComName=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-hostname|cut -d. -f2-`
+ClientComName=dcmclient.orthweb.digihunch.com
+
+# Generate a key pair for Test CA. Generate the certificate for Test CA by self-signing its own public key
+openssl11 req -x509 -sha256 -newkey rsa:4096 -days 365 -nodes -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$IssuerComName/emailAddress=info@digihunch.com -keyout /tmp/ca.key -out /tmp/ca.crt
+
+# Generate a key pair for the (DICOM) server. Generate the certificate for the server by signing its public key with Test CA's private key
+openssl11 req -new -newkey rsa:4096 -nodes -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ServerComName/emailAddress=orthweb@digihunch.com -addext extendedKeyUsage=serverAuth -addext subjectAltName=DNS:orthweb.digihunch.com,DNS:$IssuerComName -keyout /tmp/server.key -out /tmp/server.csr
+openssl11 x509 -req -sha256 -days 365 -in /tmp/server.csr -CA /tmp/ca.crt -CAkey /tmp/ca.key -set_serial 01 -out /tmp/server.crt
+cat /tmp/server.key /tmp/server.crt /tmp/ca.crt > $ServerComName.pem 
+
+chown ec2-user:ec2-user $ServerComName.pem
+echo SITE_KEY_CERT_FILE=$ServerComName.pem > .env
+
+# Generate a key pair for the (DICOM) client. Generate the certificate for the client by signing its public key with Test CA's private key
+openssl11 req -new -newkey rsa:4096 -nodes -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ClientComName/emailAddress=dcmclient@digihunch.com -keyout /tmp/client.key -out /tmp/client.csr
+openssl11 x509 -req -sha256 -days 365 -in /tmp/client.csr -CA /tmp/ca.crt -CAkey /tmp/ca.key -set_serial 01 -out /tmp/client.crt
+
+# The client key and certificate will be used by client only.
+chown ec2-user:ec2-user /tmp/*.crt /tmp/*.key
 
 
 echo "Leaving userdata1 script"

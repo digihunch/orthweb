@@ -114,7 +114,7 @@ static_resources:
         - append: true
           header:
             key: Authorization
-            value: Basic b3J0aGFuYzpvcnRoYW5j
+            value: Basic YWRtaW46b3J0aGFuYw== 
   - name: service-dicomtls
     type: STRICT_DNS
     lb_policy: RING_HASH 
