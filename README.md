@@ -186,7 +186,14 @@ To Validate DICOM capability, we can test with C-ECHO and C-STORE. We can use an
 
 Remember to enable TLS. Then you will be able to verify the node (i.e. C-ECHO) and send existing studies from Horos to Orthanc (C-STORE).
 
-To Validate the the web service, simply visit the site address (with `https://` head) and put in the [default credential](https://book.orthanc-server.com/users/docker.html#running-the-orthanc-core) at the prompt. The web browser may flag the site as insecure because Orthweb creats a self-signed certificate during deployment.
+To Validate the the web service, simply visit the site address (with `https://` scheme) and put in the [preset credential](https://github.com/digihunch/orthweb/blob/main/app/orthanc.json#L6) at the prompt. Note that the web browser may flag the site as insecure because the server certificate's CA is self-signed and not recognized by the browser. 
+
+Alternatively, you may use `curl` command to fetch the web content:
+
+```sh
+curl -HHost:web.orthweb.com -k -X GET https://ec2-35-183-66-248.ca-central-1.compute.amazonaws.com/app/explorer.html -u admin:orthanc --cacert ca.crt
+```
+The curl command should print out the web content.
 
 ## Technical Validation
 In this section, we go through a few checkpoints through a system administrator's lens, to ensure the system is functional and correctly configured.
@@ -214,66 +221,33 @@ The configuration files related to Orthanc deployment are in directory `/home/ec
 Based on envoy proxy configuration, some additional logging files are located in `/home/envoy/` for troubleshooting Envoy proxy.
 
 ### DICOM Validation
-To emulate DICOM activity, we use [dcm4che3](https://sourceforge.net/projects/dcm4che/files/dcm4che3/), a Java-based open-source utility. Since Orthweb implementation only takes DICOM traffic with TLS enabled, we need to add our site certificate to Java trust store (JKS format), so that `dcm4che3` can trust the Orthanc website to send [DIMSE](https://dicom.nema.org/dicom/2013/output/chtml/part07/sect_7.5.html) commands:
-
-<details><summary>Import site certificate to Java trust store </summary><p>
-
-1. On the server, find the .pem file in `/home/ec2-user/orthweb/app/` directory, copy the certificate content (between the lines "BEGIN CERTIFICATE" and "END CERTIFICATE" inclusive), and paste it to a file named `site.crt` on your `:computer:`.
-2. Import the certificate file into a java trust store (e.g. `server.truststore`), with the command below and give it a password, say Password123!
-```sh
-keytool -import -alias orthweb -file site.crt -storetype JKS -noprompt -keystore server.truststore -storepass Password123!
-```
-</p></details>
-In the next few stpes, the dcm4che utility will trust the certificates imported in this step.
-
-We can reference this truststore file when we use `dcm4che3` to issue `C-ECHO` and `C-STORE` commands. 
-
-The `dcm4che3` utility uses `storescu` executable to perform `C-ECHO` against the server. For example:
-<details><summary>storescu command for C-ECHO </summary><p>
+To emulate DICOM activity,  we use [dcmtk](https://dicom.offis.de/dcmtk.php.en), with TLS options. We use the `echoscu` executable to issue `C-ECHO` DIMSE command, and the `storescu` executable to issue `C-STORE` commands. For example:
+<details><summary>echoscu command for C-ECHO </summary><p>
 
 ```sh
-./storescu -c ORTHANC@ec2-54-243-91-148.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123!
+echoscu -aet TESTER -aec ORTHANC -d +tls client.key client.crt -rc +cf ca.crt ec2-35-183-66-248.ca-central-1.compute.amazonaws.com 11112
 ```
+The files `client.key`, `client.crt` and `ca.crt` can all be obtained from the /tmp/ directory on the server. 
 </p></details>
+
 The output should read Status code 0 in `C-ECHO-RSP`, followed by `C-ECHO-RQ`. Here is an example of the output from `storescu`:
 <details><summary>C-ECHO log segment:</summary>
 <p>
 
 ```
-19:26:54.908 DEBUG - STORESCU->ORTHANC(1): enter state: Sta6 - Association established and ready for data transfer
-Connected to ORTHANC in 252ms
-19:26:54.923 INFO  - STORESCU->ORTHANC(1) << 1:C-ECHO-RQ[pcid=1
-  cuid=1.2.840.10008.1.1 - Verification SOP Class
-  tsuid=1.2.840.10008.1.2 - Implicit VR Little Endian]
-19:26:54.924 DEBUG - STORESCU->ORTHANC(1) << 1:C-ECHO-RQ Command:
-(0000,0002) UI [1.2.840.10008.1.1] AffectedSOPClassUID
-(0000,0100) US [48] CommandField
-(0000,0110) US [1] MessageID
-(0000,0800) US [257] CommandDataSetType
-
-19:26:54.985 INFO  - STORESCU->ORTHANC(1) >> 1:C-ECHO-RSP[pcid=1, status=0H
-  cuid=1.2.840.10008.1.1 - Verification SOP Class
-  tsuid=1.2.840.10008.1.2 - Implicit VR Little Endian]
-19:26:54.985 DEBUG - STORESCU->ORTHANC(1) >> 1:C-ECHO-RSP Command:
-(0000,0002) UI [1.2.840.10008.1.1] AffectedSOPClassUID
-(0000,0100) US [32816] CommandField
-(0000,0120) US [1] MessageIDBeingRespondedTo
-(0000,0800) US [257] CommandDataSetType
-(0000,0900) US [0] Status
-
-19:26:54.986 INFO  - STORESCU->ORTHANC(1) << A-RELEASE-RQ
-19:26:54.986 DEBUG - STORESCU->ORTHANC(1): enter state: Sta7 - Awaiting A-RELEASE-RP PDU
-19:26:55.011 INFO  - STORESCU->ORTHANC(1) >> A-RELEASE-RP
-19:26:55.011 INFO  - STORESCU->ORTHANC(1): close Socket[addr=ec2-54-243-91-148.compute-1.amazonaws.com/54.243.91.148,port=11112,localport=52073]
-19:26:55.014 DEBUG - STORESCU->ORTHANC(1): enter state: Sta1 - Idle
+I: Association Accepted (Max Send PDV: 16372)
+I: Sending Echo Request (MsgID 1)
+D: DcmDataset::read() TransferSyntax="Little Endian Implicit"
+I: Received Echo Response (Success)
+I: Releasing Association
 ```
 </p></details>
 
-In addition to C-ECHO, we can also store a DICOM part 10 file (usually .dcm extension containing images) to Orthanc server. Again we use `storescu` executable:
+Further, we can store some DICOM part 10 file (usually .dcm extension containing images) to Orthanc server, using `storescu` executable:
 <details><summary>storescu command to issue C-STORE</summary><p>
 
 ```sh
-./storescu -c ORTHANC@ec2-54-243-91-148.compute-1.amazonaws.com:11112 --tls12 --tls-aes --trust-store server.truststore --trust-store-pass Password123! MY.DCM
+storescu -aet TESTER -aec ORTHANC -d +tls client.key client.crt -rc +cf ca.crt ec2-35-183-66-248.ca-central-1.compute.amazonaws.com 11112 DICOM_Images/COVID/56364823.dcm
 ```
 </p></details>
 Below is an example of what the output from `storescu` should look like:
@@ -281,40 +255,26 @@ Below is an example of what the output from `storescu` should look like:
 <details><summary>C-STORE log segment:</summary><p>
 
 ```
-19:24:34.157 DEBUG - STORESCU->ORTHANC(1): enter state: Sta6 - Association established and ready for data transfer
-Connected to ORTHANC in 469ms
-19:24:34.163 INFO  - STORESCU->ORTHANC(1) << 1:C-STORE-RQ[pcid=7, prior=0
-  cuid=1.2.840.10008.5.1.4.1.1.12.1 - X-Ray Angiographic Image Storage
-  iuid=1.3.12.2.1107.5.4.3.284980.19951129.170916.9 - ?
-  tsuid=1.2.840.10008.1.2.4.50 - JPEG Baseline (Process 1)]
-19:24:34.163 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Command:
-(0000,0002) UI [1.2.840.10008.5.1.4.1.1.12.1] AffectedSOPClassUID
-(0000,0100) US [1] CommandField
-(0000,0110) US [1] MessageID
-(0000,0700) US [0] Priority
-(0000,0800) US [0] CommandDataSetType
-(0000,1000) UI [1.3.12.2.1107.5.4.3.284980.19951129.170916.9] AffectedSOPInsta
-
-19:24:34.183 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Dataset sending...
-19:24:34.551 DEBUG - STORESCU->ORTHANC(1) << 1:C-STORE-RQ Dataset sent
-19:24:35.961 INFO  - STORESCU->ORTHANC(1) >> 1:C-STORE-RSP[pcid=7, status=0H
-  cuid=1.2.840.10008.5.1.4.1.1.12.1 - X-Ray Angiographic Image Storage
-  iuid=1.3.12.2.1107.5.4.3.284980.19951129.170916.9 - ?
-  tsuid=1.2.840.10008.1.2.4.50 - JPEG Baseline (Process 1)]
-19:24:35.961 DEBUG - STORESCU->ORTHANC(1) >> 1:C-STORE-RSP Command:
-(0000,0002) UI [1.2.840.10008.5.1.4.1.1.12.1] AffectedSOPClassUID
-(0000,0100) US [32769] CommandField
-(0000,0120) US [1] MessageIDBeingRespondedTo
-(0000,0800) US [257] CommandDataSetType
-(0000,0900) US [0] Status
-(0000,1000) UI [1.3.12.2.1107.5.4.3.284980.19951129.170916.9] AffectedSOPInsta
-
-.19:24:35.963 INFO  - STORESCU->ORTHANC(1) << A-RELEASE-RQ
-19:24:35.963 DEBUG - STORESCU->ORTHANC(1): enter state: Sta7 - Awaiting A-RELEASE-RP PDU
-19:24:35.990 INFO  - STORESCU->ORTHANC(1) >> A-RELEASE-RP
-19:24:35.991 INFO  - STORESCU->ORTHANC(1): close Socket[addr=ec2-54-243-91-148.compute-1.amazonaws.com/54.243.91.148,port=11112,localport=52058]
-19:24:35.999 DEBUG - STORESCU->ORTHANC(1): enter state: Sta1 - Idle
-Sent 1 objects (=0.551MB) in 1.806s (=0.305MB/s)
+D: ===================== OUTGOING DIMSE MESSAGE ====================
+D: Message Type                  : C-STORE RQ
+D: Message ID                    : 427
+D: Affected SOP Class UID        : CTImageStorage
+D: Affected SOP Instance UID     : 1.3.6.1.4.1.9590.100.1.2.227776817313443872620744441692571990763
+D: Data Set                      : present
+D: Priority                      : medium
+D: ======================= END DIMSE MESSAGE =======================
+D: DcmDataset::read() TransferSyntax="Little Endian Implicit"
+I: Received Store Response
+D: ===================== INCOMING DIMSE MESSAGE ====================
+D: Message Type                  : C-STORE RSP
+D: Presentation Context ID       : 41
+D: Message ID Being Responded To : 427
+D: Affected SOP Class UID        : CTImageStorage
+D: Affected SOP Instance UID     : 1.3.6.1.4.1.9590.100.1.2.227776817313443872620744441692571990763
+D: Data Set                      : none
+D: DIMSE Status                  : 0x0000: Success
+D: ======================= END DIMSE MESSAGE =======================
+I: Releasing Association
 ```
 </p></details>
 
