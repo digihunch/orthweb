@@ -49,11 +49,18 @@ The Orthweb architecture can be illustrated in the diagram below:
 ![Diagram](resources/Orthweb.png)
 
 The site's IP is associated with an Elastic Network Interface (ENI). It is connected to the primary EC2 instance hosted in availability zone 1. Business traffic (DICOM and HTTP) are routed to the Site IP at port 11112 and 443. Docker damon runs Envoy proxy who listens to those ports. The Envoy proxy, serves two different proxy routes: 
-<details><summary> Proxy routes</summary><p>
 
-* https on host port 443 -> https on container port 8043
-* dicom-tls on host port 11112 -> dicom on container port 4242
-</p></details>
+```mermaid
+graph TD;
+    B[Web Browser] --> |HTTPS\n TCP 443|C{Envoy Proxy\n Container};
+    X[DICOM Device] -->|DICOM TLS\n TCP 11112| C;
+    C -->|HTTPS\n TCP 8042| D[Orthanc\n Container];
+    C -. DICOM\n TCP 4242 .-> D;
+    C -->|HTTPS\n TCP 8042| F[Orthanc\n Container];
+    C -. DICOM\n TCP 4242 .-> F;
+    C -->|HTTPS\n TCP 8042| G[Orthanc\n Container];
+    C -. DICOM\n TCP 4242 .-> G;
+```
 
 The envoy proxy is configured to spread traffic across three Orthanc containers, with session affinity configured. Each Orthanc container is able to connect to S3 and PostgreSQL database via their respect endpoint in the subnet.
 
