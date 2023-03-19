@@ -35,7 +35,7 @@ static_resources:
                   prefix: "/"
                 route:
                   cluster: service-https
-                  timeout: 3s
+                  timeout: 0s   # disable route timeout as downloading via HTTP may take long.
                   hash_policy:
                     - header:
                         header_name: Origin

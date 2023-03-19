@@ -28,6 +28,13 @@ services:
       - 9901:9901
       - 443:443
       - 11112:11112
+    command:
+      - "-c"
+      - "/etc/envoy/envoy.yaml"
+      - "--log-level"
+      - "info"
+      - "--component-log-level"
+      - "upstream:debug,http:debug"
     deploy:
       replicas: 1
       resources:
