@@ -34,7 +34,7 @@ services:
       - "--log-level"
       - "info"
       - "--component-log-level"
-      - "upstream:debug,http:debug"
+      - "upstream:info,http:debug"
     deploy:
       replicas: 1
       resources:

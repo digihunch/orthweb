@@ -193,7 +193,7 @@ To Validate DICOM capability, we can test with C-ECHO and C-STORE. We can use an
 
 Remember to enable TLS. Then you will be able to verify the node (i.e. C-ECHO) and send existing studies from Horos to Orthanc (C-STORE).
 
-To Validate the the web service, simply visit the site address (with `https://` scheme) and put in the [preset credential](https://github.com/digihunch/orthweb/blob/main/app/orthanc.json#L6) at the prompt. Note that the web browser may flag the site as insecure because the server certificate's CA is self-signed and not recognized by the browser. 
+To Validate the the web service, simply visit the site address (with `https://` scheme) and put in the [preset credential](https://github.com/digihunch/orthweb/blob/main/app/orthanc.json#L6) at the credential prompt. Note that your web browser may flag the site as insecure because the server certificate's CA is self-signed and not trusted. 
 
 Alternatively, you may use `curl` command to fetch the web content:
 
@@ -397,4 +397,6 @@ Currently there are also some limitation with secure configuration:
 
 1. Database password is generated at Terraform client and then sent to deployment server to create PostgreSQL. The generated password is also stored in state file of Terraform. To overcome this, we need a) Terraform tells AWS secrets manager to generate a password; and b) it tells other AWS service to resolve the newly created secret. As of May 2021, a) is doable but b) isn't due to a limitation with Terraform
 2. Secret management with Docker container: secret are presented to container process as environment variables, instead of file content. As per [this article](https://techbeacon.com/devops/how-keep-your-container-secrets-secure), this is not the best practice.
+3. Orthweb provisions a self-signed certificate because it is free and easy to automate. Browser flags the site as insecure. If you have your own domain name and would rather host it with your own domain name. You can bring your own certificate, and store them in `site.pem`. You'll also need to add an CNAME record to point to the orthanc DNS name.
+
 </p></details>
