@@ -1,7 +1,4 @@
-variable "private_subnet1_id" {
-  type = string
-}
-variable "private_subnet2_id" {
+variable "vpc_id" {
   type = string
 }
 variable "role_name" {

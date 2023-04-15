@@ -1,11 +1,5 @@
-data "aws_subnet" "private_subnet1" {
-  id = var.private_subnet1_id
-}
-data "aws_subnet" "private_subnet2" {
-  id = var.private_subnet2_id
-}
 data "aws_vpc" "mainVPC" {
-  id = data.aws_subnet.private_subnet1.vpc_id
+  id = var.vpc_id 
 }
 data "aws_caller_identity" "current" {
   # no arguments

@@ -25,16 +25,14 @@ module "network" {
   vpc_flow_logging_bucket_arn = module.storage.s3_info.logging_bucket_arn
   resource_tags               = var.Tags
   resource_prefix             = random_pet.prefix.id
-  #  depends_on = [module.storage]
 }
 
 module "secret" {
-  source             = "./modules/secret"
-  private_subnet1_id = module.network.vpc_info.private_subnet1_id
-  private_subnet2_id = module.network.vpc_info.private_subnet2_id
-  role_name          = module.iam_role.role_info.ec2_iam_role_name
-  resource_tags      = var.Tags
-  resource_prefix    = random_pet.prefix.id
+  source          = "./modules/secret"
+  vpc_id          = module.network.vpc_info.vpc_id
+  role_name       = module.iam_role.role_info.ec2_iam_role_name
+  resource_tags   = var.Tags
+  resource_prefix = random_pet.prefix.id
 }
 
 module "database" {
@@ -61,7 +59,7 @@ module "ec2" {
     public_subnet1_id      = module.network.vpc_info.public_subnet1_id
     public_subnet2_id      = module.network.vpc_info.public_subnet2_id
     s3_ep_service_name     = module.network.vpc_info.s3_vpc_ep_service_name
-    secret_ep_service_name = module.secret.secret_info.ep_service_name
+    secret_ep_service_name = module.network.vpc_info.secmgr_vpc_ep_service_name
   }
   deployment_options = var.DeploymentOptions
   resource_tags      = var.Tags

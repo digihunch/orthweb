@@ -83,9 +83,9 @@ resource "aws_main_route_table_association" "vpc_rt_assoc" {
   route_table_id = aws_route_table.public_route_table.id
 }
 
-resource "aws_security_group" "s3_ep_secgroup" {
-  name        = "${var.resource_prefix}-s3_vpcep_sg"
-  description = "security group for S3 vpc endpoint"
+resource "aws_security_group" "ep_secgroup" {
+  name        = "${var.resource_prefix}-vpcep_sg"
+  description = "security group for vpc endpoints"
   vpc_id      = aws_vpc.orthmain.id
   ingress {
     from_port   = 443
@@ -103,7 +103,17 @@ resource "aws_vpc_endpoint" "s3_ep" {
   vpc_endpoint_type = "Interface"
   # private_dns_enabled = true # s3 interface endpoints do not support the private DNS feature.
   subnet_ids         = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
-  security_group_ids = [aws_security_group.s3_ep_secgroup.id]
-  tags               = merge(var.resource_tags, { Name = "${var.resource_prefix}-EndPointForS3" })
+  security_group_ids = [aws_security_group.ep_secgroup.id]
+  tags               = merge(var.resource_tags, { Name = "${var.resource_prefix}-VPCEndPoint-S3" })
+}
+
+resource "aws_vpc_endpoint" "secmgr_ep" {
+  vpc_id              = aws_vpc.orthmain.id 
+  service_name        = "com.amazonaws.${data.aws_region.this.name}.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  security_group_ids  = [aws_security_group.ep_secgroup.id]
+  subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
+  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-VPCEndPoint-SecMgr" })
 }
 
