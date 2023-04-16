@@ -4,7 +4,7 @@ While Orthanc is a powerful open-source medical imaging application, it supports
 
 1. A prescriptive architecture optimized for hosting Orthanc, aka. the **Orthweb architecture**
 
-2. A Infrastructure-as-code artifact for end-to-end automated configuration of Orthanc, aka. the **Orthand Terraform template**
+2. A Infrastructure-as-code artifact for end-to-end automated configuration of Orthanc, aka. the **Orthanc Terraform template**
 
 The **Orthweb architecture**, which is discussed in a separate section, is opinionated but suitable for most of the small installations. The **Orthweb project** demonstrates the idea of infrastructure-as-code, deployment automation and security configurations. However, you should not take it as is for production. 
 

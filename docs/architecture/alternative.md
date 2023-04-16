@@ -6,8 +6,7 @@ To ensure that DICOM traffic travels through private connection, consider using 
 * Site-to-site VPN: requiring either a physical device or software application to act as a customer gateway. 
 * Client VPN: requiring OpenVPN-based client.
 
-Once VPN connection is implemented, the two EC2 instances can be moved to private subnets. 
-
+Once VPN connection is added, the two EC2 instances can be moved to private subnets. The connection between the EC2 instance and the client will become secured at the IP layer.
 
 ## Network Load Balancer
 If cost allows, consider placing a network load balancer in front of the EC2 instances. We would be able to configure the network load balancer so it automatically sends the traffic to a functional EC2 instance, thereby eliminating the manual fail over procedure.
