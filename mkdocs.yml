@@ -1,0 +1,44 @@
+site_name: Orthweb - Orthanc on AWS
+repo_name: digihunch/orthweb
+repo_url: https://github.com/digihunch/orthweb
+strict: true
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+theme:
+  name: material
+  language: en
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+nav:
+  - Home: 'index.md'
+  - Introduction: 'introduction/index.md'
+  - Deployment:
+    - 'Preparation': 'deployment/preparation.md'
+    - 'Deployment': 'deployment/deployment.md'
+  - Validation: 
+    - 'Basic Validation': 'validation/basic.md'
+    - 'Advanced Validation': 'validation/advanced.md'
+    - 'Additional Validation': 'validation/additional.md'
+  - Architecture:
+    - 'Orthweb': 'architecture/orthweb.md' 
+    - 'Alternatives': 'architecture/alternative.md'
+  - Support: 'support/index.md'
+plugins:
+  - search
