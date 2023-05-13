@@ -1,5 +1,5 @@
 # Orthweb - Orthanc on AWS
-<a href="https://www.orthanc-server.com/"><img style="float" align="right" src="resources/orthanc_logo.png"></a>
+<a href="https://www.orthanc-server.com/"><img style="float" align="right" src="docs/assets/images/orthanc_logo.png"></a>
 
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?logo=terraform&logoColor=white)](https://www.terraform.io/)

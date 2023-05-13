@@ -79,10 +79,10 @@ resource "aws_s3_bucket_versioning" "orthweb_logging_versioning" {
   }
 }
 
-resource "aws_s3_bucket_acl" "logging_bucket_acl" {
-  bucket = aws_s3_bucket.logging_bucket.id
-  acl    = "log-delivery-write"
-}
+#resource "aws_s3_bucket_acl" "logging_bucket_acl" {
+#  bucket = aws_s3_bucket.logging_bucket.id
+#  acl    = "log-delivery-write"
+#}
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "logging_sse" {
   bucket = aws_s3_bucket.logging_bucket.bucket

@@ -2,7 +2,7 @@
 echo "Entering userdata1 script"
 ## Install required packages and SSM agent.
 yum update -y
-yum install docker git jq openssl11 -y
+yum install docker git jq -y
 sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
 
 ## Configure Docker daemon
@@ -50,19 +50,19 @@ ServerComName=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.
 ClientComName=dcmclient.orthweb.digihunch.com
 
 # Generate a key pair for Test CA. Generate the certificate for Test CA by self-signing its own public key
-openssl11 req -x509 -sha256 -newkey rsa:4096 -days 365 -nodes -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$IssuerComName/emailAddress=info@digihunch.com -keyout /tmp/ca.key -out /tmp/ca.crt
+openssl req -x509 -sha256 -newkey rsa:4096 -days 365 -nodes -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$IssuerComName/emailAddress=info@digihunch.com -keyout /tmp/ca.key -out /tmp/ca.crt
 
 # Generate a key pair for the (DICOM) server. Generate the certificate for the server by signing its public key with Test CA's private key
-openssl11 req -new -newkey rsa:4096 -nodes -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ServerComName/emailAddress=orthweb@digihunch.com -addext extendedKeyUsage=serverAuth -addext subjectAltName=DNS:orthweb.digihunch.com,DNS:$IssuerComName -keyout /tmp/server.key -out /tmp/server.csr
-openssl11 x509 -req -sha256 -days 365 -in /tmp/server.csr -CA /tmp/ca.crt -CAkey /tmp/ca.key -set_serial 01 -out /tmp/server.crt
+openssl req -new -newkey rsa:4096 -nodes -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ServerComName/emailAddress=orthweb@digihunch.com -addext extendedKeyUsage=serverAuth -addext subjectAltName=DNS:orthweb.digihunch.com,DNS:$IssuerComName -keyout /tmp/server.key -out /tmp/server.csr
+openssl x509 -req -sha256 -days 365 -in /tmp/server.csr -CA /tmp/ca.crt -CAkey /tmp/ca.key -set_serial 01 -out /tmp/server.crt
 cat /tmp/server.key /tmp/server.crt /tmp/ca.crt > $ServerComName.pem 
 
 chown ec2-user:ec2-user $ServerComName.pem
 echo SITE_KEY_CERT_FILE=$ServerComName.pem > .env
 
 # Generate a key pair for the (DICOM) client. Generate the certificate for the client by signing its public key with Test CA's private key
-openssl11 req -new -newkey rsa:4096 -nodes -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ClientComName/emailAddress=dcmclient@digihunch.com -keyout /tmp/client.key -out /tmp/client.csr
-openssl11 x509 -req -sha256 -days 365 -in /tmp/client.csr -CA /tmp/ca.crt -CAkey /tmp/ca.key -set_serial 01 -out /tmp/client.crt
+openssl req -new -newkey rsa:4096 -nodes -subj /C=CA/ST=Ontario/L=Waterloo/O=Digihunch/OU=Imaging/CN=$ClientComName/emailAddress=dcmclient@digihunch.com -keyout /tmp/client.key -out /tmp/client.csr
+openssl x509 -req -sha256 -days 365 -in /tmp/client.csr -CA /tmp/ca.crt -CAkey /tmp/ca.key -set_serial 01 -out /tmp/client.crt
 
 # The client key and certificate will be used by client only.
 chown ec2-user:ec2-user /tmp/*.crt /tmp/*.key

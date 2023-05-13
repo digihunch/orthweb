@@ -142,7 +142,7 @@ resource "aws_launch_template" "orthweb_launch_template" {
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
-      volume_size = 8
+      volume_size = 20
       encrypted   = true
       kms_key_id  = var.custom_key_arn
     }
@@ -165,7 +165,7 @@ resource "aws_instance" "orthweb_primary" {
   }
   launch_template {
     id      = aws_launch_template.orthweb_launch_template.id
-    version = "$Latest"
+    version = aws_launch_template.orthweb_launch_template.latest_version
   }
   tags       = merge(var.resource_tags, { Name = "${var.resource_prefix}-Primary-EC2-Instance" })
   depends_on = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
@@ -188,7 +188,7 @@ resource "aws_instance" "orthweb_secondary" {
   }
   launch_template {
     id      = aws_launch_template.orthweb_launch_template.id
-    version = "$Latest"
+    version = aws_launch_template.orthweb_launch_template.latest_version
   }
   tags       = merge(var.resource_tags, { Name = "${var.resource_prefix}-Secondary-EC2-Instance" })
   depends_on = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 

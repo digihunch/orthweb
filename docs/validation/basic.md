@@ -4,6 +4,7 @@ We first perform a basic level of validation as an end user. Then we'll dive int
 ## DICOM ping
 
 To Validate DICOM capability, we can test with C-ECHO and C-STORE. We can use any DICOM compliant application. For example, [Horos](https://horosproject.org/) on MacOS is a UI-based application. In Preference->Locations, configure a new DICOM nodes with:
+
 * Address: the site address as given above
 * AE title: ORTHANC
 * Port: 11112 (or otherwise configured)
