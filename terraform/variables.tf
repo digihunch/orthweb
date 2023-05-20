@@ -11,15 +11,15 @@ variable "Tags" {
   type        = map(any)
   default = {
     Environment = "Dev"
-    Owner       = "my@email.com"
+    Owner       = "my@digihunch.com"
   }
 }
 variable "DeploymentOptions" {
   description = "Deployment Options"
   type        = map(any)
   default = {
-    OrthancImg   = "osimis/orthanc:22.12.2"
-    EnvoyImg     = "envoyproxy/envoy:v1.25.0"
+    OrthancImg   = "osimis/orthanc:23.5.0"
+    EnvoyImg     = "envoyproxy/envoy:v1.26.1"
     InstanceType = "t3.medium" # EBS-optimized instance type
   }
 }
