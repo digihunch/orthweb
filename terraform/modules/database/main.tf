@@ -27,7 +27,7 @@ resource "aws_security_group" "dbsecgroup" {
 
 resource "aws_db_parameter_group" "dbparamgroup" {
   name   = "${var.resource_prefix}-orthdb-paramgrp"
-  family = "postgres14"
+  family = "postgres15"
 
   parameter {
     name  = "log_statement"
@@ -72,7 +72,7 @@ resource "aws_db_instance" "postgres" {
   monitoring_role_arn                 = aws_iam_role.rds_monitoring_role.arn
   storage_type                        = "standard" #magnetic drive minimum 5g storage
   engine                              = "postgres"
-  engine_version                      = "14.2"
+  engine_version                      = "15.3"
   instance_class                      = "db.t3.small" # t2.micro does not support encryption at rest
   identifier                          = "${var.resource_prefix}-orthancpostgres"
   db_name                             = "orthancdb"
