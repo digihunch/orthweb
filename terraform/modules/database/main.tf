@@ -27,7 +27,7 @@ resource "aws_security_group" "dbsecgroup" {
 
 resource "aws_db_parameter_group" "dbparamgroup" {
   name   = "${var.resource_prefix}-orthdb-paramgrp"
-  family = "postgres15"
+  family = "postgres16"
 
   parameter {
     name  = "log_statement"
@@ -59,6 +59,7 @@ resource "aws_iam_role" "rds_monitoring_role" {
 }
 
 resource "aws_cloudwatch_log_group" "db_log_group" {
+  #checkov:skip=CKV_AWS_338: retention of 1 year is not a reqruirement
   for_each          = toset([for log in local.db_log_exports : log])
   name              = "/aws/rds/instance/${var.resource_prefix}-orthancpostgres/${each.value}"
   kms_key_id        = var.custom_key_arn
@@ -67,12 +68,15 @@ resource "aws_cloudwatch_log_group" "db_log_group" {
 }
 
 resource "aws_db_instance" "postgres" {
+  #checkov:skip=CKV_AWS_354: performance insight is not a requirement
+  #checkov:skip=CKV_AWS_293: deletion protection is not a requirement
+  #checkov:skip=CKV_AWS_353: performance insight is not a requirement
   allocated_storage                   = 5
   monitoring_interval                 = 60
   monitoring_role_arn                 = aws_iam_role.rds_monitoring_role.arn
   storage_type                        = "standard" #magnetic drive minimum 5g storage
   engine                              = "postgres"
-  engine_version                      = "15.3"
+  engine_version                      = "16.1"
   instance_class                      = "db.t3.small" # t2.micro does not support encryption at rest
   identifier                          = "${var.resource_prefix}-orthancpostgres"
   db_name                             = "orthancdb"

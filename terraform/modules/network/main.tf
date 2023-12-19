@@ -23,6 +23,7 @@ resource "aws_flow_log" "mainVPCflowlog" {
 }
 
 resource "aws_subnet" "publicsubnet1" {
+  #checkov:skip=CKV_AWS_130:This is a public subnet
   vpc_id                  = aws_vpc.orthmain.id
   cidr_block              = var.public_subnet1_cidr_block
   map_public_ip_on_launch = true
@@ -31,6 +32,7 @@ resource "aws_subnet" "publicsubnet1" {
 }
 
 resource "aws_subnet" "publicsubnet2" {
+  #checkov:skip=CKV_AWS_130:This is a public subnet
   vpc_id                  = aws_vpc.orthmain.id
   cidr_block              = var.public_subnet2_cidr_block
   map_public_ip_on_launch = true

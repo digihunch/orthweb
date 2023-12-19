@@ -15,17 +15,6 @@
 
 The **[Orthweb](https://github.com/digihunch/orthweb)** project proposes an architecture that involves numerous underlying cloud resources in AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) with security, automation and high availability in consideration. **Orthweb** orchestrate these resources with Infrastructure as Code in Terraform.
 
-The Infrastructure as Code is scanned by Checkov to ensure compliance. Here is the summary of current compliance status as reported by BridgeCrew:
-
-| Benchmark | Description |
-| ----------- | --------- |
-| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/general)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=INFRASTRUCTURE+SECURITY) | Infrastructure Security Compliance |
-| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/cis_aws)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=CIS+AWS+V1.2) | Center for Internet Security, AWS Compliance |
-| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/nist)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=NIST-800-53) | National Institute of Standards and Technology Compliance |
-| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/iso)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=ISO27001) | Information Security Management System, ISO/IEC 27001 Compliance |
-| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/soc2)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=SOC2) | Service Organization Control 2 Compliance |
-| [![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/digihunch/orthweb/hipaa)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=digihunch%2Forthweb&benchmark=HIPPA) | Health Insurance Portability and Accountability Compliance |
-
 On top of the infrastructre, **Orthweb** also automatically configures the hosting of **Orthanc** application with Docker, using the [Orthanc image](https://hub.docker.com/r/osimis/orthanc) released by [Osimis](https://www.osimis.io/). For those who need to host Orthanc on Kubernetes, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb).
 
 The [Orthweb documentation](https://digihunch.github.io/orthweb/) includes a step-by-step guide for deployment and more details about the architecture.

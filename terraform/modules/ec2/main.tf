@@ -125,6 +125,7 @@ EOF
 }
 
 resource "aws_launch_template" "orthweb_launch_template" {
+  #checkov:skip=CKV_AWS_341: Process in docker needs to get instance metadata to assume the IAM role for EC2 instance. With IMDSv2, we need set http_put_response_hop_limit to 2. Otherwise, process in Docker container will not be able to read/write to S3 bucket using the IAM role attached to the instance profile. Ref: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
   name          = "${var.resource_prefix}-ec2-launch-template"
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
   instance_type = var.deployment_options.InstanceType
@@ -133,7 +134,6 @@ resource "aws_launch_template" "orthweb_launch_template" {
   iam_instance_profile {
     name = aws_iam_instance_profile.inst_profile.name
   }
-  # Process in docker needs to get instance metadata to assume the IAM role for EC2 instance. With IMDSv2, we need set http_put_response_hop_limit to 2. Otherwise, process in Docker container will not be able to read/write to S3 bucket using the IAM role attached to the instance profile. Ref: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
@@ -157,6 +157,8 @@ resource "aws_network_interface" "primary_nic" {
 }
 
 resource "aws_instance" "orthweb_primary" {
+  #checkov:skip=CKV_AWS_79: IMDS defined in launch template
+  #checkov:skip=CKV_AWS_8: Encryption configured in launch template
   ebs_optimized = true
   monitoring    = true
   network_interface {
@@ -180,6 +182,8 @@ resource "aws_network_interface" "secondary_nic" {
 }
 
 resource "aws_instance" "orthweb_secondary" {
+  #checkov:skip=CKV_AWS_79: IMDS defined in launch template
+  #checkov:skip=CKV_AWS_8: Encryption configured in launch template
   ebs_optimized = true
   monitoring    = true
   network_interface {
@@ -195,7 +199,7 @@ resource "aws_instance" "orthweb_secondary" {
 }
 
 resource "aws_eip" "orthweb_eip" {
-  vpc  = true
+  domain = "vpc"
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Floating-EIP" })
 }
 
