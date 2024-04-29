@@ -199,7 +199,7 @@ resource "aws_instance" "orthweb_secondary" {
 }
 
 resource "aws_eip" "orthweb_eip" {
-  domain = "vpc"
+  domain   = "vpc" 
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-Floating-EIP" })
 }
 

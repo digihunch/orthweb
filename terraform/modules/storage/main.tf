@@ -79,10 +79,52 @@ resource "aws_s3_bucket_versioning" "orthweb_logging_versioning" {
   }
 }
 
-#resource "aws_s3_bucket_acl" "logging_bucket_acl" {
-#  bucket = aws_s3_bucket.logging_bucket.id
-#  acl    = "log-delivery-write"
-#}
+resource "aws_iam_policy" "vpc_flow_logs_policy" {
+  name        = "vpc-flow-logs-policy"
+  description = "IAM policy for VPC flow logs to write logs to S3 bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = [
+          "s3:PutObject",
+          "s3:GetBucketAcl",
+          "s3:GetBucketPolicy",
+          "s3:PutObjectAcl"
+        ],
+        Resource = [
+          aws_s3_bucket.logging_bucket.arn,
+          "${aws_s3_bucket.logging_bucket.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# IAM role for VPC flow logs to assume and write logs to the S3 bucket
+resource "aws_iam_role" "vpc_flow_logs_role" {
+  name               = "vpc-flow-logs-role"
+  assume_role_policy = jsonencode({
+    Version   = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Principal = {
+          Service = "vpc-flow-logs.amazonaws.com"
+        },
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Attach the IAM policy to the IAM role
+resource "aws_iam_role_policy_attachment" "vpc_flow_logs_policy_attachment" {
+  role       = aws_iam_role.vpc_flow_logs_role.name
+  policy_arn = aws_iam_policy.vpc_flow_logs_policy.arn
+}
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "logging_sse" {
   bucket = aws_s3_bucket.logging_bucket.bucket

@@ -18,8 +18,8 @@ variable "DeploymentOptions" {
   description = "Deployment Options"
   type        = map(any)
   default = {
-    OrthancImg   = "osimis/orthanc:23.11.1"
-    EnvoyImg     = "envoyproxy/envoy:v1.28.0"
+    OrthancImg   = "orthancteam/orthanc:24.4.0"
+    EnvoyImg     = "envoyproxy/envoy:v1.29.4"
     InstanceType = "t3.medium" # EBS-optimized instance type
   }
 }

@@ -76,7 +76,7 @@ resource "aws_db_instance" "postgres" {
   monitoring_role_arn                 = aws_iam_role.rds_monitoring_role.arn
   storage_type                        = "standard" #magnetic drive minimum 5g storage
   engine                              = "postgres"
-  engine_version                      = "16.1"
+  engine_version                      = "16.2"
   instance_class                      = "db.t3.small" # t2.micro does not support encryption at rest
   identifier                          = "${var.resource_prefix}-orthancpostgres"
   db_name                             = "orthancdb"
