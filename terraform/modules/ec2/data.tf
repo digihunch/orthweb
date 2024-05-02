@@ -38,11 +38,6 @@ data "aws_vpc_endpoint" "secmgr" {
   service_name = var.vpc_config.secret_ep_service_name
 }
 
-data "aws_vpc_endpoint" "s3" {
-  vpc_id       = var.vpc_config.vpc_id
-  service_name = var.vpc_config.s3_ep_service_name
-}
-
 data "cloudinit_config" "orthconfig" {
   base64_encode = true
   part {
@@ -57,7 +52,6 @@ data "cloudinit_config" "orthconfig" {
       aws_region       = data.aws_region.this.name,
       sm_endpoint      = data.aws_vpc_endpoint.secmgr.dns_entry[length(data.aws_vpc_endpoint.secmgr.dns_entry)-1].dns_name,
       sec_name         = data.aws_secretsmanager_secret.secretDB.name,
-      #s3_endpoint      = data.aws_vpc_endpoint.s3.service_name,
       s3_bucket        = data.aws_s3_bucket.orthbucket.bucket,
       orthanc_image    = var.deployment_options.OrthancImg,
       envoy_image      = var.deployment_options.EnvoyImg,

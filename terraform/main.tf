@@ -58,8 +58,8 @@ module "ec2" {
     vpc_id                 = module.network.vpc_info.vpc_id
     public_subnet1_id      = module.network.vpc_info.public_subnet1_id
     public_subnet2_id      = module.network.vpc_info.public_subnet2_id
-    s3_ep_service_name     = module.network.vpc_info.s3_vpc_ep_service_name
     secret_ep_service_name = module.network.vpc_info.secmgr_vpc_ep_service_name
+    scu_cidr_block = var.scu_cidr_block
   }
   deployment_options = var.DeploymentOptions
   resource_tags      = var.Tags

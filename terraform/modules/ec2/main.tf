@@ -41,7 +41,7 @@ resource "aws_security_group" "business-traffic-secgrp" {
     from_port   = 11112
     to_port     = 11112
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.vpc_config.scu_cidr_block]
   }
   tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-BusinessTrafficSecurityGroup" })
 }

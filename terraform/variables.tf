@@ -6,6 +6,10 @@ variable "pubkey_path" {
   type    = string
   default = "~/.ssh/id_rsa.pub"
 }
+variable "scu_cidr_block" {
+  type = string
+  default = "0.0.0.0/0"
+}
 variable "Tags" {
   description = "Tags for every resource."
   type        = map(any)
