@@ -102,10 +102,7 @@ resource "aws_security_group" "ep_secgroup" {
 resource "aws_vpc_endpoint" "s3_ep" {
   vpc_id            = aws_vpc.orthmain.id
   service_name      = "com.amazonaws.${data.aws_region.this.name}.s3"
-  vpc_endpoint_type = "Interface"
-  # private_dns_enabled = true # s3 interface endpoints do not support the private DNS feature.
-  subnet_ids         = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
-  security_group_ids = [aws_security_group.ep_secgroup.id]
+  vpc_endpoint_type = "Gateway"
   tags               = merge(var.resource_tags, { Name = "${var.resource_prefix}-VPCEndPoint-S3" })
 }
 
