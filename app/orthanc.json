@@ -19,18 +19,27 @@
     "EnableSsl" : true,
     "Lock" : false
   },
+  "OrthancExplorer2" : {
+    "Enable": true,
+    "IsDefaultOrthancUI": true,
+    "Root" : "/ui/",
+    "Theme": "light"
+  },
   "AwsS3Storage" : {
     "BucketName": "${S3_BUCKET}",
     "Region" : "${S3_REGION}",
     "Endpoint" : "${S3_ENDPOINT}",
     "ConnectionTimeout": 30,
     "RequestTimeout": 1200,
-    "RootPath": "",
+    "RootPath": "image_archive",
     "StorageStructure": "flat"
   },
   "Plugins" : [
     "/usr/share/orthanc/plugins-available/libOrthancPostgreSQLIndex.so",
-    "/usr/share/orthanc/plugins-available/libOrthancWebViewer.so",
-    "/usr/share/orthanc/plugins-available/libOrthancAwsS3Storage.so"
+    "/usr/share/orthanc/plugins-available/libOrthancAwsS3Storage.so",
+    "/usr/share/orthanc/plugins-available/libOrthancExplorer2.so",
+    "/usr/share/orthanc/plugins-available/libOrthancAuthorization.so",
+    "/usr/share/orthanc/plugins-available/libOrthancDicomWeb.so",
+    "/usr/share/orthanc/plugins-available/libStoneWebViewer.so"
   ]
 }
