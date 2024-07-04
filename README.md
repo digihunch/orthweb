@@ -11,9 +11,13 @@
 [![Latest Release](https://img.shields.io/github/v/release/digihunch/orthweb)](https://github.com/digihunch/orthweb/releases/latest) 
 ## Overview
 
-**[Orthweb](https://github.com/digihunch/orthweb)** helps imaging IT administrators operationalize **[Orthanc](https://www.orthanc-server.com/)** on AWS. It proposes a self-contained architecture, and accelerates the deployment of it. Bring your own AWS account, and **Orthweb** help you set up Orthanc server in half an hour, ready to serve HTTP and DICOM traffic.
+**[Orthweb](https://github.com/digihunch/orthweb)** helps imaging IT administrators operationalize **[Orthanc](https://www.orthanc-server.com/)** on AWS. 
 
-The **[Orthweb](https://github.com/digihunch/orthweb)** project proposes an architecture that involves numerous underlying cloud resources in AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) with security, automation and high availability in consideration. **Orthweb** orchestrate these resources with Infrastructure as Code in Terraform.
+Imaging IT administrators should host Orthanc on a secure cloud platform. Large organizations usually build their own cloud landing zone for their imaging department to deploy applications. Many smaller organizations do not have this layer of infrastructure.
+
+To fill this gap, **Orthweb** project proposes a self-contained architecture for both cloud networking infrastrcutre and the VM hosting Orthanc application. Using infrastructure as code, **Orthanc** greately accelerates the deployment. Bring your own AWS account, and **Orthweb** will set up Orthanc server in half an hour to serve HTTP and DICOM traffic.
+
+The architecture that **[Orthweb](https://github.com/digihunch/orthweb)** project proposes involves numerous underlying cloud resources in AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) as a minimal implementation of best practices in security, automation and high availability.
 
 On top of the infrastructre, **Orthweb** also automatically configures the hosting of **Orthanc** application with Docker, using the [Orthanc image](https://hub.docker.com/r/osimis/orthanc) released by [Osimis](https://www.osimis.io/). For those who need to host Orthanc on Kubernetes, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb).
 
