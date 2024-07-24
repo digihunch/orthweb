@@ -4,9 +4,6 @@ variable "private_subnet1_id" {
 variable "private_subnet2_id" {
   type = string
 }
-variable "db_secret_id" {
-  type = string
-}
 variable "psql_engine_family" {
   type = string
   default = "postgres16"
@@ -33,7 +30,4 @@ variable "custom_key_arn" {
 }
 variable "resource_prefix" {
   type = string
-}
-variable "resource_tags" {
-  type = map(any)
 }

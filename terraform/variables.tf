@@ -1,6 +1,7 @@
 variable "pubkey_data" {
   type    = string
   default = null
+  sensitive = true
 }
 variable "pubkey_path" {
   type    = string
@@ -10,7 +11,7 @@ variable "scu_cidr_block" {
   type = string
   default = "0.0.0.0/0"
 }
-variable "Tags" {
+variable "CommonTags" {
   description = "Tags for every resource."
   type        = map(any)
   default = {

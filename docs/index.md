@@ -11,11 +11,13 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Latest Release](https://img.shields.io/github/v/release/digihunch/orthweb)](https://github.com/digihunch/orthweb/releases/latest) 
 
+**[Orthweb](https://github.com/digihunch/orthweb)** helps imaging IT administrators operationalize **[Orthanc](https://www.orthanc-server.com/)** on AWS. This [documentation](https://digihunch.github.io/orthweb/) provides a step-by-step guide for deployment and discussions about the architecture.
 
-**[Orthweb](https://github.com/digihunch/orthweb)** helps imaging IT administrators operationalize **[Orthanc](https://www.orthanc-server.com/)** on AWS. It proposes a self-contained architecture, and accelerates the deployment of it. Bring your own AWS account, and **Orthweb** help you set up Orthanc server in half an hour, ready to serve HTTP and DICOM traffic.
+<img align="middle" src="assets/images/Overview.png">
+<br/><br/>
 
-The **[Orthweb](https://github.com/digihunch/orthweb)** project proposes an architecture that involves numerous underlying cloud resources in AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) with security, automation and high availability in consideration. **Orthweb** orchestrate these resources with Infrastructure as Code in Terraform.
+The **Orthweb** template provisions its own self-contained infrastrcture stack in a single AWS account. It does not rely upon an established network infrastructure platform. The network infrastructure layer provisioned in the project contains a single VPC with multiple subnets, along with required endpoints. The infrastructure layer also contains encryption keys, managed database service and S3 storage. The infrastrcture footprint is small but secure. It aims to comply with regulatory requirements such as HIPPA. However, regulatory auditing is the responsibility of the Orthanc adopter. 
+<br/><br/>
 
-On top of the infrastructre, **Orthweb** also automatically configures the hosting of **Orthanc** application with Docker, using the [Orthanc image](https://hub.docker.com/r/osimis/orthanc) released by [Osimis](https://www.osimis.io/). For those who need to host Orthanc on Kubernetes, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb).
+The **Orthweb** project ueses **Terraform** for infrastructure as code. With the organization's own AWS account, **Orthweb** can typically set up Orthanc server within 30 minutes and start to serve HTTP and DICOM traffic. The project also takes into account other operational aspects, such as high availability, resiliency and automation in the configuration of **Orthanc** application with Docker, using the official [Orthanc image](https://hub.docker.com/r/orthancteam/orthanc). For those considering hosting Orthanc on Kubernetes, check out our sister project [Korthweb](https://github.com/digihunch/korthweb).
 
-This guide first discusses the usecases. Then it walks through the deployment steps, and provides guidance on system validation. Lastly, it discusses the architecture and the rationales. 

@@ -1,13 +1,17 @@
+data "aws_availability_zones" "available" {}
+data "aws_region" "this" {}
+
+
 resource "aws_vpc" "orthmain" {
   cidr_block           = var.vpc_cidr_block
   instance_tenancy     = "default"
   enable_dns_hostnames = true
-  tags                 = merge(var.resource_tags, { Name = "${var.resource_prefix}-MainVPC" })
+  tags                 = { Name = "${var.resource_prefix}-MainVPC" }
 }
 
 resource "aws_default_security_group" "default_sg" {
   vpc_id = aws_vpc.orthmain.id
-  tags   = merge(var.resource_tags, { Name = "${var.resource_prefix}-MainVPC-Default-SG" })
+  tags   = { Name = "${var.resource_prefix}-MainVPC-Default-SG" }
 }
 
 resource "aws_flow_log" "mainVPCflowlog" {
@@ -19,7 +23,7 @@ resource "aws_flow_log" "mainVPCflowlog" {
   destination_options {
     per_hour_partition = true
   }
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-MainVPCFlowLog" })
+  tags = { Name = "${var.resource_prefix}-MainVPCFlowLog" }
 }
 
 resource "aws_subnet" "publicsubnet1" {
@@ -28,7 +32,7 @@ resource "aws_subnet" "publicsubnet1" {
   cidr_block              = var.public_subnet1_cidr_block
   map_public_ip_on_launch = true
   availability_zone       = data.aws_availability_zones.available.names[1]
-  tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-PublicSubnet1" })
+  tags                    = { Name = "${var.resource_prefix}-PublicSubnet1" }
 }
 
 resource "aws_subnet" "publicsubnet2" {
@@ -37,7 +41,7 @@ resource "aws_subnet" "publicsubnet2" {
   cidr_block              = var.public_subnet2_cidr_block
   map_public_ip_on_launch = true
   availability_zone       = data.aws_availability_zones.available.names[2]
-  tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-PublicSubnet2" })
+  tags                    = { Name = "${var.resource_prefix}-PublicSubnet2" }
 }
 
 resource "aws_subnet" "privatesubnet1" {
@@ -45,7 +49,7 @@ resource "aws_subnet" "privatesubnet1" {
   cidr_block              = var.private_subnet1_cidr_block
   map_public_ip_on_launch = false
   availability_zone       = data.aws_availability_zones.available.names[1]
-  tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-PrivateSubnet1" })
+  tags                    = { Name = "${var.resource_prefix}-PrivateSubnet1" }
 }
 
 resource "aws_subnet" "privatesubnet2" {
@@ -53,12 +57,12 @@ resource "aws_subnet" "privatesubnet2" {
   cidr_block              = var.private_subnet2_cidr_block
   map_public_ip_on_launch = false
   availability_zone       = data.aws_availability_zones.available.names[2]
-  tags                    = merge(var.resource_tags, { Name = "${var.resource_prefix}-PrivateSubnet2" })
+  tags                    = { Name = "${var.resource_prefix}-PrivateSubnet2" }
 }
 
 resource "aws_internet_gateway" "maingw" {
   vpc_id = aws_vpc.orthmain.id
-  tags   = merge(var.resource_tags, { Name = "${var.resource_prefix}-MainGateway" })
+  tags   = { Name = "${var.resource_prefix}-MainGateway" }
 }
 
 resource "aws_route_table" "public_route_table" {
@@ -67,7 +71,7 @@ resource "aws_route_table" "public_route_table" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.maingw.id
   }
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-PublicRouteTable" })
+  tags = { Name = "${var.resource_prefix}-PublicRouteTable" }
 }
 
 resource "aws_route_table_association" "pubsub1_rt_assoc" {
@@ -96,14 +100,14 @@ resource "aws_security_group" "ep_secgroup" {
     cidr_blocks = [var.vpc_cidr_block]
     description = "allow access to https from VPC"
   }
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-S3EndPointSecurityGroup" })
+  tags = { Name = "${var.resource_prefix}-S3EndPointSecurityGroup" }
 }
 
 resource "aws_vpc_endpoint" "s3_ep" {
   vpc_id            = aws_vpc.orthmain.id
   service_name      = "com.amazonaws.${data.aws_region.this.name}.s3"
   vpc_endpoint_type = "Gateway"
-  tags               = merge(var.resource_tags, { Name = "${var.resource_prefix}-VPCEndPoint-S3" })
+  tags               = { Name = "${var.resource_prefix}-VPCEndPoint-S3" }
 }
 
 resource "aws_vpc_endpoint" "secmgr_ep" {
@@ -113,6 +117,6 @@ resource "aws_vpc_endpoint" "secmgr_ep" {
   private_dns_enabled = true
   security_group_ids  = [aws_security_group.ep_secgroup.id]
   subnet_ids          = [aws_subnet.privatesubnet1.id, aws_subnet.privatesubnet2.id]
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-VPCEndPoint-SecMgr" })
+  tags = { Name = "${var.resource_prefix}-VPCEndPoint-SecMgr" }
 }
 

@@ -19,6 +19,3 @@ variable "vpc_flow_logging_bucket_arn" {
 variable "resource_prefix" {
   type = string
 }
-variable "resource_tags" {
-  type = map(any)
-}

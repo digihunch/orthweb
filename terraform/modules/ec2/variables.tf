@@ -1,5 +1,6 @@
 variable "public_key" {
   type = string
+  sensitive = true
 }
 variable "vpc_config" {
   description = "VPC configuration"
@@ -32,7 +33,4 @@ variable "deployment_options" {
 }
 variable "resource_prefix" {
   type = string
-}
-variable "resource_tags" {
-  type = map(any)
 }

@@ -1,7 +1,74 @@
+
+data "aws_caller_identity" "current" {
+  # no arguments
+}
+
+resource "random_password" "password" {
+  length           = 16
+  special          = true
+  override_special = "!%*-_+:?"
+}
+
+resource "aws_secretsmanager_secret" "secretDB" {
+  name       = "${var.resource_prefix}DatabaseCreds"
+  kms_key_id = var.custom_key_arn
+  tags       = { Name = "${var.resource_prefix}-DBSecret" }
+}
+
+resource "aws_secretsmanager_secret_version" "sversion" {
+  secret_id     = aws_secretsmanager_secret.secretDB.id
+  secret_string = <<EOF
+   {
+    "username": "myuser",
+    "password": "${random_password.password.result}"
+   }
+EOF
+  depends_on    = [aws_secretsmanager_secret.secretDB]
+}
+
+data "aws_secretsmanager_secret_version" "dbcreds" {
+  secret_id  = aws_secretsmanager_secret.secretDB.arn
+  depends_on = [aws_secretsmanager_secret_version.sversion]
+}
+
+#resource "aws_secretsmanager_secret_policy" "secretmgrSecretPolicy" {
+#  secret_arn = aws_secretsmanager_secret.secretDB.arn
+#  policy = jsonencode({
+#    Version = "2012-10-17"
+#    Id      = "${var.resource_prefix}-OrthSecretPolicy"
+#    Statement = [
+#      {
+#        Sid       = "RestrictGetSecretValueoperation"
+#        Effect    = "Allow"
+#        Principal = {
+#          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.role_name}"
+#        }
+#        Action    = "secretsmanager:GetSecretValue"
+#        Resource = [
+#          aws_secretsmanager_secret.secretDB.arn
+#        ]
+#      }
+#    ]
+#  })
+#}
+
+data "aws_subnet" "private_subnet1" {
+  id = var.private_subnet1_id
+}
+
+data "aws_vpc" "mainVPC" {
+  id = data.aws_subnet.private_subnet1.vpc_id
+}
+
+locals {
+  db_log_exports        = ["postgresql", "upgrade"]
+  db_log_retention_days = 7
+}
+
 resource "aws_db_subnet_group" "dbsubnetgroup" {
   name       = "${var.resource_prefix}-dbsubnetgroup"
   subnet_ids = [var.private_subnet1_id, var.private_subnet2_id]
-  tags       = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSubnetGroup" })
+  tags       = { Name = "${var.resource_prefix}-DBSubnetGroup" }
 }
 
 resource "aws_security_group" "dbsecgroup" {
@@ -22,7 +89,7 @@ resource "aws_security_group" "dbsecgroup" {
     cidr_blocks = [data.aws_vpc.mainVPC.cidr_block]
     description = "allow ping from VPC"
   }
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBSecurityGroup" })
+  tags = { Name = "${var.resource_prefix}-DBSecurityGroup" }
 }
 
 resource "aws_db_parameter_group" "dbparamgroup" {
@@ -37,7 +104,7 @@ resource "aws_db_parameter_group" "dbparamgroup" {
     name  = "log_min_duration_statement"
     value = "1"
   }
-  tags = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBParameterGroup" })
+  tags = { Name = "${var.resource_prefix}-DBParameterGroup" }
 }
 
 resource "aws_iam_role" "rds_monitoring_role" {
@@ -55,7 +122,7 @@ resource "aws_iam_role" "rds_monitoring_role" {
     ]
   })
   managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"]
-  tags                = merge(var.resource_tags, { Name = "${var.resource_prefix}-DB-Monitoring-IAM-role" })
+  tags                = { Name = "${var.resource_prefix}-DB-Monitoring-IAM-role" }
 }
 
 resource "aws_cloudwatch_log_group" "db_log_group" {
@@ -64,7 +131,7 @@ resource "aws_cloudwatch_log_group" "db_log_group" {
   name              = "/aws/rds/instance/${var.resource_prefix}-orthancpostgres/${each.value}"
   kms_key_id        = var.custom_key_arn
   retention_in_days = local.db_log_retention_days
-  tags              = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBInstance-${each.value}" })
+  tags              = { Name = "${var.resource_prefix}-DBInstance-${each.value}" }
 }
 
 resource "aws_db_instance" "postgres" {
@@ -80,8 +147,8 @@ resource "aws_db_instance" "postgres" {
   instance_class                      = var.db_instance_class 
   identifier                          = "${var.resource_prefix}-orthancpostgres"
   db_name                             = "orthancdb"
-  username                            = local.db_creds.username
-  password                            = local.db_creds.password
+  username                            = jsondecode(data.aws_secretsmanager_secret_version.dbcreds.secret_string).username
+  password                            = jsondecode(data.aws_secretsmanager_secret_version.dbcreds.secret_string).password
   port                                = "5432"
   deletion_protection                 = false
   skip_final_snapshot                 = "true"
@@ -96,6 +163,6 @@ resource "aws_db_instance" "postgres" {
   enabled_cloudwatch_logs_exports     = local.db_log_exports
   kms_key_id                          = var.custom_key_arn
   depends_on                          = [aws_cloudwatch_log_group.db_log_group]
-  tags                                = merge(var.resource_tags, { Name = "${var.resource_prefix}-DBInstance" })
+  tags                                = { Name = "${var.resource_prefix}-DBInstance" }
 }
 

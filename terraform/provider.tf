@@ -15,4 +15,12 @@ provider "aws" {
   # export AWS_DEFAULT_REGION= 
   # export AWS_PROFILE=
   # export AWS_REGION=
+
+  default_tags {
+    tags = {
+      Environment = var.CommonTags.Environment
+      Owner = var.CommonTags.Owner
+      Application = "Orthanc"
+    }
+  }
 }

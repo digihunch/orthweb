@@ -11,14 +11,16 @@
 [![Latest Release](https://img.shields.io/github/v/release/digihunch/orthweb)](https://github.com/digihunch/orthweb/releases/latest) 
 ## Overview
 
-**[Orthweb](https://github.com/digihunch/orthweb)** helps imaging IT administrators operationalize **[Orthanc](https://www.orthanc-server.com/)** on AWS. 
+**[Orthweb](https://github.com/digihunch/orthweb)** helps imaging IT administrators operationalize **[Orthanc](https://www.orthanc-server.com/)** on AWS. The [documentation](https://digihunch.github.io/orthweb/) provides a step-by-step guide for deployment and discussions about the architecture.
 
-Imaging IT administrators should host Orthanc on a secure cloud platform. Large organizations usually build their own cloud landing zone for their imaging department to deploy applications. Many smaller organizations do not have this layer of infrastructure.
+Imaging IT administrators host Orthanc on a secure cloud platform. A large organization typically have a shared IT service team build their own platform with multi-VPC networking infrastructure on AWS, commonly known as a [landing zone](https://www.digihunch.com/2022/12/landing-zone-in-aws/). Each department in the organization deploys their own applications on their assigned portion of the network. 
 
-To fill this gap, **Orthweb** project proposes a self-contained architecture for both cloud networking infrastrcutre and the VM hosting Orthanc application. Using infrastructure as code, **Orthanc** greately accelerates the deployment. Bring your own AWS account, and **Orthweb** will set up Orthanc server in half an hour to serve HTTP and DICOM traffic.
+However, many Orthanc adopters are smaller organizations such as startups, research entities and independent health facilities (IHFs) with minimal support from their parent organizations for cloud platform. To fill this gap and accelerate deployment of Orthanc in the cloud, **Orthweb** project was [created](https://www.digihunch.com/2020/11/medical-imaging-web-server-deployment-pipeline/) in 2020.
 
-The architecture that **[Orthweb](https://github.com/digihunch/orthweb)** project proposes involves numerous underlying cloud resources in AWS (e.g. VPC, subnets, Secret Manager, RDS, S3) as a minimal implementation of best practices in security, automation and high availability.
+<img align="middle" src="docs/assets/images/Overview.png">
+<br/><br/>
 
-On top of the infrastructre, **Orthweb** also automatically configures the hosting of **Orthanc** application with Docker, using the [Orthanc image](https://hub.docker.com/r/osimis/orthanc) released by [Osimis](https://www.osimis.io/). For those who need to host Orthanc on Kubernetes, check out Orthweb's sister project [Korthweb](https://github.com/digihunch/korthweb).
+The **Orthweb** template provisions its own self-contained infrastrcture stack in a single AWS account. It does not rely upon an established network infrastructure platform. The network infrastructure layer provisioned in the project contains a single VPC with multiple subnets, along with required endpoints. The infrastructure layer also contains encryption keys, managed database service and S3 storage. The infrastrcture footprint is small but secure. It aims to comply with regulatory requirements such as HIPPA. However, regulatory auditing is the responsibility of the Orthanc adopter. 
+<br/><br/>
 
-The [Orthweb documentation](https://digihunch.github.io/orthweb/) includes a step-by-step guide for deployment and more details about the architecture.
+The **Orthweb** project ueses **Terraform** for infrastructure as code. With the organization's own AWS account, **Orthweb** can typically set up Orthanc server within 30 minutes and start to serve HTTP and DICOM traffic. The project also takes into account other operational aspects, such as high availability, resiliency and automation in the configuration of **Orthanc** application with Docker, using the official [Orthanc image](https://hub.docker.com/r/orthancteam/orthanc). For those considering hosting Orthanc on Kubernetes, check out our sister project [Korthweb](https://github.com/digihunch/korthweb).

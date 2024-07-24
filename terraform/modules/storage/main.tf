@@ -1,8 +1,15 @@
+data "aws_caller_identity" "current" {
+  # no arguments
+}
+locals {
+  access_log_prefix = "accesslog/orthbucket/"
+}
+
 resource "aws_s3_bucket" "orthbucket" {
   bucket = "${var.resource_prefix}-orthbucket"
 
   force_destroy = true # remaining object does not stop bucket from being deleted
-  tags          = merge(var.resource_tags, { Name = "${var.resource_prefix}-orthbucket" })
+  tags          = { Name = "${var.resource_prefix}-orthbucket" }
 }
 
 resource "aws_s3_bucket_versioning" "orthbucket_versioning" {
@@ -42,7 +49,7 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
     Id      = "${var.resource_prefix}-OrthBucketPolicy"
     Statement = [
       {
-        Sid       = "DenyExceptRootAccnt"
+        Sid = "DenyInsecureConnections"
         Effect    = "Deny"
         Principal = "*"
         Action    = "s3:*"
@@ -51,14 +58,27 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
           "${aws_s3_bucket.orthbucket.arn}/*",
         ]
         Condition = {
-          StringNotLike = {
-            "aws:userId" = [
-              "${data.aws_iam_role.instance_role.unique_id}:*", # instance role
-              "${data.aws_caller_identity.current.account_id}", # root user
-              "${data.aws_caller_identity.current.user_id}"     # deployment user
-            ]
+          Bool = {
+            "aws:SecureTransport": "false"
           }
         }
+      },
+      {
+        Sid = "AllowAccountRoot"
+        Effect    = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action    = [
+          "s3:Put*",
+          "s3:Get*",
+          "s3:List*",
+          "s3:Delete*"
+        ]
+        Resource = [
+          aws_s3_bucket.orthbucket.arn,
+          "${aws_s3_bucket.orthbucket.arn}/*",
+        ]
       }
     ]
   })
@@ -70,7 +90,7 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
 resource "aws_s3_bucket" "logging_bucket" {
   bucket        = "${var.resource_prefix}-orthweb-logging"
   force_destroy = true
-  tags          = merge(var.resource_tags, { Name = "${var.resource_prefix}-logging" })
+  tags          = { Name = "${var.resource_prefix}-logging" }
 }
 resource "aws_s3_bucket_versioning" "orthweb_logging_versioning" {
   bucket = aws_s3_bucket.logging_bucket.id
