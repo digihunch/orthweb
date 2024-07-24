@@ -1,17 +1,14 @@
 variable "public_key" {
-  type = string
+  type      = string
   sensitive = true
 }
 variable "vpc_config" {
   description = "VPC configuration"
-  type        = map(any)
-  default = {
-    vpc_id                 = null
-    public_subnet1_id      = null
-    public_subnet2_id      = null
-    secret_ep_service_name = null
-    scu_cidr_block = null
-  }
+  type = object({
+    vpc_id            = string
+    public_subnet_ids = list(string)
+    scu_cidr_block    = string
+  })
 }
 variable "db_instance_id" {
   type = string
@@ -32,5 +29,6 @@ variable "deployment_options" {
   type = map(any)
 }
 variable "resource_prefix" {
-  type = string
+  type        = string
+  description = "Uniq prefix of each resource"
 }

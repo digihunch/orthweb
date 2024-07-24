@@ -7,7 +7,7 @@ output "db_info" {
 
 output "secret_info" {
   value = {
-    db_secret_id    = aws_secretsmanager_secret.secretDB.id
-    db_secret_arn   = aws_secretsmanager_secret.secretDB.arn
+    db_secret_id  = aws_secretsmanager_secret.secretDB.id
+    db_secret_arn = aws_secretsmanager_secret.secretDB.arn
   }
 }

@@ -6,33 +6,35 @@ yum install docker git jq -y
 sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
 
 ## Configure Docker daemon
+# Allow non-root user to run docker cli command but only takes effect after current user session
 usermod -a -G docker ec2-user   
-# this allows non-root user to run docker cli command but only takes effect after current user session
-
-# Tell docker bridge to use an address pool other than 172.17.x.x, which is in conflict with our VPC's CIDR
-cat << EOF > /etc/docker/daemon.json
-{
-  "default-address-pools":
-  [
-    {"base":"10.10.0.0/16","size":24}
-  ]
-}
-EOF
-
 systemctl restart docker
 chmod 666 /var/run/docker.sock
+
+## No longer needed since the VPC CIDR had changed:
+## Tell docker bridge to use an address pool other than 172.17.x.x, which is in conflict with our VPC's CIDR
+#cat << EOF > /etc/docker/daemon.json
+#{
+#  "default-address-pools":
+#  [
+#    {"base":"10.10.0.0/16","size":24}
+#  ]
+#}
+#EOF
 
 ## Configure Docker Compose
 curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 
-## Create new user in line with the envoy user in envoy proxy's image
+## Create new user in line with the envoy user in envoy proxy's image. Then we create a directroy on host with owner's uid/gid identical
+## to the uid/gid of main process in envoy container. This will allow us to map host directory for container to write logs to a host directory (in addition to stdout). 
+## We also set ACL to allow ec2-user on the host to read/execute in envoy user's directory, for the convenience of ec2-user.
 groupadd -g 101 envoy
 useradd envoy -u 101 -g 101 -m
 runuser -l envoy -c "
   setfacl -m u:ec2-user:rx /home/envoy
 "
-# we create a directroy on host with owner's uid/gid identical to the uid/gid of main process in envoy container. This will allow us to map host directory for container to write logs to a host directory (in addition to stdout). We also set ACL to allow ec2-user on the host to read/execute in envoy user's directory, for the convenience of ec2-user.
+
 
 runuser -l ec2-user -c " 
   cd /home/ec2-user/ && git init orthweb && cd orthweb && \

@@ -1,7 +1,9 @@
-
-data "aws_caller_identity" "current" {
-  # no arguments
+locals {
+  db_log_exports        = ["postgresql", "upgrade"]
+  db_log_retention_days = 7
 }
+
+data "aws_caller_identity" "current" {}
 
 resource "random_password" "password" {
   length           = 16
@@ -31,50 +33,20 @@ data "aws_secretsmanager_secret_version" "dbcreds" {
   depends_on = [aws_secretsmanager_secret_version.sversion]
 }
 
-#resource "aws_secretsmanager_secret_policy" "secretmgrSecretPolicy" {
-#  secret_arn = aws_secretsmanager_secret.secretDB.arn
-#  policy = jsonencode({
-#    Version = "2012-10-17"
-#    Id      = "${var.resource_prefix}-OrthSecretPolicy"
-#    Statement = [
-#      {
-#        Sid       = "RestrictGetSecretValueoperation"
-#        Effect    = "Allow"
-#        Principal = {
-#          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.role_name}"
-#        }
-#        Action    = "secretsmanager:GetSecretValue"
-#        Resource = [
-#          aws_secretsmanager_secret.secretDB.arn
-#        ]
-#      }
-#    ]
-#  })
-#}
-
-data "aws_subnet" "private_subnet1" {
-  id = var.private_subnet1_id
-}
-
 data "aws_vpc" "mainVPC" {
-  id = data.aws_subnet.private_subnet1.vpc_id
-}
-
-locals {
-  db_log_exports        = ["postgresql", "upgrade"]
-  db_log_retention_days = 7
+  id = var.vpc_config.vpc_id
 }
 
 resource "aws_db_subnet_group" "dbsubnetgroup" {
   name       = "${var.resource_prefix}-dbsubnetgroup"
-  subnet_ids = [var.private_subnet1_id, var.private_subnet2_id]
+  subnet_ids = var.vpc_config.private_subnet_ids
   tags       = { Name = "${var.resource_prefix}-DBSubnetGroup" }
 }
 
 resource "aws_security_group" "dbsecgroup" {
   name        = "${var.resource_prefix}-orthdb-secgrp"
   description = "postgres security group"
-  vpc_id      = data.aws_vpc.mainVPC.id
+  vpc_id      = var.vpc_config.vpc_id
   ingress {
     from_port   = 5432
     to_port     = 5432
@@ -94,7 +66,7 @@ resource "aws_security_group" "dbsecgroup" {
 
 resource "aws_db_parameter_group" "dbparamgroup" {
   name   = "${var.resource_prefix}-orthdb-paramgrp"
-  family = var.psql_engine_family 
+  family = var.psql_engine_family
 
   parameter {
     name  = "log_statement"
@@ -144,7 +116,7 @@ resource "aws_db_instance" "postgres" {
   allocated_storage                   = var.db_instance_allocated_storage
   engine                              = "postgres"
   engine_version                      = var.psql_engine_version
-  instance_class                      = var.db_instance_class 
+  instance_class                      = var.db_instance_class
   identifier                          = "${var.resource_prefix}-orthancpostgres"
   db_name                             = "orthancdb"
   username                            = jsondecode(data.aws_secretsmanager_secret_version.dbcreds.secret_string).username

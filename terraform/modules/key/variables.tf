@@ -1,3 +1,4 @@
 variable "resource_prefix" {
-  type = string
+  type        = string
+  description = "Uniq prefix of each resource"
 }

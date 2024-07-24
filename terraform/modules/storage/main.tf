@@ -1,6 +1,5 @@
-data "aws_caller_identity" "current" {
-  # no arguments
-}
+data "aws_caller_identity" "current" {}
+
 locals {
   access_log_prefix = "accesslog/orthbucket/"
 }
@@ -27,7 +26,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "test" {
       sse_algorithm     = "aws:kms"
     }
   }
-
 }
 
 resource "aws_s3_bucket_public_access_block" "orthbucketblockpublicaccess" {
@@ -49,7 +47,7 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
     Id      = "${var.resource_prefix}-OrthBucketPolicy"
     Statement = [
       {
-        Sid = "DenyInsecureConnections"
+        Sid       = "DenyInsecureConnections"
         Effect    = "Deny"
         Principal = "*"
         Action    = "s3:*"
@@ -59,17 +57,17 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
         ]
         Condition = {
           Bool = {
-            "aws:SecureTransport": "false"
+            "aws:SecureTransport" : "false"
           }
         }
       },
       {
-        Sid = "AllowAccountRoot"
-        Effect    = "Allow"
+        Sid    = "AllowAccountRoot"
+        Effect = "Allow"
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         }
-        Action    = [
+        Action = [
           "s3:Put*",
           "s3:Get*",
           "s3:List*",
@@ -107,8 +105,8 @@ resource "aws_iam_policy" "vpc_flow_logs_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "s3:PutObject",
           "s3:GetBucketAcl",
           "s3:GetBucketPolicy",
@@ -125,16 +123,16 @@ resource "aws_iam_policy" "vpc_flow_logs_policy" {
 
 # IAM role for VPC flow logs to assume and write logs to the S3 bucket
 resource "aws_iam_role" "vpc_flow_logs_role" {
-  name               = "vpc-flow-logs-role"
+  name = "vpc-flow-logs-role"
   assume_role_policy = jsonencode({
-    Version   = "2012-10-17",
+    Version = "2012-10-17",
     Statement = [
       {
-        Effect    = "Allow",
+        Effect = "Allow",
         Principal = {
           Service = "vpc-flow-logs.amazonaws.com"
         },
-        Action    = "sts:AssumeRole"
+        Action = "sts:AssumeRole"
       }
     ]
   })

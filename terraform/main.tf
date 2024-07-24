@@ -10,27 +10,30 @@ module "storage" {
   source          = "./modules/storage"
   custom_key_arn  = module.key.custom_key_id
   resource_prefix = random_pet.prefix.id
-  depends_on = [ module.key ]
+  depends_on      = [module.key]
 }
 
 module "network" {
-  source                      = "./modules/network"
-  vpc_cidr_block              = "172.27.0.0/16"
-  public_subnet1_cidr_block   = "172.27.3.0/24"
-  public_subnet2_cidr_block   = "172.27.5.0/24"
-  private_subnet1_cidr_block  = "172.27.4.0/24"
-  private_subnet2_cidr_block  = "172.27.6.0/24"
+  source = "./modules/network"
+  network_cidr_blocks = {
+    vpc_cidr_block             = "172.27.0.0/16"
+    public_subnet_cidr_blocks  = ["172.27.3.0/24", "172.27.5.0/24"]
+    private_subnet_cidr_blocks = ["172.27.4.0/24", "172.27.6.0/24"]
+  }
+  ifep_services = ["secretsmanager"]
   vpc_flow_logging_bucket_arn = module.storage.s3_info.logging_bucket_arn
   resource_prefix             = random_pet.prefix.id
 }
 
 module "database" {
-  source             = "./modules/database"
-  private_subnet1_id = module.network.vpc_info.private_subnet1_id
-  private_subnet2_id = module.network.vpc_info.private_subnet2_id
+  source = "./modules/database"
+  vpc_config = {
+    vpc_id             = module.network.vpc_info.vpc_id
+    private_subnet_ids = module.network.vpc_info.private_subnet_ids
+  }
   custom_key_arn  = module.key.custom_key_id
-  resource_prefix    = random_pet.prefix.id
-  depends_on = [ module.key ]
+  resource_prefix = random_pet.prefix.id
+  depends_on      = [module.key]
 }
 
 module "ec2" {
@@ -40,13 +43,11 @@ module "ec2" {
   db_instance_id = module.database.db_info.db_instance_id
   s3_bucket_name = module.storage.s3_info.bucket_name
   db_secret_arn  = module.database.secret_info.db_secret_arn
-  custom_key_arn  = module.key.custom_key_id
+  custom_key_arn = module.key.custom_key_id
   vpc_config = {
-    vpc_id                 = module.network.vpc_info.vpc_id
-    public_subnet1_id      = module.network.vpc_info.public_subnet1_id
-    public_subnet2_id      = module.network.vpc_info.public_subnet2_id
-    secret_ep_service_name = module.network.vpc_info.secmgr_vpc_ep_service_name
-    scu_cidr_block = var.scu_cidr_block
+    vpc_id            = module.network.vpc_info.vpc_id
+    public_subnet_ids = module.network.vpc_info.public_subnet_ids
+    scu_cidr_block    = var.scu_cidr_block
   }
   deployment_options = var.DeploymentOptions
   resource_prefix    = random_pet.prefix.id

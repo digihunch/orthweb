@@ -1,6 +1,4 @@
-data "aws_db_instance" "postgres" {
-  db_instance_identifier = var.db_instance_id
-}
+data "aws_region" "this" {}
 
 data "aws_ami" "amazon_linux" {
   most_recent = true
@@ -19,7 +17,9 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-data "aws_region" "this" {}
+data "aws_db_instance" "postgres" {
+  db_instance_identifier = var.db_instance_id
+}
 
 data "aws_s3_bucket" "orthbucket" {
   bucket = var.s3_bucket_name
@@ -27,11 +27,6 @@ data "aws_s3_bucket" "orthbucket" {
 
 data "aws_secretsmanager_secret" "secretDB" {
   arn = var.db_secret_arn
-}
-
-data "aws_vpc_endpoint" "secmgr" {
-  vpc_id       = var.vpc_config.vpc_id
-  service_name = var.vpc_config.secret_ep_service_name
 }
 
 data "cloudinit_config" "orthconfig" {
@@ -42,21 +37,16 @@ data "cloudinit_config" "orthconfig" {
   }
   part {
     content_type = "text/x-shellscript"
-    content = templatefile("${path.module}/userdata2.tpl",{
+    content = templatefile("${path.module}/userdata2.tpl", {
       db_address       = data.aws_db_instance.postgres.address,
       db_port          = data.aws_db_instance.postgres.port,
       aws_region       = data.aws_region.this.name,
-      sm_endpoint      = data.aws_vpc_endpoint.secmgr.dns_entry[length(data.aws_vpc_endpoint.secmgr.dns_entry)-1].dns_name,
       sec_name         = data.aws_secretsmanager_secret.secretDB.name,
       s3_bucket        = data.aws_s3_bucket.orthbucket.bucket,
       orthanc_image    = var.deployment_options.OrthancImg,
       envoy_image      = var.deployment_options.EnvoyImg,
       floating_eip_dns = aws_eip.orthweb_eip.public_dns
     })
-  }
-  part {
-    content_type = "text/x-shellscript"
-    content      = file("${path.module}/userdata3.sh")
   }
 }
 
@@ -258,65 +248,41 @@ resource "aws_launch_template" "orthweb_launch_template" {
       kms_key_id  = var.custom_key_arn
     }
   }
-
   depends_on = [aws_iam_role.ec2_iam_role]
 }
 
-resource "aws_network_interface" "primary_nic" {
-  subnet_id       = var.vpc_config.public_subnet1_id
+resource "aws_network_interface" "orthanc_ec2_nics" {
+  count           = length(var.vpc_config.public_subnet_ids)
+  subnet_id       = var.vpc_config.public_subnet_ids[count.index]
   security_groups = [aws_security_group.ec2-secgrp.id, aws_security_group.business-traffic-secgrp.id]
-  tags            = { Name = "${var.resource_prefix}-Primary-EC2-Business-Interface" }
+  tags            = { Name = "${var.resource_prefix}-EC2-Business-Interface${count.index + 1}" }
   depends_on      = [aws_security_group.ec2-secgrp, aws_security_group.business-traffic-secgrp]
 }
 
-resource "aws_instance" "orthweb_primary" {
+resource "aws_instance" "orthweb_instance" {
   #checkov:skip=CKV_AWS_79: IMDS defined in launch template
   #checkov:skip=CKV_AWS_8: Encryption configured in launch template
+  count         = length(aws_network_interface.orthanc_ec2_nics)
   ebs_optimized = true
   monitoring    = true
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.primary_nic.id
+    network_interface_id = aws_network_interface.orthanc_ec2_nics[count.index].id
   }
   launch_template {
     id      = aws_launch_template.orthweb_launch_template.id
     version = aws_launch_template.orthweb_launch_template.latest_version
   }
-  tags       = { Name = "${var.resource_prefix}-Primary-EC2-Instance" }
-  depends_on = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
-}
-
-## secondary instance
-resource "aws_network_interface" "secondary_nic" {
-  subnet_id       = var.vpc_config.public_subnet2_id
-  security_groups = [aws_security_group.ec2-secgrp.id, aws_security_group.business-traffic-secgrp.id]
-  tags            = { Name = "${var.resource_prefix}-Secondary-EC2-Business-Interface" }
-  depends_on      = [aws_security_group.ec2-secgrp, aws_security_group.business-traffic-secgrp]
-}
-
-resource "aws_instance" "orthweb_secondary" {
-  #checkov:skip=CKV_AWS_79: IMDS defined in launch template
-  #checkov:skip=CKV_AWS_8: Encryption configured in launch template
-  ebs_optimized = true
-  monitoring    = true
-  network_interface {
-    device_index         = 0
-    network_interface_id = aws_network_interface.secondary_nic.id
-  }
-  launch_template {
-    id      = aws_launch_template.orthweb_launch_template.id
-    version = aws_launch_template.orthweb_launch_template.latest_version
-  }
-  tags       = { Name = "${var.resource_prefix}-Secondary-EC2-Instance" }
+  tags       = { Name = "${var.resource_prefix}-EC2-Instance-${count.index + 1}" }
   depends_on = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
 }
 
 resource "aws_eip" "orthweb_eip" {
-  domain   = "vpc" 
-  tags = { Name = "${var.resource_prefix}-Floating-EIP" }
+  domain = "vpc"
+  tags   = { Name = "${var.resource_prefix}-Floating-EIP" }
 }
 
 resource "aws_eip_association" "floating_eip_assoc" {
   allocation_id        = aws_eip.orthweb_eip.id
-  network_interface_id = aws_network_interface.primary_nic.id
+  network_interface_id = aws_network_interface.orthanc_ec2_nics[0].id
 }

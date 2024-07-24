@@ -1,11 +1,11 @@
 output "primary_host_info" {
   value = {
-    instance_id = aws_instance.orthweb_primary.id
+    instance_id = aws_instance.orthweb_instance[0].id
   }
 }
 output "secondary_host_info" {
   value = {
-    instance_id = aws_instance.orthweb_secondary.id
+    instance_id = aws_instance.orthweb_instance[1].id
   }
 }
 output "eip_info" {

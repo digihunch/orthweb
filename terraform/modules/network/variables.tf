@@ -1,21 +1,19 @@
-variable "vpc_cidr_block" {
-  type = string
+variable "network_cidr_blocks" {
+  description = "CIDR blocks at VPC and subnet levels"
+  type = object({
+    vpc_cidr_block             = string
+    public_subnet_cidr_blocks  = list(string)
+    private_subnet_cidr_blocks = list(string)
+  })
 }
-variable "public_subnet1_cidr_block" {
-  type = string
-}
-variable "public_subnet2_cidr_block" {
-  type = string
-}
-variable "private_subnet1_cidr_block" {
-  type = string
-}
-variable "private_subnet2_cidr_block" {
-  type = string
+variable "ifep_services" {
+  type    = list(string)
+  default = ["sts", "secretsmanager"]
 }
 variable "vpc_flow_logging_bucket_arn" {
   type = string
 }
 variable "resource_prefix" {
-  type = string
+  type        = string
+  description = "Uniq prefix of each resource"
 }
