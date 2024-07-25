@@ -20,3 +20,8 @@ As for site-to-site VPN and Direct Connect, their requirement should be reviewed
 
 ## Network Load Balancer
 If cost allows, consider placing a network load balancer in front of the EC2 instances. We would be able to configure the network load balancer so it automatically sends the traffic to a functional EC2 instance, thereby eliminating the manual fail over procedure.
+
+## Domain name and Certificate
+For instance's public IP, AWS creates a domain name under the amazonaws.com domain. Consider bringing your own domain and resolve to the server's public IP.
+
+For completeness, the bootstrapping script of EC2 instance creates a self-signed CA and issues a certificate with that. Most browsers understandably flag the connection as not private and web users must proceed as unsafe connection. To address this, consider use your own certificate issued by the [Public Key Infrastructure](https://www.digihunch.com/2024/02/public-key-infrastructure-1-of-3-basics/) of your organization. 

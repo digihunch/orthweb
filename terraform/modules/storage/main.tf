@@ -1,8 +1,6 @@
-data "aws_caller_identity" "current" {}
+locals { access_log_prefix = "accesslog/orthbucket/" }
 
-locals {
-  access_log_prefix = "accesslog/orthbucket/"
-}
+data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket" "orthbucket" {
   bucket = "${var.resource_prefix}-orthbucket"
@@ -82,8 +80,6 @@ resource "aws_s3_bucket_policy" "orthbucketpolicy" {
   })
   depends_on = [aws_s3_bucket_public_access_block.orthbucketblockpublicaccess]
 }
-
-## VPC endpoint is declared in the VPC module
 
 resource "aws_s3_bucket" "logging_bucket" {
   bucket        = "${var.resource_prefix}-orthweb-logging"

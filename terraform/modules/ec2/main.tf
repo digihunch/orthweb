@@ -1,6 +1,55 @@
+locals {
+  instance_sg_configs = [
+    {
+      name        = "${var.resource_prefix}-mgmt-sg"
+      description = "Security Group for management traffic"
+      ingress_rules = [
+        {
+          from_port   = 8
+          to_port     = 0
+          protocol    = "icmp"
+          cidr_blocks = ["0.0.0.0/0"]
+          rule_desc   = "Allow ping from anywhere"
+        }
+      ]
+      egress_rules = [
+        {
+          from_port   = 0
+          to_port     = 0
+          protocol    = "-1"
+          cidr_blocks = ["0.0.0.0/0"]
+          rule_desc   = "Allow outbound access"
+        }
+      ]
+    },
+    {
+      name        = "${var.resource_prefix}-app-sg"
+      description = "Security Group for application traffic"
+      ingress_rules = [
+        {
+          from_port   = 443
+          to_port     = 443
+          protocol    = "tcp"
+          cidr_blocks = ["0.0.0.0/0"]
+          rule_desc   = "Allow web traffic"
+        }
+      ]
+      egress_rules = [
+        {
+          from_port   = 11112
+          to_port     = 11112
+          protocol    = "tcp"
+          cidr_blocks = [var.vpc_config.scu_cidr_block]
+          rule_desc   = "Allow DICOM traffic"
+        }
+      ]
+    }
+  ]
+}
+
 data "aws_region" "this" {}
 
-data "aws_ami" "amazon_linux" {
+data "aws_ami" "amazon_linux_ami" {
   most_recent = true
   owners      = ["amazon"]
   filter {
@@ -85,9 +134,8 @@ resource "aws_iam_role_policy_attachment" "ec2-iam-role-ssm-policy-attach" {
 
 # EC2 instance needs to read DB secret
 resource "aws_iam_role_policy" "secret_reader_policy" {
-  name = "${var.resource_prefix}-secret_reader_policy"
-  role = aws_iam_role.ec2_iam_role.name
-
+  name   = "${var.resource_prefix}-secret_reader_policy"
+  role   = aws_iam_role.ec2_iam_role.name
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -178,46 +226,31 @@ resource "aws_iam_role_policy" "key_access_policy" {
 EOF
 }
 
-resource "aws_security_group" "ec2-secgrp" {
-  name        = "${var.resource_prefix}-ec2-sg"
-  description = "security group for ec2 instance"
+resource "aws_security_group" "ec2_sgs" {
+  count       = length(local.instance_sg_configs)
+  name        = local.instance_sg_configs[count.index].name
+  description = local.instance_sg_configs[count.index].description
   vpc_id      = var.vpc_config.vpc_id
-  ingress {
-    from_port   = 8
-    to_port     = 0
-    protocol    = "icmp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "allow ping from anywhere"
+  dynamic "ingress" {
+    for_each = local.instance_sg_configs[count.index].ingress_rules
+    content {
+      from_port   = ingress.value.from_port
+      to_port     = ingress.value.to_port
+      protocol    = ingress.value.protocol
+      cidr_blocks = ingress.value.cidr_blocks
+      description = ingress.value.rule_desc
+    }
   }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "allow outbound access"
+  dynamic "egress" {
+    for_each = local.instance_sg_configs[count.index].egress_rules
+    content {
+      from_port   = egress.value.from_port
+      to_port     = egress.value.to_port
+      protocol    = egress.value.protocol
+      cidr_blocks = egress.value.cidr_blocks
+      description = egress.value.rule_desc
+    }
   }
-  tags = { Name = "${var.resource_prefix}-EC2SecurityGroup" }
-}
-
-resource "aws_security_group" "business-traffic-secgrp" {
-  name        = "${var.resource_prefix}-business-traffic-sg"
-  description = "security group for business traffic"
-  vpc_id      = var.vpc_config.vpc_id
-  ingress {
-    description = "Orthanc Web Portal"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    description = "DICOM Communication"
-    from_port   = 11112
-    to_port     = 11112
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_config.scu_cidr_block]
-  }
-  tags = { Name = "${var.resource_prefix}-BusinessTrafficSecurityGroup" }
 }
 
 resource "aws_iam_instance_profile" "inst_profile" {
@@ -231,7 +264,7 @@ resource "aws_launch_template" "orthweb_launch_template" {
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
   instance_type = var.deployment_options.InstanceType
   user_data     = data.cloudinit_config.orthconfig.rendered
-  image_id      = data.aws_ami.amazon_linux.id
+  image_id      = data.aws_ami.amazon_linux_ami.id
   iam_instance_profile {
     name = aws_iam_instance_profile.inst_profile.name
   }
@@ -241,7 +274,7 @@ resource "aws_launch_template" "orthweb_launch_template" {
     http_put_response_hop_limit = 2
   }
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = data.aws_ami.amazon_linux_ami.root_device_name
     ebs {
       volume_size = 20
       encrypted   = true
@@ -254,9 +287,9 @@ resource "aws_launch_template" "orthweb_launch_template" {
 resource "aws_network_interface" "orthanc_ec2_nics" {
   count           = length(var.vpc_config.public_subnet_ids)
   subnet_id       = var.vpc_config.public_subnet_ids[count.index]
-  security_groups = [aws_security_group.ec2-secgrp.id, aws_security_group.business-traffic-secgrp.id]
+  security_groups = aws_security_group.ec2_sgs[*].id
   tags            = { Name = "${var.resource_prefix}-EC2-Business-Interface${count.index + 1}" }
-  depends_on      = [aws_security_group.ec2-secgrp, aws_security_group.business-traffic-secgrp]
+  depends_on      = [aws_security_group.ec2_sgs]
 }
 
 resource "aws_instance" "orthweb_instance" {

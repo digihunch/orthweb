@@ -20,7 +20,7 @@ module "network" {
     public_subnet_cidr_blocks  = ["172.27.3.0/24", "172.27.5.0/24"]
     private_subnet_cidr_blocks = ["172.27.4.0/24", "172.27.6.0/24"]
   }
-  ifep_services = ["secretsmanager"]
+  ifep_services               = ["secretsmanager"]
   vpc_flow_logging_bucket_arn = module.storage.s3_info.logging_bucket_arn
   resource_prefix             = random_pet.prefix.id
 }

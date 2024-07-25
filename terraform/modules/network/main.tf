@@ -8,11 +8,6 @@ resource "aws_vpc" "orthmain" {
   tags                 = { Name = "${var.resource_prefix}-MainVPC" }
 }
 
-resource "aws_default_security_group" "default_sg" {
-  vpc_id = aws_vpc.orthmain.id
-  tags   = { Name = "${var.resource_prefix}-MainVPC-Default-SG" }
-}
-
 resource "aws_flow_log" "mainVPCflowlog" {
   log_destination          = var.vpc_flow_logging_bucket_arn
   log_destination_type     = "s3"
@@ -25,8 +20,8 @@ resource "aws_flow_log" "mainVPCflowlog" {
   tags = { Name = "${var.resource_prefix}-MainVPCFlowLog" }
 }
 
-# Instances are placed in public subnet. Private subnets are only to connect to DB and endpoints.
-# Private subnets do not need to access the Internet.
+# Instances are placed in public subnet. Private for DB subnets and endpoint interfaces.
+# Private subnets do not need to access the Internet, hence no NAT Gateway
 
 resource "aws_subnet" "public_subnets" {
   #checkov:skip=CKV_AWS_130: For public subnet, assign public IP by default
