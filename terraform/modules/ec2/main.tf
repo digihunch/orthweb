@@ -1,6 +1,6 @@
 locals {
-  instance_sg_configs = [
-    {
+  instance_sg_configs = {
+    mgmtsg = {
       name        = "${var.resource_prefix}-mgmt-sg"
       description = "Security Group for management traffic"
       ingress_rules = [
@@ -22,7 +22,7 @@ locals {
         }
       ]
     },
-    {
+    appsg = {
       name        = "${var.resource_prefix}-app-sg"
       description = "Security Group for application traffic"
       ingress_rules = [
@@ -44,8 +44,9 @@ locals {
         }
       ]
     }
-  ]
+  }
 }
+
 
 data "aws_region" "this" {}
 
@@ -227,12 +228,12 @@ EOF
 }
 
 resource "aws_security_group" "ec2_sgs" {
-  count       = length(local.instance_sg_configs)
-  name        = local.instance_sg_configs[count.index].name
-  description = local.instance_sg_configs[count.index].description
+  for_each    = local.instance_sg_configs
+  name        = each.value.name
+  description = each.value.description
   vpc_id      = var.vpc_config.vpc_id
   dynamic "ingress" {
-    for_each = local.instance_sg_configs[count.index].ingress_rules
+    for_each = each.value.ingress_rules
     content {
       from_port   = ingress.value.from_port
       to_port     = ingress.value.to_port
@@ -242,7 +243,7 @@ resource "aws_security_group" "ec2_sgs" {
     }
   }
   dynamic "egress" {
-    for_each = local.instance_sg_configs[count.index].egress_rules
+    for_each = each.value.egress_rules
     content {
       from_port   = egress.value.from_port
       to_port     = egress.value.to_port
@@ -285,28 +286,28 @@ resource "aws_launch_template" "orthweb_launch_template" {
 }
 
 resource "aws_network_interface" "orthanc_ec2_nics" {
-  count           = length(var.vpc_config.public_subnet_ids)
-  subnet_id       = var.vpc_config.public_subnet_ids[count.index]
-  security_groups = aws_security_group.ec2_sgs[*].id
-  tags            = { Name = "${var.resource_prefix}-EC2-Business-Interface${count.index + 1}" }
+  for_each        = toset(var.vpc_config.public_subnet_cidr_blocks)
+  subnet_id       = var.vpc_config.public_subnet_ids[each.value]
+  security_groups = values(aws_security_group.ec2_sgs)[*].id
+  tags            = { Name = "${var.resource_prefix}-EC2-Business-Interface-${var.vpc_config.public_subnet_ids[each.value]}" }
   depends_on      = [aws_security_group.ec2_sgs]
 }
 
 resource "aws_instance" "orthweb_instance" {
   #checkov:skip=CKV_AWS_79: IMDS defined in launch template
   #checkov:skip=CKV_AWS_8: Encryption configured in launch template
-  count         = length(aws_network_interface.orthanc_ec2_nics)
+  for_each      = aws_network_interface.orthanc_ec2_nics
   ebs_optimized = true
   monitoring    = true
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.orthanc_ec2_nics[count.index].id
+    network_interface_id = each.value.id
   }
   launch_template {
     id      = aws_launch_template.orthweb_launch_template.id
     version = aws_launch_template.orthweb_launch_template.latest_version
   }
-  tags       = { Name = "${var.resource_prefix}-EC2-Instance-${count.index + 1}" }
+  tags       = { Name = "${var.resource_prefix}-EC2-Instance-${var.vpc_config.public_subnet_ids[each.key]}" }
   depends_on = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
 }
 
@@ -317,5 +318,5 @@ resource "aws_eip" "orthweb_eip" {
 
 resource "aws_eip_association" "floating_eip_assoc" {
   allocation_id        = aws_eip.orthweb_eip.id
-  network_interface_id = aws_network_interface.orthanc_ec2_nics[0].id
+  network_interface_id = values(aws_network_interface.orthanc_ec2_nics)[0].id
 }

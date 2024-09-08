@@ -1,5 +1,16 @@
 resource "random_pet" "prefix" {}
 
+locals {
+  vpc_pfxlen = parseint(regex("/(\\d+)$", var.vpc_config.vpc_cidr)[0], 10)
+  # Calculate subnet size for each type of subnet per AZ, in the order of public subnet and private subnet
+  subnet_sizes = [var.vpc_config.public_subnet_pfxlen - local.vpc_pfxlen, var.vpc_config.private_subnet_pfxlen - local.vpc_pfxlen]
+  # Calculate the Subnet CIDRs for each type of subnet, in all AZs
+  subnet_cidrs = cidrsubnets(var.vpc_config.vpc_cidr, flatten([for i in range(var.vpc_config.az_count) : local.subnet_sizes])...)
+  # For each type of subnet, build a list of CIDRs for the subnet type in all AZs
+  public_subnets_cidr_list  = [for idx, val in local.subnet_cidrs : val if idx % 2 == 0]
+  private_subnets_cidr_list = [for idx, val in local.subnet_cidrs : val if idx % 2 == 1]
+}
+
 module "key" {
   # This encryption key is used to encrypt s3 bucket, database, secret manager entry, EC2 volume, etc
   source          = "./modules/key"
@@ -16,9 +27,9 @@ module "storage" {
 module "network" {
   source = "./modules/network"
   network_cidr_blocks = {
-    vpc_cidr_block             = "172.27.0.0/16"
-    public_subnet_cidr_blocks  = ["172.27.3.0/24", "172.27.5.0/24"]
-    private_subnet_cidr_blocks = ["172.27.4.0/24", "172.27.6.0/24"]
+    vpc_cidr_block             = var.vpc_config.vpc_cidr
+    public_subnet_cidr_blocks  = local.public_subnets_cidr_list
+    private_subnet_cidr_blocks = local.private_subnets_cidr_list
   }
   ifep_services               = ["secretsmanager"]
   vpc_flow_logging_bucket_arn = module.storage.s3_info.logging_bucket_arn
@@ -45,9 +56,10 @@ module "ec2" {
   db_secret_arn  = module.database.secret_info.db_secret_arn
   custom_key_arn = module.key.custom_key_id
   vpc_config = {
-    vpc_id            = module.network.vpc_info.vpc_id
-    public_subnet_ids = module.network.vpc_info.public_subnet_ids
-    scu_cidr_block    = var.scu_cidr_block
+    vpc_id                    = module.network.vpc_info.vpc_id
+    public_subnet_ids         = module.network.vpc_info.public_subnet_ids
+    public_subnet_cidr_blocks = local.public_subnets_cidr_list
+    scu_cidr_block            = var.scu_cidr_block
   }
   deployment_options = var.DeploymentOptions
   resource_prefix    = random_pet.prefix.id

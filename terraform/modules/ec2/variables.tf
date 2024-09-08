@@ -5,9 +5,10 @@ variable "public_key" {
 variable "vpc_config" {
   description = "VPC configuration"
   type = object({
-    vpc_id            = string
-    public_subnet_ids = list(string)
-    scu_cidr_block    = string
+    vpc_id                    = string
+    public_subnet_cidr_blocks = list(string)
+    public_subnet_ids         = map(string)
+    scu_cidr_block            = string
   })
 }
 variable "db_instance_id" {
