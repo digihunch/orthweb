@@ -94,6 +94,30 @@ resource "aws_vpc_endpoint" "s3_ep" {
   tags              = { Name = "${var.resource_prefix}-s3-gwep" }
 }
 
+resource "aws_security_group" "ifep_sg" {
+  name        = "${var.resource_prefix}-interface-endpoint-sg"
+  description = "Security Group For Interface Endpoints"
+  vpc_id      = aws_vpc.orthmain.id
+
+  # Inbound rule to allow traffic on port 443 (HTTPS)
+  ingress {
+    description = "Allow inbound HTTPS traffic"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.network_cidr_blocks.vpc_cidr_block]
+  }
+
+  # Outbound rule to block all outbound traffic
+  egress {
+    description = "Deny all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # -1 means all protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_vpc_endpoint" "standard_interface_endpoints" {
   for_each            = toset(var.ifep_services)
   vpc_id              = aws_vpc.orthmain.id
@@ -101,6 +125,7 @@ resource "aws_vpc_endpoint" "standard_interface_endpoints" {
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
   subnet_ids          = values(aws_subnet.private_subnets)[*].id
+  security_group_ids  = [aws_security_group.ifep_sg.id]
   tags                = { Name = "${var.resource_prefix}-${each.key}-ifep" }
 }
 

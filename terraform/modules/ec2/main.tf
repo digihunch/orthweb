@@ -259,6 +259,7 @@ resource "aws_iam_instance_profile" "inst_profile" {
   role = aws_iam_role.ec2_iam_role.name
 }
 
+
 resource "aws_launch_template" "orthweb_launch_template" {
   #checkov:skip=CKV_AWS_341: Process in docker needs to get instance metadata to assume the IAM role for EC2 instance. With IMDSv2, we need set http_put_response_hop_limit to 2. Otherwise, process in Docker container will not be able to read/write to S3 bucket using the IAM role attached to the instance profile. Ref: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
   name          = "${var.resource_prefix}-ec2-launch-template"
@@ -283,6 +284,12 @@ resource "aws_launch_template" "orthweb_launch_template" {
     }
   }
   depends_on = [aws_iam_role.ec2_iam_role]
+
+  lifecycle {
+    ignore_changes = [
+      user_data,
+    ]
+  }
 }
 
 resource "aws_network_interface" "orthanc_ec2_nics" {
@@ -309,6 +316,13 @@ resource "aws_instance" "orthweb_instance" {
   }
   tags       = { Name = "${var.resource_prefix}-EC2-Instance-${var.vpc_config.public_subnet_ids[each.key]}" }
   depends_on = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
+
+  #https://github.com/hashicorp/terraform-provider-aws/issues/5011
+  lifecycle {
+    ignore_changes = [
+      user_data,
+    ]
+  }
 }
 
 resource "aws_eip" "orthweb_eip" {

@@ -1,11 +1,11 @@
 resource "random_pet" "prefix" {}
 
 locals {
-  vpc_pfxlen = parseint(regex("/(\\d+)$", var.vpc_config.vpc_cidr)[0], 10)
+  vpc_pfxlen = parseint(regex("/(\\d+)$", var.network_config.vpc_cidr)[0], 10)
   # Calculate subnet size for each type of subnet per AZ, in the order of public subnet and private subnet
-  subnet_sizes = [var.vpc_config.public_subnet_pfxlen - local.vpc_pfxlen, var.vpc_config.private_subnet_pfxlen - local.vpc_pfxlen]
+  subnet_sizes = [var.network_config.public_subnet_pfxlen - local.vpc_pfxlen, var.network_config.private_subnet_pfxlen - local.vpc_pfxlen]
   # Calculate the Subnet CIDRs for each type of subnet, in all AZs
-  subnet_cidrs = cidrsubnets(var.vpc_config.vpc_cidr, flatten([for i in range(var.vpc_config.az_count) : local.subnet_sizes])...)
+  subnet_cidrs = cidrsubnets(var.network_config.vpc_cidr, flatten([for i in range(var.network_config.az_count) : local.subnet_sizes])...)
   # For each type of subnet, build a list of CIDRs for the subnet type in all AZs
   public_subnets_cidr_list  = [for idx, val in local.subnet_cidrs : val if idx % 2 == 0]
   private_subnets_cidr_list = [for idx, val in local.subnet_cidrs : val if idx % 2 == 1]
@@ -27,7 +27,7 @@ module "storage" {
 module "network" {
   source = "./modules/network"
   network_cidr_blocks = {
-    vpc_cidr_block             = var.vpc_config.vpc_cidr
+    vpc_cidr_block             = var.network_config.vpc_cidr
     public_subnet_cidr_blocks  = local.public_subnets_cidr_list
     private_subnet_cidr_blocks = local.private_subnets_cidr_list
   }
@@ -59,7 +59,7 @@ module "ec2" {
     vpc_id                    = module.network.vpc_info.vpc_id
     public_subnet_ids         = module.network.vpc_info.public_subnet_ids
     public_subnet_cidr_blocks = local.public_subnets_cidr_list
-    scu_cidr_block            = var.scu_cidr_block
+    scu_cidr_block            = var.network_config.scu_cidr
   }
   deployment_options = var.DeploymentOptions
   resource_prefix    = random_pet.prefix.id

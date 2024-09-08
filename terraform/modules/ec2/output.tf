@@ -13,3 +13,5 @@ output "eip_info" {
     eip_dns = aws_eip.orthweb_eip.public_dns
   }
 }
+
+
