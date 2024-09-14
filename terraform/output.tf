@@ -1,5 +1,5 @@
 output "host_info" {
-  value = "Primary:${module.ec2.primary_host_info.instance_id}    Secondary:${module.ec2.secondary_host_info.instance_id} (private SSH access as ec2-user)"
+  value = join(", ", [for i in range(length(module.ec2.hosts_info.instance_ids)) : join("", [module.ec2.hosts_info.instance_ids[i], "(", module.ec2.hosts_info.public_ips[i], ")"])])
 }
 output "site_address" {
   value = "${module.ec2.eip_info.eip_dns} (HTTPS and DICOM TLS)"

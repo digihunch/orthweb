@@ -1,11 +1,7 @@
-output "primary_host_info" {
+output "hosts_info" {
   value = {
-    instance_id = values(aws_instance.orthweb_instance)[0].id
-  }
-}
-output "secondary_host_info" {
-  value = {
-    instance_id = values(aws_instance.orthweb_instance)[1].id
+    instance_ids = values(aws_instance.orthweb_instance)[*].id
+    public_ips   = values(aws_instance.orthweb_instance)[*].public_ip
   }
 }
 output "eip_info" {
