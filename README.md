@@ -11,11 +11,11 @@
 [![Latest Release](https://img.shields.io/github/v/release/digihunch/orthweb)](https://github.com/digihunch/orthweb/releases/latest) 
 ## Overview
 
-**[Orthweb](https://github.com/digihunch/orthweb)** helps imaging IT administrators operationalize **[Orthanc](https://www.orthanc-server.com/)** on AWS. The [documentation](https://digihunch.github.io/orthweb/) provides a step-by-step guide for deployment and discussions about the architecture.
+**[Orthweb](https://github.com/digihunch/orthweb)** helps imaging IT administrators operate **[Orthanc](https://www.orthanc-server.com/)** on AWS. The [documentation](https://digihunch.github.io/orthweb/) provides a step-by-step guide for deployment and discusses the architecture.
 
-Imaging IT administrators host Orthanc on a secure cloud platform. A large organization typically have a shared IT service team build their own platform with multi-VPC networking infrastructure on AWS, commonly known as a [landing zone](https://www.digihunch.com/2022/12/landing-zone-in-aws/). Each department in the organization deploys their own applications on their assigned portion of the network. 
+Orthanc must run on a secure cloud platform. Large organizations typically have dedicated IT resources to build a multi-VPC networking infrastructure on AWS,  known as a [landing zone](https://www.digihunch.com/2022/12/landing-zone-in-aws/). Each department in the organization deploys their own applications on their assigned segments of the network. 
 
-However, many Orthanc adopters are smaller organizations such as startups, research entities and independent health facilities (IHFs) with minimal support from their parent organizations for cloud platform. To fill this gap and accelerate deployment of Orthanc in the cloud, **Orthweb** project was [created](https://www.digihunch.com/2020/11/medical-imaging-web-server-deployment-pipeline/) in 2020.
+However, many Orthanc adopters are smaller organizations such as startups, research entities, independent health facilities, or departments with very loose cloud support from parent organizations. These adopters needs a secure and scalable cloud foundation to operate Orthanc. To fill this gap, **Orthweb** project was [created](https://www.digihunch.com/2020/11/medical-imaging-web-server-deployment-pipeline/) to accelerate deployment of Orthanc in the cloud.
 
 <img align="middle" src="docs/assets/images/Overview.png">
 <br/><br/>
