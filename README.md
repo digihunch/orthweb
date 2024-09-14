@@ -15,7 +15,7 @@
 
 Orthanc must run on a secure cloud platform. Large organizations typically have dedicated IT resources to build a multi-VPC networking infrastructure on AWS,  known as a [landing zone](https://www.digihunch.com/2022/12/landing-zone-in-aws/). Each department in the organization deploys their own applications on their assigned segments of the network. 
 
-However, many Orthanc adopters are smaller organizations such as startups, research entities, independent health facilities, or departments with very loose cloud support from parent organizations. These adopters needs a secure and scalable cloud foundation to operate Orthanc. To fill this gap, **Orthweb** project was [created](https://www.digihunch.com/2020/11/medical-imaging-web-server-deployment-pipeline/) to accelerate deployment of Orthanc in the cloud.
+However, many Orthanc adopters are smaller entities such as startups, research facilities, independent health facilities, or departments without organizational cloud strategy. These adopters needs a secure and scalable cloud foundation to leverage the power of Orthanc. To fill this gap, **Orthweb** project was [created](https://www.digihunch.com/2020/11/medical-imaging-web-server-deployment-pipeline/) to accelerate deployment of Orthanc in public cloud.
 
 <img align="middle" src="docs/assets/images/Overview.png">
 <br/><br/>
