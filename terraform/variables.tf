@@ -29,7 +29,7 @@ variable "network_config" {
   default = {
     vpc_cidr              = "172.17.0.0/16"
     scu_cidr              = "0.0.0.0/0"
-    az_count              = 3
+    az_count              = 2
     public_subnet_pfxlen  = 24
     private_subnet_pfxlen = 22
   }
@@ -51,15 +51,15 @@ variable "CommonTags" {
   type        = map(string)
   default = {
     Environment = "Dev"
-    Owner       = "my@digihunch.com"
+    Owner       = "info@digihunch.com"
   }
 }
 variable "DeploymentOptions" {
   description = "Deployment Options for Orthac app configuration"
   type        = map(string)
   default = {
-    OrthancImg   = "orthancteam/orthanc:24.7.3"
-    EnvoyImg     = "envoyproxy/envoy:v1.31.0"
+    OrthancImg   = "orthancteam/orthanc:24.10.3"
+    EnvoyImg     = "envoyproxy/envoy:v1.32.1"
     InstanceType = "t3.medium" # EBS-optimized instance type
   }
 }

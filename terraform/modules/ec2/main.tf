@@ -32,15 +32,22 @@ locals {
           protocol    = "tcp"
           cidr_blocks = ["0.0.0.0/0"]
           rule_desc   = "Allow web traffic"
-        }
-      ]
-      egress_rules = [
+        },
         {
           from_port   = 11112
           to_port     = 11112
           protocol    = "tcp"
           cidr_blocks = [var.vpc_config.scu_cidr_block]
           rule_desc   = "Allow DICOM traffic"
+        }
+      ]
+      egress_rules = [
+        {
+          from_port   = 0
+          to_port     = 0
+          protocol    = "-1"
+          cidr_blocks = ["0.0.0.0/0"]
+          rule_desc   = "Allow outbound access"
         }
       ]
     }
@@ -109,122 +116,102 @@ resource "aws_key_pair" "runner-pubkey" {
 resource "aws_iam_role" "ec2_iam_role" {
   name = "${var.resource_prefix}-iamrole-for-ec2-instance"
 
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
       },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}
-EOF
-  tags               = { Name = "${var.role_name}" }
+    ]
+  })
+  tags = { Name = "${var.role_name}" }
 }
 
 # EC2 instance needs to connect to AWS Systems Manager 
-resource "aws_iam_role_policy_attachment" "ec2-iam-role-ssm-policy-attach" {
+resource "aws_iam_role_policy_attachment" "ec2_iam_role_ssm_policy_attach" {
   role       = aws_iam_role.ec2_iam_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 # EC2 instance needs to read DB secret
 resource "aws_iam_role_policy" "secret_reader_policy" {
-  name   = "${var.resource_prefix}-secret_reader_policy"
-  role   = aws_iam_role.ec2_iam_role.name
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "secretsmanager:GetResourcePolicy",
-        "secretsmanager:GetSecretValue",
-        "secretsmanager:DescribeSecret"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "${data.aws_secretsmanager_secret.secretDB.id}"
-      ]
-    }
-  ]
-}
-EOF
+  name = "${var.resource_prefix}-secret_reader_policy"
+  role = aws_iam_role.ec2_iam_role.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "secretsmanager:GetResourcePolicy",
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Effect   = "Allow"
+        Resource = data.aws_secretsmanager_secret.secretDB.id
+      }
+    ]
+  })
 }
 
 # EC2 instance needs to access database
 resource "aws_iam_role_policy" "database_access_policy" {
-  name   = "${var.resource_prefix}-database_access_policy"
-  role   = aws_iam_role.ec2_iam_role.name
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "rds-db:connect"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "${data.aws_db_instance.postgres.db_instance_arn}"
-      ]
-    }
-  ]
-}
-EOF
+  name = "${var.resource_prefix}-database_access_policy"
+  role = aws_iam_role.ec2_iam_role.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = ["rds-db:connect"]
+        Effect   = "Allow"
+        Resource = data.aws_db_instance.postgres.db_instance_arn
+      }
+    ]
+  })
 }
 
 # EC2 instance needs to access s3 storage bucket
 resource "aws_iam_role_policy" "s3_access_policy" {
-  name   = "${var.resource_prefix}-s3_access_policy"
-  role   = aws_iam_role.ec2_iam_role.name
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "s3:*"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "${data.aws_s3_bucket.orthbucket.arn}",
-        "${data.aws_s3_bucket.orthbucket.arn}/*"
-      ]
-    }
-  ]
-}
-EOF
+  name = "${var.resource_prefix}-s3_access_policy"
+  role = aws_iam_role.ec2_iam_role.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = ["s3:*"]
+        Effect = "Allow"
+        Resource = [
+          data.aws_s3_bucket.orthbucket.arn,
+          "${data.aws_s3_bucket.orthbucket.arn}/*"
+        ]
+      }
+    ]
+  })
 }
 
 # EC2 instance to access KMS key to encrypt/decrypt data from encrypted resource it has access to (e.g. database, secret, S3 bucket, EBS)
 # https://aws.amazon.com/premiumsupport/knowledge-center/decrypt-kms-encrypted-objects-s3/
 # https://aws.amazon.com/premiumsupport/knowledge-center/s3-access-denied-error-kms/
 resource "aws_iam_role_policy" "key_access_policy" {
-  name   = "${var.resource_prefix}-key_access_policy"
-  role   = aws_iam_role.ec2_iam_role.name
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "kms:Decrypt",
-        "kms:GenerateDataKey"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "${var.custom_key_arn}"
-      ]
-    }
-  ]
-}
-EOF
+  name = "${var.resource_prefix}-key_access_policy"
+  role = aws_iam_role.ec2_iam_role.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "kms:Decrypt",
+          "kms:GenerateDataKey"
+        ]
+        Effect   = "Allow"
+        Resource = var.custom_key_arn
+      }
+    ]
+  })
 }
 
 resource "aws_security_group" "ec2_sgs" {
@@ -252,6 +239,7 @@ resource "aws_security_group" "ec2_sgs" {
       description = egress.value.rule_desc
     }
   }
+  tags = { Name = "${var.resource_prefix}-${each.value.name}" }
 }
 
 resource "aws_iam_instance_profile" "inst_profile" {

@@ -73,20 +73,6 @@ resource "aws_route_table_association" "pubsub_rt_assocs" {
   route_table_id = aws_route_table.public_route_table.id
 }
 
-resource "aws_security_group" "ep_secgroup" {
-  name        = "${var.resource_prefix}-vpcep_sg"
-  description = "security group for vpc endpoints"
-  vpc_id      = aws_vpc.orthmain.id
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [var.network_cidr_blocks.vpc_cidr_block]
-    description = "allow access to https from VPC"
-  }
-  tags = { Name = "${var.resource_prefix}-S3EndPointSecurityGroup" }
-}
-
 resource "aws_vpc_endpoint" "s3_ep" {
   vpc_id            = aws_vpc.orthmain.id
   service_name      = "com.amazonaws.${data.aws_region.this.name}.s3"
@@ -116,6 +102,8 @@ resource "aws_security_group" "ifep_sg" {
     protocol    = "-1" # -1 means all protocols
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = { Name = "${var.resource_prefix}-interface-endpoint-sg" }
 }
 
 resource "aws_vpc_endpoint" "standard_interface_endpoints" {
@@ -127,6 +115,7 @@ resource "aws_vpc_endpoint" "standard_interface_endpoints" {
   subnet_ids          = values(aws_subnet.private_subnets)[*].id
   security_group_ids  = [aws_security_group.ifep_sg.id]
   tags                = { Name = "${var.resource_prefix}-${each.key}-ifep" }
+  #depends_on = [ aws_subnet.private_subnets ]
 }
 
 

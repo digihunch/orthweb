@@ -93,8 +93,13 @@ resource "aws_iam_role" "rds_monitoring_role" {
       },
     ]
   })
-  managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"]
-  tags                = { Name = "${var.resource_prefix}-DB-Monitoring-IAM-role" }
+  tags = { Name = "${var.resource_prefix}-DB-Monitoring-IAM-role" }
+}
+
+
+resource "aws_iam_role_policy_attachment" "rds_monitoring_role_policy_attach" {
+  role       = aws_iam_role.rds_monitoring_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 }
 
 resource "aws_cloudwatch_log_group" "db_log_group" {

@@ -150,7 +150,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "logging_sse" {
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "orthwebloggingbucketblockpublicaccess" {
+resource "aws_s3_bucket_public_access_block" "orthweb_loggingbucket_blockpublicaccess" {
   bucket                  = aws_s3_bucket.logging_bucket.id
   block_public_acls       = true
   block_public_policy     = true
@@ -187,7 +187,7 @@ resource "aws_s3_bucket_policy" "orthweb_logging_policy" {
       }
     ]
   })
-  depends_on = [aws_s3_bucket_public_access_block.orthwebloggingbucketblockpublicaccess]
+  depends_on = [aws_s3_bucket_public_access_block.orthweb_loggingbucket_blockpublicaccess]
 }
 
 resource "aws_s3_bucket_logging" "bucket_logging_target_association" {

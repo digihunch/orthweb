@@ -7,11 +7,11 @@ variable "vpc_config" {
 }
 variable "psql_engine_family" {
   type    = string
-  default = "postgres16"
+  default = "postgres17"
 }
 variable "psql_engine_version" {
   type    = string
-  default = "16.3"
+  default = "17.1"
 }
 variable "db_instance_class" {
   type    = string
