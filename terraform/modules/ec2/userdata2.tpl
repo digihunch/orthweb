@@ -5,7 +5,9 @@ echo "Entering userdata2 script"
 cd /home/ec2-user/orthweb/app
 chown ec2-user:ec2-user .env
 echo DOCKER_IMAGE_ORTHANC=${orthanc_image} >> .env
+echo COMPOSE_PROFILES=${proxy_tool}-proxy >> .env
 echo DOCKER_IMAGE_ENVOY=${envoy_image} >> .env
+echo DOCKER_IMAGE_NGINX=${nginx_image} >> .env
 echo Orthanc configuration will index data in PostgreSQL and store image files in S3 bucket.
 echo ORTHANC_CONFIG_FILE=orthanc.json >> .env
 

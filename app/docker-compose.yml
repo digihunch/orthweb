@@ -20,6 +20,9 @@ services:
       - host.docker.internal:host-gateway
     healthcheck:
       disable: true  # Healthcheck is driven by Envoy, see envoy.yaml for healthcheck configuration
+    profiles:
+      - nginx-proxy 
+      - envoy-proxy
   envoy-proxy:
     image: $DOCKER_IMAGE_ENVOY 
     container_name: envoy
@@ -46,6 +49,8 @@ services:
       - /home/envoy:/home/envoy
     networks:
       - orthnet
+    profiles:
+      - envoy-proxy
 secrets:
   orthanc.json:
     file: $ORTHANC_CONFIG_FILE

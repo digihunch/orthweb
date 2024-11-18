@@ -59,7 +59,13 @@ variable "DeploymentOptions" {
   type        = map(string)
   default = {
     OrthancImg   = "orthancteam/orthanc:24.10.3"
+    ProxyTool    = "envoy"
     EnvoyImg     = "envoyproxy/envoy:v1.32.1"
+    NginxImg     = "orthancteam/orthanc-nginx:24.9.1"
     InstanceType = "t3.medium" # EBS-optimized instance type
+  }
+  validation {
+    condition     = contains(["envoy","nginx"], var.DeploymentOptions.ProxyTool)
+    error_message = "Proxy Tool must be either nginx or envoy"
   }
 }
