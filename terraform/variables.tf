@@ -61,7 +61,7 @@ variable "DeploymentOptions" {
     OrthancImg   = "orthancteam/orthanc:24.10.3"
     ProxyTool    = "envoy"
     EnvoyImg     = "envoyproxy/envoy:v1.32.1"
-    NginxImg     = "orthancteam/orthanc-nginx:24.9.1"
+    NginxImg     = "nginx:1.27.2"
     InstanceType = "t3.medium" # EBS-optimized instance type
   }
   validation {
