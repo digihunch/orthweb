@@ -3,13 +3,13 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.7 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.59.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.70.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_random"></a> [random](#provider\_random) | 3.6.2 |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.6.3 |
 
 ## Modules
 
@@ -31,9 +31,9 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_CommonTags"></a> [CommonTags](#input\_CommonTags) | Tags to apply for every resource by default | `map(string)` | <pre>{<br>  "Environment": "Dev",<br>  "Owner": "my@digihunch.com"<br>}</pre> | no |
-| <a name="input_DeploymentOptions"></a> [DeploymentOptions](#input\_DeploymentOptions) | Deployment Options for Orthac app configuration | `map(string)` | <pre>{<br>  "EnvoyImg": "envoyproxy/envoy:v1.31.0",<br>  "InstanceType": "t3.medium",<br>  "OrthancImg": "orthancteam/orthanc:24.7.3"<br>}</pre> | no |
-| <a name="input_network_config"></a> [network\_config](#input\_network\_config) | Networking Configuration | <pre>object({<br>    vpc_cidr              = string<br>    scu_cidr = string<br>    az_count              = number<br>    public_subnet_pfxlen  = number<br>    private_subnet_pfxlen = number<br>  })</pre> | <pre>{<br>  "az_count": 2,<br>  "private_subnet_pfxlen": 22,<br>  "public_subnet_pfxlen": 24,<br>  "scu_cidr": "0.0.0.0/0",<br>  "vpc_cidr": "172.17.0.0/16"<br>}</pre> | no |
+| <a name="input_CommonTags"></a> [CommonTags](#input\_CommonTags) | Tags to apply for every resource by default | `map(string)` | <pre>{<br/>  "Environment": "Dev",<br/>  "Owner": "info@digihunch.com"<br/>}</pre> | no |
+| <a name="input_DeploymentOptions"></a> [DeploymentOptions](#input\_DeploymentOptions) | Deployment Options for Orthac app configuration | `map(string)` | <pre>{<br/>  "InstanceType": "t3.medium"<br/>}</pre> | no |
+| <a name="input_network_config"></a> [network\_config](#input\_network\_config) | Networking Configuration | <pre>object({<br/>    vpc_cidr              = string<br/>    scu_cidr              = string<br/>    az_count              = number<br/>    public_subnet_pfxlen  = number<br/>    private_subnet_pfxlen = number<br/>  })</pre> | <pre>{<br/>  "az_count": 2,<br/>  "private_subnet_pfxlen": 22,<br/>  "public_subnet_pfxlen": 24,<br/>  "scu_cidr": "0.0.0.0/0",<br/>  "vpc_cidr": "172.17.0.0/16"<br/>}</pre> | no |
 | <a name="input_pubkey_data"></a> [pubkey\_data](#input\_pubkey\_data) | Public key content for the EC2 instance to authorize. If the key isn't stored in a local file. | `string` | `null` | no |
 | <a name="input_pubkey_path"></a> [pubkey\_path](#input\_pubkey\_path) | Path to file that stores the SSH public key for the EC2 instance to authorize. | `string` | `"~/.ssh/id_rsa.pub"` | no |
 

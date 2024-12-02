@@ -58,14 +58,6 @@ variable "DeploymentOptions" {
   description = "Deployment Options for Orthac app configuration"
   type        = map(string)
   default = {
-    OrthancImg   = "orthancteam/orthanc:24.10.3"
-    ProxyTool    = "nginx"
-    EnvoyImg     = "envoyproxy/envoy:v1.32.1"
-    NginxImg     = "nginx:1.27.2"
     InstanceType = "t3.medium" # EBS-optimized instance type
-  }
-  validation {
-    condition     = contains(["envoy","nginx"], var.DeploymentOptions.ProxyTool)
-    error_message = "Proxy Tool must be either nginx or envoy"
   }
 }

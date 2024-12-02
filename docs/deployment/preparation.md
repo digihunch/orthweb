@@ -60,7 +60,5 @@ Both mechanisms are enabled by default in the Terraform template.
 This project comes with working default but you can customize it in certain ways. For example,  if you want to run with own container image, different versions, different instance type, you may override the default by declaring environment variable `TF_VAR_DeploymentOptions`, for example:
 
 ```sh
-export TF_VAR_DeploymentOptions="{\"EnvoyImg\":\"envoyproxy/envoy:v1.22.5\",\"OrthancImg\":\"osimis/orthanc:22.11.3\",\"InstanceType\"=\"t2.medium\"}"
+export TF_VAR_DeploymentOptions="{\"InstanceType\"=\"t2.medium\"}"
 ```
-
-This is helpful to test newer version of Orthanc or Envoy proxy.

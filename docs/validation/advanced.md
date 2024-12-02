@@ -7,19 +7,7 @@ Now we SSH to the server as `ec2-user`, as instructed above. Once connected, we 
 ```sh
 sudo tail -F /var/log/cloud-init-output.log
 ```
-In the log, each container should say `Orthanc has started`. To confirm Envoy proxy started properly, look for the line that says:
-```
-all dependencies initialized. starting workers
-```
-The configuration files related to Orthanc deployment are in directory `/home/ec2-user/orthweb/app`, including:
-
-* `orthanc.json`: the Orthanc configuration file. Some values are specified as [environment variables](https://book.orthanc-server.com/users/configuration.html#environment-variables). Their value can be found in file `~/.orthanc.env`. For example, you can change `VERBOSE_ENABLED` to true and restart Docker compose for Orthanc verbose logging.
-* `envoy.yaml`: the configuration file for Envoy proxy. Changes to this file should take effect rightaway. However, it is helpful to restart Docker container and watch for Envoy logs in case of configuration error.
-* `compute-1.amazonaws.com.pem`: the file that contains the self-signed certificate and key that were generated during server bootstrapping. 
-* `docker-compose.yml`: the file that tells `Docker-compose` how to orchestrate Docker containers. Changes to this file requires Docker-compose to restart to take effect.
-* `.env`: the file that stores the environment variables being referenced in the `docker-compose.yml` file. Changes to this file requires Docker compose to restart to take effect.
-
-Based on envoy proxy configuration, some additional logging files are located in `/home/envoy/` for troubleshooting Envoy proxy.
+In the log, each container should say `Orthanc has started`. The configuration files related to Orthanc deployment are in directory `/home/ec2-user/orthanc-config`. Refer to the [orthanc-config](https://github.com/digihunchinc/orthanc-config) repository for how the configuration automation works. 
 
 ## DICOM communication
 

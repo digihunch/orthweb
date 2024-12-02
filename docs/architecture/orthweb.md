@@ -9,13 +9,13 @@ The Orthweb Architecture can be illustrated in the diagram below:
 
 The site's IP is associated with an Elastic Network Interface (ENI). It is connected to the primary EC2 instance hosted in availability zone 1. Business traffic (DICOM and HTTP) are routed to the Site IP at port 11112 and 443. 
 
-Within each EC2 instance, Docker daemon runs the containers for Envoy proxy and Orthanc application. Orthweb uses [Docker Compose](https://docs.docker.com/compose/) to orchestrate the containers in such a way that three replicas of Orthanc containers operates behind one replica of Envoy proxy container. To scale up, you may increase the number of replicas for Orthanc containers. This scaling model is sufficient for typical Orthanc use cases. 
+Within each EC2 instance, Docker daemon runs the containers for Nginx proxy and Orthanc application. Orthweb uses [Docker Compose](https://docs.docker.com/compose/) to orchestrate the containers in such a way that three replicas of Orthanc containers operates behind one replica of Nginx proxy container. To scale up, you may increase the number of replicas for Orthanc containers. This scaling model is sufficient for typical Orthanc use cases. 
 
-The Envoy proxy serves two different proxy routes: 
+The Nginx proxy serves two different proxy routes: 
 
 ```mermaid
 graph TD;
-    B[Web Browser] --> |HTTPS\n TCP 443|C{Envoy Proxy\n Container};
+    B[Web Browser] --> |HTTPS\n TCP 443|C{Nginx Proxy\n Container};
     X[DICOM Device] -->|DICOM TLS\n TCP 11112| C;
     C -->|HTTPS\n TCP 8042| D[Orthanc\n Container];
     C -. DICOM\n TCP 4242 .-> D;
@@ -25,7 +25,7 @@ graph TD;
     C -. DICOM\n TCP 4242 .-> G;
 ```
 
-The Envoy proxy is configured to spread traffic across three Orthanc containers, with session affinity configured. Each Orthanc container is able to connect to S3 and PostgreSQL database via their respect endpoint in the subnet.
+The Nginx proxy is configured to spread traffic across three Orthanc containers, with session affinity configured. Each Orthanc container is able to connect to S3 and PostgreSQL database via their respect endpoint in the subnet.
 
 
 ## Failover
@@ -64,7 +64,7 @@ Configuring TLS certificate is essential to the security of this architecture. H
 
 A self-signed certificate can encrypt the traffic even though its identity is not certified by the organization's certified authority. Since the Elastic IP is automatically assigned with the format of `ec2-pub-lic-ip-addr.<region>.compute.amazonaws.com`, the self-signed certificate is issued to `compute.amazonaaws.com`. 
 
-The certificate must be applied to both HTTP and DICOM ports for traffic encryption, because the data contains patient information and travels across the Internet. Orthweb automatically configures Envoy proxy using the self-signed certificate for both TCP ports (443 and 11112). 
+The certificate must be applied to both HTTP and DICOM ports for traffic encryption, because the data contains patient information and travels across the Internet. Orthweb automatically configures Nginx proxy using the self-signed certificate for both TCP ports (443 and 11112). 
 
 
 ## Network paths

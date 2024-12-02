@@ -24,6 +24,6 @@ Orthweb selects numerous open-source tools. Here is the rational behind the choi
 
 **PostgreSQL** is the choice of database amongst all the database engines that Orthanc supports. It is feature rich and supports analytical workloads. Nearly all cloud platforms supports PostgreSQL engine in their managed database offerings.
 
-**Envoy Proxy** is a modern reverse proxy to handle web and DICOm requests. Originally, **Orthweb** started with Nginx proxy. Lately Orthweb deprecated Nginx in favour of Envoy for performance and consistency with Istio Ingress configuration in [Korthweb](https://github.com/digihunch/korthweb) that are Envoy-based.
+**Nginx Proxy** is a widely adopted reverse proxy to handle web and DICOM requests. **Orthweb** adopted Envoy Proxy from 2022 to 2024, but eventually switched to Nginx as the default reverse proxy because it is the main choice in the Orthanc user community.
 
 **Terraform** is a widely used infrastructure-as-code software tool for most common cloud platforms. Terraform templates are written in Hashicorp Configuration Language(HCL), which strikes a good balance between declarativeness and level of abstraction.

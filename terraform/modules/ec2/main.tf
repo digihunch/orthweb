@@ -100,10 +100,6 @@ data "cloudinit_config" "orthconfig" {
       aws_region       = data.aws_region.this.name,
       sec_name         = data.aws_secretsmanager_secret.secretDB.name,
       s3_bucket        = data.aws_s3_bucket.orthbucket.bucket,
-      proxy_tool       = var.deployment_options.ProxyTool
-      orthanc_image    = var.deployment_options.OrthancImg,
-      envoy_image      = var.deployment_options.EnvoyImg,
-      nginx_image      = var.deployment_options.NginxImg,
       floating_eip_dns = aws_eip.orthweb_eip.public_dns
     })
   }
