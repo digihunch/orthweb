@@ -1,4 +1,4 @@
-site_name: Orthweb - Orthanc on AWS
+site_name: Orthweb - Orthanc Solution on AWS
 repo_name: digihunch/orthweb
 repo_url: https://github.com/digihunch/orthweb
 strict: true
@@ -32,6 +32,7 @@ nav:
   - Deployment:
     - 'Preparation': 'deployment/preparation.md'
     - 'Deployment': 'deployment/deployment.md'
+    - 'Configuration': 'deployment/configuration.md'
   - Validation: 
     - 'Basic Validation': 'validation/basic.md'
     - 'Advanced Validation': 'validation/advanced.md'
