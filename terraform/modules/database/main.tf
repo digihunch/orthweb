@@ -127,8 +127,8 @@ resource "aws_db_instance" "postgres" {
   username                            = jsondecode(data.aws_secretsmanager_secret_version.dbcreds.secret_string).username
   password                            = jsondecode(data.aws_secretsmanager_secret_version.dbcreds.secret_string).password
   port                                = "5432"
-  deletion_protection                 = false
-  skip_final_snapshot                 = "true"
+  deletion_protection                 = var.is_prod ? true : false
+  skip_final_snapshot                 = var.is_prod ? "false" : "true"
   iam_database_authentication_enabled = true
   final_snapshot_identifier           = "demodb"
   vpc_security_group_ids              = [aws_security_group.dbsecgroup.id]
@@ -139,6 +139,10 @@ resource "aws_db_instance" "postgres" {
   auto_minor_version_upgrade          = true
   enabled_cloudwatch_logs_exports     = local.db_log_exports
   kms_key_id                          = var.custom_key_arn
+  backup_retention_period             = 7
+  backup_window                       = "03:00-04:00"
+  delete_automated_backups            = var.is_prod ? true : false
+  maintenance_window                  = "Mon:05:00-Mon:08:00"
   depends_on                          = [aws_cloudwatch_log_group.db_log_group]
   tags                                = { Name = "${var.resource_prefix}-DBInstance" }
 }

@@ -5,7 +5,7 @@ data "aws_caller_identity" "current" {}
 resource "aws_s3_bucket" "orthbucket" {
   bucket = "${var.resource_prefix}-orthbucket"
 
-  force_destroy = true # remaining object does not stop bucket from being deleted
+  force_destroy = !var.is_prod # remaining object does not stop bucket from being deleted when force_destroy is true
   tags          = { Name = "${var.resource_prefix}-orthbucket" }
 }
 

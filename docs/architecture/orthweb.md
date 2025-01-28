@@ -68,14 +68,22 @@ The certificate must be applied to both HTTP and DICOM ports for traffic encrypt
 
 
 ## Network paths
-The EC2 instances initiates several types of traffic for business and management purposes. They are explained as below:
+The EC2 instances handles network traffic for both business and management purposes. They are broken down as below:
 
 * DICOM and web traffic: connection from client browser or DICOM AE travels across Internet and arrives at Elastic IP via the Internet Gateway of VPC. Returning taffic directed to the client goes through Internet Gateway. Both types of traffic are by default protected with TLS (transport layer security).
 * Database traffic: only Orthanc container in each EC2 instance makes connection to RDS instance. The endpoint of RDS instance is available in prviate subnets of the VPC. The database traffic does not leave the VPC. The traffic is protected with TLS.
-* S3 and Secret Manager: only the EC2 instances make connection to S3 and Secret Manager. The VPC has interface endpoints for S3 and Secret Manager. The traffic between EC2 instances and S3 or Secret manager goes through the endpoints without leaving the VPC. The traffic is protected with TLS.
-* System Manager and KMS: only the EC2 instances make connection to System Manager and KMS. Currently they are not configured with VPC endpoints. The traffic between EC2 instances and System Manager or KMS travels across the Internet. The traffic is protected with TLS.
+* AWS Management traffic: by default, AWS management traffic such as secret manager, KMS, are routed through the Internet. The AWS Management traffic are encrypted with TLS. For additional layer of security, or compliance requirement, users may introduce their interface endpoints to VPC to route such traffic privately, by using the variable `network_config.interface_endpoints`. 
 
-For cost efficiency, Orthweb only sends patient and secret traffic over private VPC endpoints. In enterprise deployment, it is the landing zone design that concens with the network paths.
+  | Value for `network_config.interface_endpoints`  | Configuration | Tradeoff
+  | -------- | ------- | ------- |
+  | `[]` (default) | Without any interface endpoints, all types of AWS management traffic are routed through Internet. | Most cost-efficient configuration. |
+  | `["kms","secretsmanager"]`    | Traffic for critical management traffic (secrets and keys) is routed privately  | A balanced configration between security risk and cost |
+  | `["kms","secretsmanager","ec2","ssm","ec2messages","ssmmessages"]` | All types of AWS management traffic are routed privately.    | Most secure configuration but each interface endpoint incurs its own cost. |
+
+
+* AWS Data Traffic: the EC2 instances makes connection to S3 to store images. The terraform template creates S3 Gateway Endpoint such that the traffic from EC2 instance to S3 is routed privately. The traffic to S3 is protected with TLS encryption.
+
+In enterprise cloud deployment, this configuration is covered in the landing zone design.
 
 ## Configuration
 

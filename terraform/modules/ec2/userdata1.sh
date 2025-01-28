@@ -17,7 +17,4 @@ chmod 666 /var/run/docker.sock    ## Allow non-root user to run docker cli
 curl -SL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/bin/yq
 chmod +x /usr/bin/yq
 
-runuser -l ec2-user -c "
-  git clone --depth 1 https://github.com/digihunchinc/orthanc-config.git
-"
 echo "Leaving userdata1 script"

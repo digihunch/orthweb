@@ -11,8 +11,8 @@ terraform {
 provider "aws" {
   default_tags {
     tags = {
-      Environment = var.CommonTags.Environment
-      Owner       = var.CommonTags.Owner
+      Environment = var.provider_tags.environment
+      Owner       = var.provider_tags.owner
       Application = "Orthanc"
     }
   }

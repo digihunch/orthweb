@@ -95,12 +95,14 @@ data "cloudinit_config" "orthconfig" {
   part {
     content_type = "text/x-shellscript"
     content = templatefile("${path.module}/userdata2.tpl", {
-      db_address       = data.aws_db_instance.postgres.address,
-      db_port          = data.aws_db_instance.postgres.port,
-      aws_region       = data.aws_region.this.name,
-      sec_name         = data.aws_secretsmanager_secret.secretDB.name,
-      s3_bucket        = data.aws_s3_bucket.orthbucket.bucket,
-      floating_eip_dns = aws_eip.orthweb_eip.public_dns
+      db_address   = data.aws_db_instance.postgres.address,
+      db_port      = data.aws_db_instance.postgres.port,
+      aws_region   = data.aws_region.this.name,
+      sec_name     = data.aws_secretsmanager_secret.secretDB.name,
+      s3_bucket    = data.aws_s3_bucket.orthbucket.bucket,
+      site_name    = var.deployment_options.SiteName != null && var.deployment_options.SiteName != "" ? var.deployment_options.SiteName : aws_eip.orthweb_eip.public_dns
+      config_repo  = var.deployment_options.ConfigRepo
+      init_command = var.deployment_options.InitCommand
     })
   }
 }

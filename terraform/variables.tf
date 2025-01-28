@@ -5,6 +5,7 @@ variable "pubkey_data" {
   sensitive   = true
   nullable    = true
 }
+
 variable "pubkey_path" {
   type        = string
   description = "Path to file that stores the SSH public key for the EC2 instance to authorize."
@@ -25,6 +26,7 @@ variable "network_config" {
     az_count              = number
     public_subnet_pfxlen  = number
     private_subnet_pfxlen = number
+    interface_endpoints   = list(string)
   })
   default = {
     vpc_cidr              = "172.17.0.0/16"
@@ -32,6 +34,11 @@ variable "network_config" {
     az_count              = 2
     public_subnet_pfxlen  = 24
     private_subnet_pfxlen = 22
+    interface_endpoints   = []
+    # For all management traffic on private route: ["kms","secretsmanager","ec2","ssm","ec2messages","ssmmessages"]
+    # For secrets and keys on private route: ["kms","secretsmanager"]
+    # For all management traffic via Internet (lowest cost): []
+    # View available options: https://docs.aws.amazon.com/vpc/latest/privatelink/aws-services-privatelink-support.html#vpce-view-available-services
   }
   validation {
     condition     = can(cidrhost(var.network_config.vpc_cidr, 32))
@@ -46,18 +53,25 @@ variable "network_config" {
     error_message = "Input variable network_config.az_count must be a numeric value between 1, 2 or 3"
   }
 }
-variable "CommonTags" {
+variable "provider_tags" {
   description = "Tags to apply for every resource by default"
   type        = map(string)
   default = {
-    Environment = "Dev"
-    Owner       = "info@digihunch.com"
+    environment = "dev"
+    owner       = "info@digihunch.com"
+  }
+  validation {
+    condition     = contains(["prd", "dev", "tst", "stg"], var.provider_tags.environment)
+    error_message = "The environment code must be one of: prd, dev, tst, or stg"
   }
 }
-variable "DeploymentOptions" {
+variable "deployment_options" {
   description = "Deployment Options for Orthac app configuration"
   type        = map(string)
   default = {
-    InstanceType = "t3.medium" # EBS-optimized instance type
+    InstanceType = "t3.medium"                                          # must be an EBS-optimized instance type with amd64 CPU architecture.
+    ConfigRepo   = "https://github.com/digihunchinc/orthanc-config.git" # configuration repo to clone.
+    SiteName     = null
+    InitCommand  = "pwd && echo Init"
   }
 }

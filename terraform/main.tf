@@ -21,6 +21,7 @@ module "storage" {
   source          = "./modules/storage"
   custom_key_arn  = module.key.custom_key_id
   resource_prefix = random_pet.prefix.id
+  is_prod         = var.provider_tags.environment == "prd"
   depends_on      = [module.key]
 }
 
@@ -31,7 +32,7 @@ module "network" {
     public_subnet_cidr_blocks  = local.public_subnets_cidr_list
     private_subnet_cidr_blocks = local.private_subnets_cidr_list
   }
-  ifep_services               = ["secretsmanager"]
+  ifep_services               = var.network_config.interface_endpoints
   vpc_flow_logging_bucket_arn = module.storage.s3_info.logging_bucket_arn
   resource_prefix             = random_pet.prefix.id
 }
@@ -44,6 +45,7 @@ module "database" {
   }
   custom_key_arn  = module.key.custom_key_id
   resource_prefix = random_pet.prefix.id
+  is_prod         = var.provider_tags.environment == "prd"
   depends_on      = [module.key]
 }
 
@@ -61,7 +63,7 @@ module "ec2" {
     public_subnet_cidr_blocks = local.public_subnets_cidr_list
     scu_cidr_block            = var.network_config.scu_cidr
   }
-  deployment_options = var.DeploymentOptions
+  deployment_options = var.deployment_options
   resource_prefix    = random_pet.prefix.id
   depends_on         = [module.database, module.storage, module.network]
 }

@@ -11,20 +11,20 @@ variable "psql_engine_family" {
 }
 variable "psql_engine_version" {
   type    = string
-  default = "17.1"
+  default = "17.2"
 }
 variable "db_instance_class" {
   type    = string
-  default = "db.t4g.small"
+  default = "db.t4g.medium"
   # t2.micro does not support encryption at rest
 }
 variable "db_instance_storage_type" {
   type    = string
-  default = "gp2" # magnetic drive minimum 5g storage
+  default = "gp3"    # magnetic drive minimum 5g storage
 }
 variable "db_instance_allocated_storage" {
   type    = number
-  default = 10
+  default = 30   
 }
 variable "custom_key_arn" {
   type = string
@@ -32,4 +32,9 @@ variable "custom_key_arn" {
 variable "resource_prefix" {
   type        = string
   description = "Uniq prefix of each resource"
+}
+variable "is_prod" {
+  type        = bool
+  description = "whether the resource is in prod environment"
+  default     = false
 }

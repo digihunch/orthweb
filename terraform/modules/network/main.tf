@@ -84,7 +84,6 @@ resource "aws_security_group" "ifep_sg" {
   name        = "${var.resource_prefix}-interface-endpoint-sg"
   description = "Security Group For Interface Endpoints"
   vpc_id      = aws_vpc.orthmain.id
-
   # Inbound rule to allow traffic on port 443 (HTTPS)
   ingress {
     description = "Allow inbound HTTPS traffic"
@@ -93,7 +92,6 @@ resource "aws_security_group" "ifep_sg" {
     protocol    = "tcp"
     cidr_blocks = [var.network_cidr_blocks.vpc_cidr_block]
   }
-
   # Outbound rule to block all outbound traffic
   egress {
     description = "Deny all outbound traffic"
@@ -102,7 +100,6 @@ resource "aws_security_group" "ifep_sg" {
     protocol    = "-1" # -1 means all protocols
     cidr_blocks = ["0.0.0.0/0"]
   }
-
   tags = { Name = "${var.resource_prefix}-interface-endpoint-sg" }
 }
 
