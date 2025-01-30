@@ -72,6 +72,6 @@ variable "deployment_options" {
     InstanceType = "t3.medium"                                          # must be an EBS-optimized instance type with amd64 CPU architecture.
     ConfigRepo   = "https://github.com/digihunchinc/orthanc-config.git" # configuration repo to clone.
     SiteName     = null
-    InitCommand  = "pwd && echo Init"
+    InitCommand  = "pwd && echo Custom Init Command Here"
   }
 }

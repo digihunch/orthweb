@@ -14,5 +14,5 @@ deployment_options = {
   InstanceType = "t3.medium"
   ConfigRepo   = "https://github.com/digihunchinc/orthanc-config.git"
   SiteName     = null
-  InitCommand  = "pwd && echo Init"
+  InitCommand  = "echo Custom Init Command && cd orthanc-config && make aws"
 }
