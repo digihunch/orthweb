@@ -20,11 +20,11 @@ variable "db_instance_class" {
 }
 variable "db_instance_storage_type" {
   type    = string
-  default = "gp3"    # magnetic drive minimum 5g storage
+  default = "gp3" # magnetic drive minimum 5g storage
 }
 variable "db_instance_allocated_storage" {
   type    = number
-  default = 30   
+  default = 30
 }
 variable "custom_key_arn" {
   type = string

@@ -100,7 +100,7 @@ data "cloudinit_config" "orthconfig" {
       aws_region   = data.aws_region.this.name,
       sec_name     = data.aws_secretsmanager_secret.secretDB.name,
       s3_bucket    = data.aws_s3_bucket.orthbucket.bucket,
-      site_name    = var.deployment_options.SiteName != null && var.deployment_options.SiteName != "" ? var.deployment_options.SiteName : aws_eip.orthweb_eip.public_dns
+      site_name    = var.deployment_options.SiteName != null ? var.deployment_options.SiteName : ""
       config_repo  = var.deployment_options.ConfigRepo
       init_command = var.deployment_options.InitCommand
     })
@@ -275,7 +275,9 @@ resource "aws_launch_template" "orthweb_launch_template" {
 
   lifecycle {
     ignore_changes = [
-      user_data,
+      #user_data,
+      image_id,
+      block_device_mappings,
     ]
   }
 }
@@ -302,23 +304,13 @@ resource "aws_instance" "orthweb_instance" {
     id      = aws_launch_template.orthweb_launch_template.id
     version = aws_launch_template.orthweb_launch_template.latest_version
   }
-  tags       = { Name = "${var.resource_prefix}-EC2-Instance-${var.vpc_config.public_subnet_ids[each.key]}" }
-  depends_on = [aws_eip.orthweb_eip] # bootstrapping script provisions self-signed certificate using EIP's DNS name 
+  tags = { Name = "${var.resource_prefix}-EC2-Instance-${var.vpc_config.public_subnet_ids[each.key]}" }
 
   #https://github.com/hashicorp/terraform-provider-aws/issues/5011
   lifecycle {
     ignore_changes = [
-      user_data,
+      #launch_template,
     ]
   }
 }
 
-resource "aws_eip" "orthweb_eip" {
-  domain = "vpc"
-  tags   = { Name = "${var.resource_prefix}-Floating-EIP" }
-}
-
-resource "aws_eip_association" "floating_eip_assoc" {
-  allocation_id        = aws_eip.orthweb_eip.id
-  network_interface_id = values(aws_network_interface.orthanc_ec2_nics)[0].id
-}

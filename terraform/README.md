@@ -32,7 +32,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_deployment_options"></a> [deployment\_options](#input\_deployment\_options) | Deployment Options for Orthac app configuration | `map(string)` | <pre>{<br/>  "ConfigRepo": "https://github.com/digihunchinc/orthanc-config.git",<br/>  "InitCommand": "pwd && echo Init",<br/>  "InstanceType": "t3.medium",<br/>  "SiteName": null<br/>}</pre> | no |
-| <a name="input_network_config"></a> [network\_config](#input\_network\_config) | Networking Configuration | <pre>object({<br/>    vpc_cidr              = string<br/>    scu_cidr              = string<br/>    az_count              = number<br/>    public_subnet_pfxlen  = number<br/>    private_subnet_pfxlen = number<br/>  })</pre> | <pre>{<br/>  "az_count": 2,<br/>  "private_subnet_pfxlen": 22,<br/>  "public_subnet_pfxlen": 24,<br/>  "scu_cidr": "0.0.0.0/0",<br/>  "vpc_cidr": "172.17.0.0/16"<br/>}</pre> | no |
+| <a name="input_network_config"></a> [network\_config](#input\_network\_config) | Networking Configuration | <pre>object({<br/>    vpc_cidr              = string<br/>    scu_cidr              = string<br/>    az_count              = number<br/>    public_subnet_pfxlen  = number<br/>    private_subnet_pfxlen = number<br/>    interface_endpoints   = list(string)<br/>  })</pre> | <pre>{<br/>  "az_count": 2,<br/>  "interface_endpoints": [],<br/>  "private_subnet_pfxlen": 22,<br/>  "public_subnet_pfxlen": 24,<br/>  "scu_cidr": "0.0.0.0/0",<br/>  "vpc_cidr": "172.17.0.0/16"<br/>}</pre> | no |
 | <a name="input_provider_tags"></a> [provider\_tags](#input\_provider\_tags) | Tags to apply for every resource by default | `map(string)` | <pre>{<br/>  "environment": "dev",<br/>  "owner": "info@digihunch.com"<br/>}</pre> | no |
 | <a name="input_pubkey_data"></a> [pubkey\_data](#input\_pubkey\_data) | Public key content for the EC2 instance to authorize. If the key isn't stored in a local file. | `string` | `null` | no |
 | <a name="input_pubkey_path"></a> [pubkey\_path](#input\_pubkey\_path) | Path to file that stores the SSH public key for the EC2 instance to authorize. | `string` | `"~/.ssh/id_rsa.pub"` | no |
@@ -44,4 +44,4 @@
 | <a name="output_db_endpoint"></a> [db\_endpoint](#output\_db\_endpoint) | n/a |
 | <a name="output_host_info"></a> [host\_info](#output\_host\_info) | n/a |
 | <a name="output_s3_bucket"></a> [s3\_bucket](#output\_s3\_bucket) | n/a |
-| <a name="output_site_address"></a> [site\_address](#output\_site\_address) | n/a |
+| <a name="output_server_dns"></a> [server\_dns](#output\_server\_dns) | n/a |
