@@ -1,6 +1,6 @@
 
 ## Overview
-We execute Terraform commands locally to drive the deployment. We also store Terraform states locally. Advanced Terraform users may choose to managed Terraform platform such as Terraform Cloud or Scalr, which is beyond the scope of this document. 
+Since we execute Terraform commands locally to drive the deployment, we also store Terraform states locally. Advanced Terraform users may choose to managed Terraform platform such as Terraform Cloud or Scalr, which is beyond the scope of this document. 
 
 Now we can start deploying Orthanc. From your command terminal, go to the [`terraform`](https://github.com/digihunch/orthweb/tree/main/terraform) directory, and run `terraform` commands from this directory.
 
@@ -50,12 +50,14 @@ Upon successful deployment, the screen should print out four entries. They are e
 
 |key|example value|protocol|purpose|
 |--|--|--|--|
-|**site_address**|ec2-54-243-91-148.compute-1.amazonaws.com|HTTPS/DICOM-TLS|Business traffic: HTTPS on port 443 and DICOM-TLS on port 11112. Reachable from the Internet.|
+|**server_dns**|ec2-15-156-192-145.ca-central-1.compute.amazonaws.com, ec2-99-79-73-88.ca-central-1.compute.amazonaws.com (HTTPS and DICOM TLS)|HTTPS/DICOM-TLS|Business traffic: HTTPS on port 443 and DICOM-TLS on port 11112. Reachable from the Internet.|
 |**host_info**|Primary:i-02d92d2c1c046ea62    Secondary:i-076b93808575da71e|SSH|For management traffic. |
 |**s3_bucket**|wealthy-lemur-orthbucket.s3.amazonaws.com|HTTPS-S3| For orthanc to store and fetch images. Access is restricted.|
 |**db_endpoint**|wealthy-lemur-orthancpostgres.cqfpmkrutlau.us-east-1.rds.amazonaws.com:5432|TLS-POSTGRESQL| For orthanc to index data. Access is restricted.|
 
 Once the screen prints the output, the EC2 instances may still take a couple extra minutes in the background to finish  configuring Orthanc. We can start validation as per the steps outlined in the next section. 
+
+If applicable, deploy the custom application traffic management
 
 ## Terraform State
 Terraform keeps a local file `terraform.tfstate` for the last known state of the deployed resources, known as the state file. This file is critical for the ongoing maintanance of the deployed resources.

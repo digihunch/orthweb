@@ -1,17 +1,22 @@
+The solution was tested on Mac and Linux. The instructions are based on Mac or Linux. Use the solution on Windows at your own risk. There are also several ways to adjust the steps to work with managed Terraform environment (e.g. Scalr, Terraform Cloud). For simplicity, this documentation assumes that you work from a command terminal.
+
 ## Prerequisite
 
-Whether on Linux, Mac or Windows, you need a command terminal to start deployment, with:
+In your command terminal, install the required packages:
 
 * Make sure **[awscli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)** is installed and [configured](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure) so you can connect to your AWS account with as your IAM user (using `Access Key ID` and `Secret Access Key` with administrator privilege). If you will need to SSH to the EC2 instance, you also need to install [session manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html);
 * Make sure **Terraform CLI** is [installed](https://learn.hashicorp.com/tutorials/terraform/install-cli). In the Orthweb template, Terraform also uses your IAM credential to [authenticate into AWS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#shared-credentials-file). 
 
-The guide is based on local Terraform execution, and were tested on MacBook (arm64 and x86_64) and WSL2 (Ubuntu) on Windows. However, the steps can be adjusted to work on Windows or from managed Terraform environment (e.g. Scalr, Terraform Cloud). 
+Then, use Git to pull the repostory:
+```sh
+git clone https://github.com/digihunch/orthweb.git
+```
+Before running terraform command, enter the `orthweb` directory as current working directory.
 
-## Optional Steps
 
-Take the preparatory step below if you need to inspect or troubleshoot the Orthanc deployment. Otherwise, skip to the next section to start Installation.
+## Additional Steps
 
-In this section, we set input variables to facilitate troubleshooting.
+Take the preparatory steps below if you need to inspect or troubleshoot the Orthanc deployment. Otherwise, skip to the next section to start Installation.
 
 ### Secure SSH access
 There are two ways to SSH to the EC2 instances. To use your own choice of command terminal, you must configure your [RSA key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html) on the EC2 instances. Alternatively, without your own RSA key pair, you may use web-based command terminal provided by Session Manager in AWS console.
@@ -57,8 +62,12 @@ Last login: Wed Nov 23 22:02:57 UTC 2022 from localhost on pts/0
 Both mechanisms are enabled by default in the Terraform template.
 
 ## Custom deployment options
-This project comes with working default but you can customize it in certain ways. For example,  if you want to run with own container image, different versions, different instance type, you may override the default by declaring environment variable `TF_VAR_DeploymentOptions`, for example:
+This project comes with working default but you can customize it in certain ways, by modifying the variable file `terraform.tfvars`. The variables are self-explanatory and defined in `variables.tf` file. 
 
-```sh
-export TF_VAR_DeploymentOptions="{\"InstanceType\"=\"t2.medium\"}"
-```
+|variable|description|
+|--|--|
+|**network_config**| Adjust the networking configuration (e.g. CIDRs, sizing) and specify interface endpoints to enable if required.|
+|**provider_tags**| Adjust the resource tags to apply to every resources deployed through the Terraform template |
+|**deployment_options**| Adjust the deployment specification. For example, use a different instance size, configuration repo, and have your own site name|
+
+If you use BYO DNS name, make sure to set the **SiteName** correctly. The value of site name, if set, is used in several configuration files for Orthanc. If it is set incorrectly, you will not be able to browse the orthanc Site correctly. 

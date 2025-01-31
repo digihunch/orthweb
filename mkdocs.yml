@@ -29,17 +29,19 @@ theme:
 nav:
   - Home: 'index.md'
   - Introduction: 'introduction/index.md'
+  - Architecture:
+    - 'Infrastructure': 'design/infrastructure.md' 
+    - 'Configuration Management': 'design/configmgmt.md'
+    - 'Application Traffic': 'design/applicationtraffic.md'
   - Deployment:
     - 'Preparation': 'deployment/preparation.md'
-    - 'Deployment': 'deployment/deployment.md'
+    - 'Infrastructure': 'deployment/infrastructure.md'
     - 'Configuration': 'deployment/configuration.md'
   - Validation: 
     - 'Basic Validation': 'validation/basic.md'
     - 'Advanced Validation': 'validation/advanced.md'
     - 'Additional Validation': 'validation/additional.md'
-  - Architecture:
-    - 'Orthweb': 'architecture/orthweb.md' 
-    - 'Alternatives': 'architecture/alternative.md'
+
   - Support: 'support/index.md'
 plugins:
   - search

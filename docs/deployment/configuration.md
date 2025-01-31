@@ -1,9 +1,3 @@
-## Overview
+With the Terraform template, you specify the configuration repository and the command to trigger the automatic deployment. As discussed, 
 
-The Terraform template no longer initiates the application configuration for Orthanc. Instead, it initiates a git clone of the [orthanc-config](https://github.com/digihunchinc/orthanc-config) repository to the servers home directory.
-
-Users are expected to use the assets in the `orthanc-config` repository. The repository creates a prescriptive configuration with an automation wrapper so that it only takes a few commands to finish installation.
-
-## Application Configuration
-
-Review the instruction in the orthanc-config repository.
+The configuration management repo is [orthanc-config](https://github.com/digihunchinc/orthanc-config), and the initial command can be set to `make aws`. Review the cloud init log for errors. The output consists of the next step to follow to finish the configuration.
