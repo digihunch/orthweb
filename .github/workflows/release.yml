@@ -18,14 +18,33 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
+      - name: Find previous tag
+        id: get_previous_tag
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "None")
+          echo "PREVIOUS_TAG=$PREV_TAG" >> $GITHUB_ENV
+          
+      - name: Generate changelog
+        run: |
+          echo "## Changes in v${VERSION}" > release_notes.txt
+          
+          if [ "$PREVIOUS_TAG" = "None" ]; then
+            echo "First release - showing full commit history:" >> release_notes.txt
+            git log --pretty=format:"- %h %s" >> release_notes.txt
+          else
+            echo "Changes since $PREVIOUS_TAG:" >> release_notes.txt
+            git log $PREVIOUS_TAG..HEAD --pretty=format:"- %h %s" >> release_notes.txt
+          fi
+
+      - name: Display changelog (for debugging)
+        run: cat release_notes.txt
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
           name: Release v${{ env.VERSION }}
-          body: |
-            ## Changes in this release:
-            - Auto-generated release from tag `${{ env.VERSION }}`
+          body_path: release_notes.txt  # ✅ Uses generated commit history
           draft: false
           prerelease: false
 
