@@ -51,7 +51,7 @@ module "database" {
 
 module "ec2" {
   source         = "./modules/ec2"
-  public_key     = var.pubkey_data != null ? var.pubkey_data : (fileexists(var.pubkey_path) ? file(var.pubkey_path) : "")
+  public_key     = var.ec2_config.PublicKeyData != null ? var.ec2_config.PublicKeyData : (fileexists(var.ec2_config.PublicKeyPath) ? file(var.ec2_config.PublicKeyPath) : "")
   role_name      = "${random_pet.prefix.id}-InstanceRole"
   db_instance_id = module.database.db_info.db_instance_id
   s3_bucket_name = module.storage.s3_info.bucket_name

@@ -1,20 +1,31 @@
-variable "pubkey_data" {
-  description = "Public key content for the EC2 instance to authorize. If the key isn't stored in a local file."
-  type        = string
-  default     = null
-  sensitive   = true
-  nullable    = true
-}
-
-variable "pubkey_path" {
-  type        = string
-  description = "Path to file that stores the SSH public key for the EC2 instance to authorize."
-  default     = "~/.ssh/id_rsa.pub"
-  nullable    = true
-
+variable "ec2_config" {
+  description = "Configuration Options for EC2 instances"
+  type        = map(string)
+  default = {
+    InstanceType  = "t3.medium" # must be an EBS-optimized instance type with amd64 CPU architecture.
+    PublicKeyData = null
+    PublicKeyPath = "~/.ssh/id_rsa.pub"
+  }
   validation {
-    condition     = var.pubkey_path == null || var.pubkey_path == "" || fileexists(var.pubkey_path)
-    error_message = "If pubkey_path is specified, it must be a valid file path"
+    condition     = (var.ec2_config.PublicKeyData != null && var.ec2_config.PublicKeyData != "") || (var.ec2_config.PublicKeyPath != null && var.ec2_config.PublicKeyPath != "")
+    error_message = "Must specify one of ec2_config.PublicKeyData and ec2_config.PublicKeyPath."
+  }
+  validation {
+    condition = (
+      var.ec2_config.PublicKeyPath == null || var.ec2_config.PublicKeyPath == "" || (fileexists(var.ec2_config.PublicKeyPath) &&
+      can(regex("^(ssh-rsa|ssh-ed25519) [A-Za-z0-9+/=]+( [^ ]+)?$", file(var.ec2_config.PublicKeyPath))))
+    )
+    error_message = "If provided, the file must exist and contain a valid RSA (ssh-rsa) or ED25519 (ssh-ed25519) public key in OpenSSH format."
+  }
+  #validation {
+  #  condition     = var.ec2_config.PublicKeyPath == null || var.ec2_config.PublicKeyPath == "" || fileexists(var.ec2_config.PublicKeyPath)
+  #  error_message = "If ec2_config.PublicKeyPath is specified, it must be a valid file path"
+  #}
+  validation {
+    condition = (
+      var.ec2_config.PublicKeyData == null || var.ec2_config.PublicKeyData == "" || can(regex("^(ssh-rsa|ssh-ed25519) [A-Za-z0-9+/=]+( [^ ]+)?$", var.ec2_config.PublicKeyData))
+    )
+    error_message = "If provided, var.ec2_config.PublicKeyData must be in a valid OpenSSH format (starting with 'ssh-rsa' or 'ssh-ed25519')."
   }
 }
 
@@ -69,9 +80,8 @@ variable "deployment_options" {
   description = "Deployment Options for Orthac app configuration"
   type        = map(string)
   default = {
-    InstanceType = "t3.medium"                                          # must be an EBS-optimized instance type with amd64 CPU architecture.
-    ConfigRepo   = "https://github.com/digihunchinc/orthanc-config.git" # configuration repo to clone.
-    SiteName     = null
-    InitCommand  = "pwd && echo Custom Init Command Here"
+    ConfigRepo  = "https://github.com/digihunchinc/orthanc-config.git" # configuration repo to clone.
+    SiteName    = null
+    InitCommand = "pwd && echo Custom Init Command Here"
   }
 }

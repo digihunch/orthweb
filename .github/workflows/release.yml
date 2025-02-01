@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers only on tags starting with 'v' (e.g., v1.2.3)
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
+          body: |
+            ## Changes in this release:
+            - Auto-generated release from tag `${{ env.VERSION }}`
+          draft: false
+          prerelease: false
+
+      - name: Auto-increment version
+        id: bump_version
+        run: |
+          IFS='.' read -r MAJOR MINOR PATCH <<< "${VERSION}"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
+          echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+          echo "Next version: $NEW_VERSION"
+
+      - name: Push new version tag
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git tag ${{ env.NEW_VERSION }}
+          git push origin ${{ env.NEW_VERSION }}

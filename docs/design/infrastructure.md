@@ -31,7 +31,7 @@ TLS certificate (either self-signed or BYO certificates) must be applied to both
 The Orthweb solution provisions self-signed certificate in the configuration. It automatically configures Nginx proxy using the self-signed certificate for both TCP ports (443 and 11112). The limitation with Self-signed certificates is that they are not broadly trusted. However, they can still encrypt the traffic. The self-signed certificate is issued to the public DNS name of the EC2 instance as the certificate Common Name, in the format of `ec2-pub-lic-ip-addr.<region>.compute.amazonaws.com`. 
 
 
-## Network paths
+## Network Paths
 The EC2 instances handles network traffic for both business and management purposes. Assuming the application traffic coming from the Internet arrives at the network interface of the two EC2 instances, we consider the following traffic pathes:
 
 * DICOM and web traffic: connection from client browser or DICOM AE travels across Internet and arrives at EC2's network interface via the Internet Gateway of VPC. Returning taffic directed to the client goes through Internet Gateway. Both types of traffic are by default protected with TLS (transport layer security).

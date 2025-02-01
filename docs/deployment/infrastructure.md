@@ -40,9 +40,9 @@ If the plan looks good, we can apply the deployment plan:
 ```
 terraform apply
 ```
-You need to say `yes` to the prompt. Terraform kicks off the deployment.  
+Then, you need to say `yes` to the prompt. Terraform kicks off the deployment.  
 
-During deployment, Terraform provider interacts with your AWS account to provision the resources. Some critical resources takes much longer than others due to sheer size. For example, the database alone takes 15 minutes. The EC2 instances also takes a few minutes because of the bootstrapping process that configures Orthanc application. The entire deployment process can take as long as 30 minutes.
+During deployment, Terraform provider interacts with your AWS account to provision the resources. Some critical resources takes much longer than others due to sheer size. For example, the database alone takes 15 minutes. The EC2 instances also takes a few minutes because of the bootstrapping process that configures Orthanc application. The entire deployment process can take as long as 30 minutes. To fask track the progress, you parrallelize the deployment with flags such as `-parallelism=3`. 
 
 ## Review Output
 
@@ -64,8 +64,25 @@ Terraform keeps a local file `terraform.tfstate` for the last known state of the
 
 Ad hoc changes to the resources created by Terraform are not registered in the state file. These changes, often referred to as configuration drift, are very likely to cause issues when the Terraform managed resources are updated or deleted. In general, manual changes to Terraform managed resources should be avoided. Changes should be first registered in the Terraform template and applied via the `terraform apply` command.
 
+## Cost Estimate
+
+Below is a per-day estimate of cost (in USD) of the infrastructure based on default configuration. 
+
+| AWS Service   | Standing Cost |
+| :---------------- | :------: |
+| Relational Database |  $3.6   |
+| EC2-Instances |  $2.2   |
+| VPC |  $0.6   |
+| Key Management Service |  $0.13   |
+| EC2-Other |  $0.12   |
+| Secrets Manager |  $0.12   |
+| S3 |  $0.13   |
+| <b>Total daily cost</b> |  <b>$7</b>   |
+
+Note, the numbers does not include data processing charges such as images stored to and retrieved from S3, or data moved in and out of the Internet Gateway, etc. AWS has a comprehensive [pricing calculator](https://calculator.aws/#/) and [saving plans](https://aws.amazon.com/savingsplans/).
+
 ## Clean up
-After the validation is completed, it is important to remember this step to stop incurring on-going cost on your bill.
+After the validation is completed, it is important to remember this step to stop incurring on-going cost.
 
 You can delete all the resources with `destroy` command:
 ```

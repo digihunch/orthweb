@@ -18,11 +18,11 @@
 
 ## Overview
 
-The **[Orthweb](https://github.com/digihunch/orthweb)** project helps imaging IT staff build an **[Orthanc](https://www.orthanc-server.com/)** solution on AWS. The project addresses the cloud foundation and configuration management to host Orthanc. Follow to the [documentation](https://digihunch.github.io/orthweb/) for instructions and architecture discussions.
+The **[Orthweb](https://github.com/digihunch/orthweb)** project helps imaging IT staff build an **[Orthanc](https://www.orthanc-server.com/)** solution on AWS. The project addresses the cloud foundation and configuration management to host the Orthanc application. Follow to the [documentation](https://digihunch.github.io/orthweb/) for instructions and architecture discussions. 💪 Let's automate medical imaging!
 
 Orthanc handles sensitive data and must operate on a secure cloud platform. Typically, large organizations can afford specialized IT resources to build enterprise-scale cloud foundations. This cloud foundation is known as a [landing zone](https://www.digihunch.com/2022/12/landing-zone-in-aws/). Each department in the organization is allocated with a segment of the landing zone (e.g. an VPC), to deploys their own applications. 
 
-In reality, many Orthanc users are small entities (e.g. startups, research groups, independent clinics, etc) without an overarching cloud strategy. They need a secure and scalable cloud foundation to leverage Orthanc. To fill this gap, **Orthweb** project was [created](https://www.digihunch.com/2020/11/medical-imaging-web-server-deployment-pipeline/) to propose a cloud-based Orthanc solution, to address the cloud foundation and configuration management.
+In reality, many Orthanc users are small entities (e.g. startups, research groups, independent clinics, etc) without an overarching cloud strategy. They need a secure and scalable cloud foundation to leverage Orthanc. To close this gap, we propose a cloud-based Orthanc solution to address the cloud foundation and configuration management, and [created](https://www.digihunch.com/2020/11/medical-imaging-web-server-deployment-pipeline/) the **Orthweb** project. 
 
 <img align="middle" src="assets/images/Overview.png">
 <br/><br/>

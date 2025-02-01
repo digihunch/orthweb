@@ -1,7 +1,7 @@
 
 Application traffic management addresses the ingress path of DICOM and web traffic to the network interface of Orthanc EC2 instances. 
 
-The Orthweb solution does not provide a prescriptive design pattern or implementation on application traffic management. This is because the user requirements around application traffic can vary so significantly that no two users would share the same pattern. 
+The Orthweb solution does not provide a prescriptive design pattern or implementation on application traffic management. This is because the user requirements around application traffic can vary so significantly the no two users would share the same design. 
 
 This section discusses some possible customization options for application traffic management. Note, these patterns are not the only viable options. Please discuss the most suitable design with us.
 

@@ -1,6 +1,6 @@
-For feature requests or bugs, please open an [Issue](https://github.com/digihunch/orthweb/issues).
+For feature requests or bugs, please open an [Issue](https://github.com/digihunch/orthweb/issues) on GitHub.
 
-Orthweb focuses on a streamlined deployment experience for demo. The idealism of 1-click deployment often conflicts with the reality of the diverse requirement between clients. Therefore it is necessary to leave some area of design and implementation open for further customization. Please discuss with [Digi Hunch](https://www.digihunch.com/)💡 about further support and professional services. Some service areas include:
+Orthweb proposes a streamlined deployment experience. The idealistic intent of 1-click setup process conflicts with the reality of having to support diverse range of requirements across clients. As a result, we have to strke a balance, by leaving some design areas and implementation work open with further customization. Please discuss with [Digi Hunch](https://www.digihunch.com/)💡 about support and professional services. Some service areas include:
 
 * Custom Orthanc Configurations
 * Custom Networking infrastructure
@@ -9,4 +9,4 @@ Orthweb focuses on a streamlined deployment experience for demo. The idealism of
 * Design and build of custom [cloud landing zone](https://www.digihunch.com/2023/09/orchestrate-landing-zone-with-landing-zone-accelerator-on-aws/)
 * Improvement of [Terraform workflow](https://medium.com/itnext/pains-in-terraform-collaboration-249a56b4534e)
 
-Thank you for testing with Orthweb.  ❤️ 
+❤️ Thank you again for testing with Orthweb. Let's automate medical imaging!
