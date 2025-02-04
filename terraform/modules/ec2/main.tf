@@ -252,7 +252,7 @@ resource "aws_launch_template" "orthweb_launch_template" {
   #checkov:skip=CKV_AWS_341: Process in docker needs to get instance metadata to assume the IAM role for EC2 instance. With IMDSv2, we need set http_put_response_hop_limit to 2. Otherwise, process in Docker container will not be able to read/write to S3 bucket using the IAM role attached to the instance profile. Ref: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
   name          = "${var.resource_prefix}-ec2-launch-template"
   key_name      = (var.public_key == "") ? null : aws_key_pair.runner-pubkey[0].key_name
-  instance_type = var.deployment_options.InstanceType
+  instance_type = var.ec2_config.InstanceType
   user_data     = data.cloudinit_config.orthconfig.rendered
   image_id      = data.aws_ami.amazon_linux_ami.id
   iam_instance_profile {

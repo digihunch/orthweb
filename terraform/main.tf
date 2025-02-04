@@ -63,6 +63,7 @@ module "ec2" {
     public_subnet_cidr_blocks = local.public_subnets_cidr_list
     scu_cidr_block            = var.network_config.scu_cidr
   }
+  ec2_config         = var.ec2_config
   deployment_options = var.deployment_options
   resource_prefix    = random_pet.prefix.id
   depends_on         = [module.database, module.storage, module.network]

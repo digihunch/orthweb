@@ -12,15 +12,11 @@ variable "ec2_config" {
   }
   validation {
     condition = (
-      var.ec2_config.PublicKeyPath == null || var.ec2_config.PublicKeyPath == "" || (fileexists(var.ec2_config.PublicKeyPath) &&
-      can(regex("^(ssh-rsa|ssh-ed25519) [A-Za-z0-9+/=]+( [^ ]+)?$", file(var.ec2_config.PublicKeyPath))))
+      var.ec2_config.PublicKeyPath == null || var.ec2_config.PublicKeyPath == "" ||
+      can(regex("^(ssh-rsa|ssh-ed25519) [A-Za-z0-9+/=]+( [^ ]+)?$", file(var.ec2_config.PublicKeyPath)))
     )
     error_message = "If provided, the file must exist and contain a valid RSA (ssh-rsa) or ED25519 (ssh-ed25519) public key in OpenSSH format."
   }
-  #validation {
-  #  condition     = var.ec2_config.PublicKeyPath == null || var.ec2_config.PublicKeyPath == "" || fileexists(var.ec2_config.PublicKeyPath)
-  #  error_message = "If ec2_config.PublicKeyPath is specified, it must be a valid file path"
-  #}
   validation {
     condition = (
       var.ec2_config.PublicKeyData == null || var.ec2_config.PublicKeyData == "" || can(regex("^(ssh-rsa|ssh-ed25519) [A-Za-z0-9+/=]+( [^ ]+)?$", var.ec2_config.PublicKeyData))

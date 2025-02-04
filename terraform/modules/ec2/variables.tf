@@ -29,6 +29,9 @@ variable "custom_key_arn" {
 variable "deployment_options" {
   type = map(any)
 }
+variable "ec2_config" {
+  type = map(any)
+}
 variable "resource_prefix" {
   type        = string
   description = "Uniq prefix of each resource"
