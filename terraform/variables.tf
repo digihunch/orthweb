@@ -29,7 +29,8 @@ variable "network_config" {
   description = "Networking Configuration"
   type = object({
     vpc_cidr              = string
-    scu_cidr              = string
+    dcm_cli_cidrs         = list(string)
+    web_cli_cidrs         = list(string)
     az_count              = number
     public_subnet_pfxlen  = number
     private_subnet_pfxlen = number
@@ -37,7 +38,8 @@ variable "network_config" {
   })
   default = {
     vpc_cidr              = "172.17.0.0/16"
-    scu_cidr              = "0.0.0.0/0"
+    dcm_cli_cidrs         = ["0.0.0.0/0"]
+    web_cli_cidrs         = ["0.0.0.0/0"]
     az_count              = 2
     public_subnet_pfxlen  = 24
     private_subnet_pfxlen = 22
@@ -52,14 +54,23 @@ variable "network_config" {
     error_message = "Input variable network_config.vpc_cidr must be a valid IPv4 CIDR."
   }
   validation {
-    condition     = can(cidrhost(var.network_config.scu_cidr, 0))
-    error_message = "Input variable network_config.scu_cidr must be a valid IPv4 CIDR."
+    condition = alltrue([
+      for cidr in var.network_config.web_cli_cidrs : can(cidrhost(cidr, 0))
+    ])
+    error_message = "Input variable network_config.web_cli_cidrs must be a list of valid IPv4 CIDRs."
+  }
+  validation {
+    condition = alltrue([
+      for cidr in var.network_config.dcm_cli_cidrs : can(cidrhost(cidr, 0))
+    ])
+    error_message = "Input variable network_config.dcm_cli_cidrs must be a list of valid IPv4 CIDRs."
   }
   validation {
     condition     = var.network_config.az_count >= 1 && var.network_config.az_count <= 3
     error_message = "Input variable network_config.az_count must be a numeric value between 1, 2 or 3"
   }
 }
+
 variable "provider_tags" {
   description = "Tags to apply for every resource by default"
   type        = map(string)
@@ -72,12 +83,25 @@ variable "provider_tags" {
     error_message = "The environment code must be one of: prd, dev, tst, or stg"
   }
 }
+
 variable "deployment_options" {
   description = "Deployment Options for Orthac app configuration"
-  type        = map(string)
+  type = object({
+    ConfigRepo     = string
+    SiteName       = string
+    InitCommand    = string
+    EnableCWLog    = bool
+    CWLogRetention = number
+  })
   default = {
-    ConfigRepo  = "https://github.com/digihunchinc/orthanc-config.git" # configuration repo to clone.
-    SiteName    = null
-    InitCommand = "pwd && echo Custom Init Command Here"
+    ConfigRepo     = "https://github.com/digihunchinc/orthanc-config.git" # configuration repo to clone.
+    SiteName       = null
+    InitCommand    = "pwd && echo Custom Init Command Here"
+    EnableCWLog    = true
+    CWLogRetention = 3 # CloudWatch Log group Retention days -1 to disable
+  }
+  validation {
+    condition     = contains([0, 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653], var.deployment_options.CWLogRetention)
+    error_message = "The value of deployment_options.CWLogRetention must be one of the following integers: -1,0,1,3,5,7,14,30,60,90,120,150,180,365,400,545,731,1096."
   }
 }

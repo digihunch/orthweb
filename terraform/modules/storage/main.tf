@@ -2,6 +2,8 @@ locals { access_log_prefix = "accesslog/orthbucket/" }
 
 data "aws_caller_identity" "current" {}
 
+data "aws_region" "this" {}
+
 resource "aws_s3_bucket" "orthbucket" {
   bucket = "${var.resource_prefix}-orthbucket"
 
@@ -167,14 +169,14 @@ resource "aws_s3_bucket_policy" "orthweb_logging_policy" {
     Id      = "${var.resource_prefix}-OrthwebLoggingBucketPolicy"
     Statement = [
       {
-        Sid    = "S3ServerAccessLogsPolicy"
-        Effect = "Allow"
+        Sid    = "S3ServerAccessLogsPolicy",
+        Effect = "Allow",
         Principal = {
           Service = "logging.s3.amazonaws.com"
         },
         Action = [
           "s3:PutObject"
-        ]
+        ],
         Resource = "${aws_s3_bucket.logging_bucket.arn}/${local.access_log_prefix}*",
         Condition = {
           ArnLike = {
@@ -182,6 +184,45 @@ resource "aws_s3_bucket_policy" "orthweb_logging_policy" {
           },
           StringEquals = {
             "aws:SourceAccount" = "${data.aws_caller_identity.current.account_id}"
+          }
+        }
+      },
+      {
+        Sid    = "AWSLogDeliveryWrite",
+        Effect = "Allow",
+        Principal = {
+          Service = "delivery.logs.amazonaws.com"
+        },
+        Action = [
+          "s3:PutObject"
+        ],
+        Resource = "${aws_s3_bucket.logging_bucket.arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*",
+        Condition = {
+          StringEquals = {
+            "s3:x-amz-acl"      = "bucket-owner-full-control"
+            "aws:SourceAccount" = "${data.aws_caller_identity.current.account_id}"
+          },
+          ArnLike = {
+            "aws:SourceArn" = "arn:aws:logs:${data.aws_region.this.name}:${data.aws_caller_identity.current.account_id}:*"
+          }
+        }
+      },
+      {
+        Sid    = "AWSLogDeliveryAclCheck",
+        Effect = "Allow",
+        Principal = {
+          Service = "delivery.logs.amazonaws.com"
+        },
+        Action = [
+          "s3:GetBucketAcl"
+        ],
+        Resource = "${aws_s3_bucket.logging_bucket.arn}",
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = "${data.aws_caller_identity.current.account_id}"
+          },
+          ArnLike = {
+            "aws:SourceArn" = "arn:aws:logs:${data.aws_region.this.name}:${data.aws_caller_identity.current.account_id}:*"
           }
         }
       }

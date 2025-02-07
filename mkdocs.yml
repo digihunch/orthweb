@@ -9,6 +9,9 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.snippets:
+      auto_append: ["../LICENSE"]
+      base_path: ["docs"]
 
 theme:
   name: material
@@ -45,3 +48,4 @@ nav:
   - Support: 'support/index.md'
 plugins:
   - search
+  - include-markdown

@@ -1,17 +1,9 @@
 locals {
   instance_sg_configs = {
     mgmtsg = {
-      name        = "${var.resource_prefix}-mgmt-sg"
-      description = "Security Group for management traffic"
-      ingress_rules = [
-        {
-          from_port   = 8
-          to_port     = 0
-          protocol    = "icmp"
-          cidr_blocks = ["0.0.0.0/0"]
-          rule_desc   = "Allow ping from anywhere"
-        }
-      ]
+      name          = "${var.resource_prefix}-mgmt-sg"
+      description   = "Security Group for management traffic"
+      ingress_rules = []
       egress_rules = [
         {
           from_port   = 0
@@ -30,14 +22,14 @@ locals {
           from_port   = 443
           to_port     = 443
           protocol    = "tcp"
-          cidr_blocks = ["0.0.0.0/0"]
+          cidr_blocks = var.vpc_config.dcm_cli_cidrs
           rule_desc   = "Allow web traffic"
         },
         {
           from_port   = 11112
           to_port     = 11112
           protocol    = "tcp"
-          cidr_blocks = [var.vpc_config.scu_cidr_block]
+          cidr_blocks = var.vpc_config.dcm_cli_cidrs
           rule_desc   = "Allow DICOM traffic"
         }
       ]
@@ -53,7 +45,6 @@ locals {
     }
   }
 }
-
 
 data "aws_region" "this" {}
 
@@ -95,14 +86,16 @@ data "cloudinit_config" "orthconfig" {
   part {
     content_type = "text/x-shellscript"
     content = templatefile("${path.module}/userdata2.tpl", {
-      db_address   = data.aws_db_instance.postgres.address,
-      db_port      = data.aws_db_instance.postgres.port,
-      aws_region   = data.aws_region.this.name,
-      sec_name     = data.aws_secretsmanager_secret.secretDB.name,
-      s3_bucket    = data.aws_s3_bucket.orthbucket.bucket,
-      site_name    = var.deployment_options.SiteName != null ? var.deployment_options.SiteName : ""
-      config_repo  = var.deployment_options.ConfigRepo
-      init_command = var.deployment_options.InitCommand
+      db_address      = data.aws_db_instance.postgres.address,
+      db_port         = data.aws_db_instance.postgres.port,
+      aws_region      = data.aws_region.this.name,
+      resource_prefix = var.resource_prefix,
+      cw_docker_log   = var.deployment_options.EnableCWLog,
+      sec_name        = data.aws_secretsmanager_secret.secretDB.name,
+      s3_bucket       = data.aws_s3_bucket.orthbucket.bucket,
+      site_name       = var.deployment_options.SiteName != null ? var.deployment_options.SiteName : ""
+      config_repo     = var.deployment_options.ConfigRepo
+      init_command    = var.deployment_options.InitCommand
     })
   }
 }
@@ -188,6 +181,27 @@ resource "aws_iam_role_policy" "s3_access_policy" {
           data.aws_s3_bucket.orthbucket.arn,
           "${data.aws_s3_bucket.orthbucket.arn}/*"
         ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "cloudwatch_policy" {
+  for_each = aws_cloudwatch_log_group.ec2_log_group
+  name     = "${var.resource_prefix}-cloudwatch_policy-${each.key}"
+
+  role = aws_iam_role.ec2_iam_role.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Effect = "Allow"
+        #Resource = "${aws_cloudwatch_log_group.ec2_log_group.arn}:*"
+        Resource = "${aws_cloudwatch_log_group.ec2_log_group[each.key].arn}:*"
       }
     ]
   })
@@ -314,3 +328,9 @@ resource "aws_instance" "orthweb_instance" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "ec2_log_group" {
+  for_each          = var.deployment_options.EnableCWLog ? { "containers" : "orthweb" } : {}
+  name              = "/${var.resource_prefix}/${each.value}/${each.key}"
+  retention_in_days = var.deployment_options.CWLogRetention
+  kms_key_id        = var.custom_key_arn
+}

@@ -8,7 +8,8 @@ variable "vpc_config" {
     vpc_id                    = string
     public_subnet_cidr_blocks = list(string)
     public_subnet_ids         = map(string)
-    scu_cidr_block            = string
+    web_cli_cidrs             = list(string)
+    dcm_cli_cidrs             = list(string)
   })
 }
 variable "db_instance_id" {
@@ -30,7 +31,9 @@ variable "deployment_options" {
   type = map(any)
 }
 variable "ec2_config" {
-  type = map(any)
+  type = object({
+    InstanceType = string
+  })
 }
 variable "resource_prefix" {
   type        = string

@@ -1,6 +1,6 @@
 
 ## Overview
-Since we execute Terraform commands locally to drive the deployment, we also store Terraform states locally. Advanced Terraform users may choose to managed Terraform platform such as Terraform Cloud or Scalr, which is beyond the scope of this document. 
+Since we execute Terraform commands locally to drive the deployment, we also store Terraform states locally. Advanced Terraform users may choose to managed Terraform platform such as HCP Terraform(previously known as Terraform Cloud) which is beyond the scope of this document. 
 
 Now we can start deploying Orthanc. From your command terminal, go to the [`terraform`](https://github.com/digihunch/orthweb/tree/main/terraform) directory, and run `terraform` commands from this directory.
 
@@ -17,8 +17,26 @@ Terraform has been successfully initialized!
 
 After initialization, terraform creates `.terraform` directory to store the pulled modules and providers.
 
+## Adjust Variables
+
+There are several ways to declare [input variable](https://developer.hashicorp.com/terraform/language/values/variables) in Terraform. In this solution, we use `terraform.tfvars` file in the terraform working directory. The [file](https://github.com/digihunch/orthweb/blob/main/terraform/terraform.tfvars) is loaded with functional input variables. Users should review the variables and adjust accordingly. Here is a sample of the `terraform.tfvars` file:
+
+```
+{% include "https://raw.githubusercontent.com/digihunch/orthweb/refs/heads/main/terraform/terraform.tfvars" %}
+```
+
+To determin the variable values, some decisions to make are:
+
+- Value of provider tag and site name 
+- Size of EC2 instance and public key
+- Number of availability zones, CIDR for the VPC and subnet sizing
+- CIDR blocks of the web and dicom client to whitelist
+- Whether or not to ship docker log to Cloud Watch and retention period
+
+In most cases, users at least need to update the provider tag and site name. 
+
 ## Terraform Plan
-We plan the deployment with this command:
+We plan the deployment with command:
 
 ```sh
 terraform plan
@@ -30,9 +48,9 @@ If you're running this command for the first time, Terraform will flag all resou
 
 At the end of the result, it will summarize the actions to take, for example:
 ```
-Plan: 3 to add, 4 to change, 3 to destroy.
+Plan: 54 to add, 0 to change, 0 to destroy.
 ```
-If the plan fails, check the code and state file.
+If the plan fails, check the code and state file. The number of resources to add depends on the specific input variables and whether the solution has been previously deployed.
 
 ## Terraform Apply
 
@@ -79,7 +97,15 @@ Below is a per-day estimate of cost (in USD) of the infrastructure based on defa
 | S3 |  $0.13   |
 | <b>Total daily cost</b> |  <b>$7</b>   |
 
-Note, the numbers does not include data processing charges such as images stored to and retrieved from S3, or data moved in and out of the Internet Gateway, etc. AWS has a comprehensive [pricing calculator](https://calculator.aws/#/) and [saving plans](https://aws.amazon.com/savingsplans/).
+Note, the numbers does not include data processing charges such as images stored to and retrieved from S3, or data moved in and out of the Internet Gateway, etc. The numbers also have free-tier usage factored in. Users are advised to run the solution with everyday usage to get a more realistic ballpark of daily cost. AWS has a comprehensive [pricing calculator](https://calculator.aws/#/) and [saving plans](https://aws.amazon.com/savingsplans/) available.
+
+## Logs
+To view container logs from EC2 instance, use docker compose log command:
+```sh
+docker compose logs -f
+```
+If cloud watch log is enabled, the docker daemon configuration file is automatically configured on EC2 instances to ship logs to cloud watch log groups with the configured retention window. 
+
 
 ## Clean up
 After the validation is completed, it is important to remember this step to stop incurring on-going cost.

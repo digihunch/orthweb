@@ -39,3 +39,8 @@ One of the key configuration file is `orthanc.json`, which defines the required 
 - Stone Web Viewer Plugin
 
 The Authorization plugin requires use of the Orthanc Explorer 2 plugin, and integrates with the external custom authorization service. The PostgreSQL database is to index the study data. The imaging pixel data are stored to S3 bucket using the S3 Storage Plugin.
+
+
+## Application logs
+
+Container produces logs through docker deamon. To persist the log data, the solution provides a mechanism to tell Docker daemon to push container logs to Cloud Watch, with a configurable retention window. Even if an EC2 instance dies or containers fail, the log data are stored outside of the EC2 instance.

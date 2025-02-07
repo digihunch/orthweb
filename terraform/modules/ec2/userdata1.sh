@@ -8,9 +8,8 @@ yum install -y git make docker jq postgresql16
 mkdir -p /usr/local/lib/docker/cli-plugins/
 curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
 chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+usermod -a -G docker ec2-user     ## Hold off restarting docker daemon until end of userdata2.tpl
 
-usermod -a -G docker ec2-user   
-systemctl restart docker          ## Configure Docker daemon
 chmod 666 /var/run/docker.sock    ## Allow non-root user to run docker cli 
 
 # Install yq

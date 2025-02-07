@@ -28,4 +28,19 @@ runuser -l ec2-user -c '
   ${init_command}
 ' 
 
+## Configure Docker daemon
+
+if [ "${cw_docker_log}" == "true" ]; then
+  cat <<EOF >/etc/docker/daemon.json
+{
+  "log-driver": "awslogs",
+  "log-opts": {
+    "awslogs-region": "${aws_region}",
+    "awslogs-group": "/${resource_prefix}/orthweb/containers"
+  }
+}
+EOF
+fi
+
+systemctl restart docker
 echo "Leaving userdata2 script"

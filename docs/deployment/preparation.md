@@ -1,4 +1,4 @@
-The solution was tested on Mac and Linux. The instructions are based on Mac or Linux. Use the solution on Windows at your own risk. There are also several ways to adjust the steps to work with managed Terraform environment (e.g. Scalr, Terraform Cloud). For simplicity, this documentation assumes that you work from a command terminal.
+The solution was tested on Mac and Linux. The instructions are based on Mac or Linux. Use the solution on Windows at your own risk. There are also several ways to adjust the steps to work with managed Terraform environment (e.g. Terraform Cloud). For simplicity, this documentation assumes that you work from a command terminal.
 
 ## Prerequisite
 

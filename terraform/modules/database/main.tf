@@ -130,7 +130,7 @@ resource "aws_db_instance" "postgres" {
   deletion_protection                 = var.is_prod ? true : false
   skip_final_snapshot                 = var.is_prod ? "false" : "true"
   iam_database_authentication_enabled = true
-  final_snapshot_identifier           = "demodb"
+  final_snapshot_identifier           = join("-", ["${var.resource_prefix}", formatdate("YYMMDDhhmm", timestamp())])
   vpc_security_group_ids              = [aws_security_group.dbsecgroup.id]
   db_subnet_group_name                = aws_db_subnet_group.dbsubnetgroup.name
   parameter_group_name                = aws_db_parameter_group.dbparamgroup.name

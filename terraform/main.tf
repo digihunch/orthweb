@@ -61,9 +61,12 @@ module "ec2" {
     vpc_id                    = module.network.vpc_info.vpc_id
     public_subnet_ids         = module.network.vpc_info.public_subnet_ids
     public_subnet_cidr_blocks = local.public_subnets_cidr_list
-    scu_cidr_block            = var.network_config.scu_cidr
+    dcm_cli_cidrs             = var.network_config.dcm_cli_cidrs
+    web_cli_cidrs             = var.network_config.web_cli_cidrs
   }
-  ec2_config         = var.ec2_config
+  ec2_config = {
+    InstanceType = var.ec2_config.InstanceType
+  }
   deployment_options = var.deployment_options
   resource_prefix    = random_pet.prefix.id
   depends_on         = [module.database, module.storage, module.network]
