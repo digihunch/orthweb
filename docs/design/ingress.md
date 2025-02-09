@@ -14,8 +14,10 @@ In this configuration, each EC2 instance lives in a separate availability zone. 
 
 On each EC2 instance, the Nginx container listens to port 443 and proxies web request according to its configuration.
 
-## Limitation
-The out-of-box configuration is not always convinient. First, the two EC2 instances have two separate DNS names. In the event that one instance becomes unavailable, users and modalities have to use the alternative site DNS name. Second, the DNS name is automatically created based on the public IP address. Users do not have control of the DNS names. Thrid, the DNS names end with `amazonaws.com`, which is not owned by the users, and therefore users are not able to create trusted certificates.
+## Limitations
+In most production scenarios, the out-of-box configuration is not convinient. First, the two EC2 instances have two separate DNS names. In the event that one instance becomes unavailable, users and modalities have to use the alternative site DNS name. Second, the DNS name is automatically created based on the public IP address. Users do not have control of the DNS names. Thrid, the DNS names end with `amazonaws.com`, which is not owned by the users, and therefore users are not able to create trusted certificates.
+
+To bring the solution to produciton, it is recommended to introduce additional cloud resources to manage ingress traffic. The rest of the section discusses at very high level some options.
 
 ## Use Domain Naming Service (DNS)
 Consider introducing a DNS service to point to both EC2 instances. The DNS resolution result determins which EC2 instance the client connects to. So each EC2 instance must still open 443 and 11112 ports. This pattern is illustrated as below:

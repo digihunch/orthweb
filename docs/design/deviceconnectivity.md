@@ -4,14 +4,15 @@ Images with sensitive information are transferred in [DICOM protocol](https://di
 
 As a result, users should not send DICOM images from modalities over the Internet to Orthanc without TLS configuration. If the modality does not support DICOM TLS configuration, consider the following ways to secure the transfer.
 
-## Use a DICOM proxy
-The organization may consider running a local DICOM proxy. The proxy receives images from modality in the clear, and forwards the images over the Internet to Orthanc. Unlike the modality application, such proxy applications usually come with full support of TLS. There are not many open-source options. An on-prem instance of Orthanc can be configured to act as a DICOM proxy.
-
-## Use Private Network Connection
+## Private Network Connection
 At network infrastructure level, the organzation may build a AWS Direct Connect connection with AWS. Requirement for such network connection should be reviewed with the network team of the organization, and require collaboration of multiple teams.
 
+![Diagram](../assets/images/private-connection.png)
+
+Instead of private physical connection, user may build a private connection over the Internet using VPN.
+
 ## Virtual Private Network (VPN)
-Instead of private physical connection, user may build a private connection over the Internet using VPN. Compared with Direct Connect, VPN involves much less effort and cost. It comes with two models:
+Compared with Direct Connect, VPN involves much less effort and cost. It comes with two models:
 
 * Site-to-site VPN: requiring either a physical device or software application to act as a customer gateway. 
 * Client VPN: requiring OpenVPN-based client on a workstation. Enable split-tunnel so only relevent traffic are routed to VPC.
@@ -25,3 +26,10 @@ If you're sending imaging data from a single workstation. You may connect the wo
 5. Enable [split-tunnel](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/split-tunnel-vpn.html) for the VPN endpoint so other network features on the workstation are not impacted.
 
 Once the VPC client software (OpenVPN or AWS VPN client) is configured and connected from the workstation, the connection between the EC2 instance and the DICOM client will become secured at the IP layer.
+
+## Use a DICOM proxy
+The organization may consider running a local DICOM proxy. The proxy receives images from modality in the clear, and forwards the images over the Internet to Orthanc. Unlike the modality application, such proxy applications usually come with full support of TLS. There are not many open-source options. An on-prem instance of Orthanc can be configured to act as a DICOM proxy.
+
+![Diagram](../assets/images/dicom-proxy.png)
+
+In this configuration the DICOM port should also open. Use security group to restrict where the port can receive traffic.

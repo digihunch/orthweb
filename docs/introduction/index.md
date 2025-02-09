@@ -4,23 +4,23 @@ Orthanc handles sensitive data and must be hosted on secure platforms. The motiv
 
 1. A prescriptive architecture optimized for hosting Orthanc. The architecture is opinionated but suitable for common scenarios. The architecture design is discussed in the [Infrastructure](../design/infrastructure.md) section.
 
-2. The implementation artifact for the prescriptive architecture with Infrastructure-as-Code template in [Terraform](https://www.terraform.io/). The **Orthanc Terraform template** is available in the [orthweb](https://github.com/digihunch/orthweb) GitHub repository.
+2. The implementation artifact for the prescriptive architecture using[Terraform](https://www.terraform.io/) to manage infrastructure as code. The **Orthanc Terraform template** is available in the [orthweb](https://github.com/digihunch/orthweb) GitHub repository.
 
-3. A baseline Orthanc configuration with key plugins such as advanced authorization and KeyCloak. The artifact for configuration management is available in the [orthanc-config](https://github.com/digihunchinc/orthanc-config) GitHub repository.
+3. A baseline Orthanc configuration with key plugins such as advanced authorization and auxiliary services such as KeyCloak. The artifact for configuration management is available in the [orthanc-config](https://github.com/digihunchinc/orthanc-config) GitHub repository. To customize configuration, create a fork of this repo.
 
-Since the cloud operation model varies significantly from organization to organization, each user may need different parts of this project to facilitate their Orthanc deployment.
+While **Orthweb** provisions a fully functional Orthanc solution, there are some areas it does not intend to address. One example is ingress traffic management, whose design must account for integration with the current infrastructure and security setup, which is vastly different from organziation to organization. To drive this initiative in your organization, contact professional services at [Digi Hunch](https://www.digihunch.com).
 
 ## Use case
 
 If you have an AWS account without networking foundation for Orthanc, the template in [Orthweb](https://github.com/digihunch/orthweb) suits exactly to your needs. Then you may use the automation artifact in [orthanc-config](https://github.com/digihunchinc/orthanc-config) to configure Orthanc. 
 
-If you have pre-created networking layer (e.g. VPC, subnets), then you only need to create virtual machine with relevant dependencies before installing Orthanc. You can use **Orthweb** as a reference implementation to understand how the application interact with underlying cloud resources, and potentially reuse some Terraform [modules](https://github.com/digihunch/orthweb/tree/main/terraform/modules). 
+If you have pre-created networking layer (e.g. VPC, subnets), then you only need to create virtual machine with relevant dependencies before installing Orthanc. You can use **Orthweb** as a reference implementation to examine how the application interact with underlying cloud resources, and potentially reuse some Terraform [modules](https://github.com/digihunch/orthweb/tree/main/terraform/modules) in the repo. 
 
-To let Terraform create resources in AWS, it needs sufficient permissions for deployment. Such permission for deployment usually requires administrator-level access.
+To allow Terraform to create resources in AWS, it needs sufficient permissions for deployment. Such permission for deployment usually requires administrator-level access.
 
 ## Toolings
 
-Orthweb is based on numerous open-source tools. Here are the rationales behind the choice of tools.
+Orthweb is based on numerous open-source tools and commercial cloud services. Here are the rationales behind the choice:
 
 **Terraform** is a widely used infrastructure-as-code utility. The templates are written in Hashicorp Configuration Language(HCL), which strikes a good balance between declarativeness and level of abstraction. However, you do need to securely store [Terraform state](https://developer.hashicorp.com/terraform/language/state), and be wary of its [workflow nuances](https://itnext.io/pains-in-terraform-collaboration-249a56b4534e). 
 
