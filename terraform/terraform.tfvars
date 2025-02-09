@@ -19,7 +19,7 @@ provider_tags = {
 deployment_options = {
   ConfigRepo     = "https://github.com/digihunchinc/orthanc-config.git"
   CWLogRetention = 3
-  EnableCWLog    = false 
+  EnableCWLog    = false
   SiteName       = null
   InitCommand    = "echo Custom Init Command && cd orthanc-config && make aws"
 }

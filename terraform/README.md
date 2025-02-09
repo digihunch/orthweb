@@ -40,7 +40,7 @@
 
 | Name | Description |
 |------|-------------|
-| <a name="output_db_endpoint"></a> [db\_endpoint](#output\_db\_endpoint) | Database endpiont (only accessible privately from EC2 Instance) |
+| <a name="output_db_endpoint"></a> [db\_endpoint](#output\_db\_endpoint) | Database endpiont (port 5432 only accessible privately from EC2 Instance) |
 | <a name="output_host_info"></a> [host\_info](#output\_host\_info) | Instance IDs and Public IPs of EC2 instances |
 | <a name="output_s3_bucket"></a> [s3\_bucket](#output\_s3\_bucket) | S3 bucket name for data storage |
 | <a name="output_server_dns"></a> [server\_dns](#output\_server\_dns) | DNS names of EC2 instances |

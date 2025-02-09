@@ -35,7 +35,8 @@ nav:
   - Architecture:
     - 'Infrastructure': 'design/infrastructure.md' 
     - 'Configuration Management': 'design/configmgmt.md'
-    - 'Application Traffic': 'design/applicationtraffic.md'
+    - 'Ingress Traffic': 'design/ingress.md'
+    - 'Device Connectivity': 'design/deviceconnectivity.md'
   - Deployment:
     - 'Preparation': 'deployment/preparation.md'
     - 'Infrastructure': 'deployment/infrastructure.md'

@@ -48,6 +48,8 @@ locals {
 
 data "aws_region" "this" {}
 
+data "aws_caller_identity" "current" {}
+
 data "aws_ami" "amazon_linux_ami" {
   most_recent = true
   owners      = ["amazon"]
@@ -65,18 +67,6 @@ data "aws_ami" "amazon_linux_ami" {
   }
 }
 
-data "aws_db_instance" "postgres" {
-  db_instance_identifier = var.db_instance_id
-}
-
-data "aws_s3_bucket" "orthbucket" {
-  bucket = var.s3_bucket_name
-}
-
-data "aws_secretsmanager_secret" "secretDB" {
-  arn = var.db_secret_arn
-}
-
 data "cloudinit_config" "orthconfig" {
   base64_encode = true
   part {
@@ -86,13 +76,13 @@ data "cloudinit_config" "orthconfig" {
   part {
     content_type = "text/x-shellscript"
     content = templatefile("${path.module}/userdata2.tpl", {
-      db_address      = data.aws_db_instance.postgres.address,
-      db_port         = data.aws_db_instance.postgres.port,
+      db_address      = var.db_info.db_address,
+      db_port         = var.db_info.db_port,
       aws_region      = data.aws_region.this.name,
       resource_prefix = var.resource_prefix,
       cw_docker_log   = var.deployment_options.EnableCWLog,
-      sec_name        = data.aws_secretsmanager_secret.secretDB.name,
-      s3_bucket       = data.aws_s3_bucket.orthbucket.bucket,
+      sec_name        = var.secret_info.db_secret_name,
+      s3_bucket       = var.s3_bucket_name,
       site_name       = var.deployment_options.SiteName != null ? var.deployment_options.SiteName : ""
       config_repo     = var.deployment_options.ConfigRepo
       init_command    = var.deployment_options.InitCommand
@@ -145,7 +135,7 @@ resource "aws_iam_role_policy" "secret_reader_policy" {
           "secretsmanager:DescribeSecret"
         ]
         Effect   = "Allow"
-        Resource = data.aws_secretsmanager_secret.secretDB.id
+        Resource = var.secret_info.db_secret_arn
       }
     ]
   })
@@ -161,7 +151,7 @@ resource "aws_iam_role_policy" "database_access_policy" {
       {
         Action   = ["rds-db:connect"]
         Effect   = "Allow"
-        Resource = data.aws_db_instance.postgres.db_instance_arn
+        Resource = "${var.db_info.db_instance_arn}"
       }
     ]
   })
@@ -178,8 +168,8 @@ resource "aws_iam_role_policy" "s3_access_policy" {
         Action = ["s3:*"]
         Effect = "Allow"
         Resource = [
-          data.aws_s3_bucket.orthbucket.arn,
-          "${data.aws_s3_bucket.orthbucket.arn}/*"
+          "arn:aws:s3:::${var.s3_bucket_name}",
+          "arn:aws:s3:::${var.s3_bucket_name}/*"
         ]
       }
     ]
@@ -199,8 +189,7 @@ resource "aws_iam_role_policy" "cloudwatch_policy" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Effect = "Allow"
-        #Resource = "${aws_cloudwatch_log_group.ec2_log_group.arn}:*"
+        Effect   = "Allow"
         Resource = "${aws_cloudwatch_log_group.ec2_log_group[each.key].arn}:*"
       }
     ]
@@ -222,7 +211,7 @@ resource "aws_iam_role_policy" "key_access_policy" {
           "kms:GenerateDataKey"
         ]
         Effect   = "Allow"
-        Resource = var.custom_key_arn
+        Resource = "${var.custom_key_arn}"
       }
     ]
   })
@@ -261,7 +250,6 @@ resource "aws_iam_instance_profile" "inst_profile" {
   role = aws_iam_role.ec2_iam_role.name
 }
 
-
 resource "aws_launch_template" "orthweb_launch_template" {
   #checkov:skip=CKV_AWS_341: Process in docker needs to get instance metadata to assume the IAM role for EC2 instance. With IMDSv2, we need set http_put_response_hop_limit to 2. Otherwise, process in Docker container will not be able to read/write to S3 bucket using the IAM role attached to the instance profile. Ref: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
   name          = "${var.resource_prefix}-ec2-launch-template"
@@ -287,13 +275,13 @@ resource "aws_launch_template" "orthweb_launch_template" {
   }
   depends_on = [aws_iam_role.ec2_iam_role]
 
-  lifecycle {
-    ignore_changes = [
-      #user_data,
-      image_id,
-      block_device_mappings,
-    ]
-  }
+  #lifecycle {
+  #  ignore_changes = [
+  #    user_data,
+  #    image_id,
+  #    block_device_mappings,
+  #  ]
+  #}
 }
 
 resource "aws_network_interface" "orthanc_ec2_nics" {
@@ -323,7 +311,8 @@ resource "aws_instance" "orthweb_instance" {
   #https://github.com/hashicorp/terraform-provider-aws/issues/5011
   lifecycle {
     ignore_changes = [
-      #launch_template,
+      launch_template,
+      user_data,
     ]
   }
 }

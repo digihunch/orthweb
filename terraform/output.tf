@@ -7,8 +7,8 @@ output "server_dns" {
   description = "DNS names of EC2 instances"
 }
 output "db_endpoint" {
-  value       = module.database.db_info.db_endpoint
-  description = "Database endpiont (only accessible privately from EC2 Instance)"
+  value       = join(":", [module.database.db_info.db_address, module.database.db_info.db_port])
+  description = "Database endpiont (port 5432 only accessible privately from EC2 Instance)"
 }
 output "s3_bucket" {
   value       = module.storage.s3_info.bucket_domain_name

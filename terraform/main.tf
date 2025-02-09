@@ -53,9 +53,9 @@ module "ec2" {
   source         = "./modules/ec2"
   public_key     = var.ec2_config.PublicKeyData != null ? var.ec2_config.PublicKeyData : (fileexists(var.ec2_config.PublicKeyPath) ? file(var.ec2_config.PublicKeyPath) : "")
   role_name      = "${random_pet.prefix.id}-InstanceRole"
-  db_instance_id = module.database.db_info.db_instance_id
+  db_info        = module.database.db_info
+  secret_info    = module.database.secret_info
   s3_bucket_name = module.storage.s3_info.bucket_name
-  db_secret_arn  = module.database.secret_info.db_secret_arn
   custom_key_arn = module.key.custom_key_id
   vpc_config = {
     vpc_id                    = module.network.vpc_info.vpc_id

@@ -12,17 +12,28 @@ variable "vpc_config" {
     dcm_cli_cidrs             = list(string)
   })
 }
-variable "db_instance_id" {
-  type = string
-}
+
 variable "s3_bucket_name" {
   type = string
 }
 variable "role_name" {
   type = string
 }
-variable "db_secret_arn" {
-  type = string
+
+variable "db_info" {
+  type = object({
+    db_address             = string
+    db_port                = string
+    db_instance_identifier = string
+    db_instance_arn        = string
+  })
+
+}
+variable "secret_info" {
+  type = object({
+    db_secret_arn  = string
+    db_secret_name = string
+  })
 }
 variable "custom_key_arn" {
   type = string

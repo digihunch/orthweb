@@ -96,7 +96,7 @@ resource "aws_s3_bucket_versioning" "orthweb_logging_versioning" {
 }
 
 resource "aws_iam_policy" "vpc_flow_logs_policy" {
-  name        = "vpc-flow-logs-policy"
+  name        = "${var.resource_prefix}-vpc-flow-logs-policy"
   description = "IAM policy for VPC flow logs to write logs to S3 bucket"
 
   policy = jsonencode({
@@ -121,7 +121,7 @@ resource "aws_iam_policy" "vpc_flow_logs_policy" {
 
 # IAM role for VPC flow logs to assume and write logs to the S3 bucket
 resource "aws_iam_role" "vpc_flow_logs_role" {
-  name = "vpc-flow-logs-role"
+  name = "${var.resource_prefix}-vpc-flow-logs-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [

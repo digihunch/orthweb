@@ -1,5 +1,5 @@
 
-The Orthweb proposes a reference architecture to host Orthanc on AWS. The reference architecture does not include application traffic management. This section discusses how the components work in this architecture. The [next page](./applicationtraffic.md), will focus on the options for application traffic management.
+The Orthweb proposes a reference architecture to host Orthanc on AWS. The reference architecture does not include application traffic management. This section discusses how the components work in this architecture. The [next page](./ingress.md), will focus on the options for ingress traffic management.
 
 ## The Reference Arthicture
 
@@ -22,7 +22,7 @@ aws ec2 start-instances --instance-ids i-12345678  # instance billing restarts
 ```
 Bear in mind that when there is only one EC2 instance running, it becomes a single point of failure.
 
-The pair of EC2 instances, in conjunction with additional cloud resources, can bring high availability to the solution. However, the Orthweb solution does not intend to address high availability with its out-of-the-box configuration. For high availability, options are discussed under [application traffic management](applicationtraffic.md) and usually require additional customization efforts.
+The pair of EC2 instances, in conjunction with additional cloud resources, can bring high availability to the solution. However, the Orthweb solution does not intend to address high availability with its out-of-the-box configuration. For high availability, options are discussed under [application traffic management](ingress.md) and usually require additional customization efforts.
 
 ## Certificate
 

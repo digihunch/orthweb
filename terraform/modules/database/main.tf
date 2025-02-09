@@ -145,5 +145,11 @@ resource "aws_db_instance" "postgres" {
   maintenance_window                  = "Mon:05:00-Mon:08:00"
   depends_on                          = [aws_cloudwatch_log_group.db_log_group]
   tags                                = { Name = "${var.resource_prefix}-DBInstance" }
+
+  lifecycle {
+    ignore_changes = [
+      final_snapshot_identifier,
+    ]
+  }
 }
 
