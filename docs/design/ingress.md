@@ -1,4 +1,3 @@
-
 Ingress traffic management concerns with how external web traffic (and possibly DICOM traffic) reach the network interface of Orthanc EC2 instances. 
 
 The Orthweb solution does not provide a prescriptive design pattern or implementation for ingress traffic management. This is because the requirements in this area often vary so significantly that no two organizations share the same design. 
@@ -8,7 +7,7 @@ This section discusses some possible customization options for ingress traffic m
 ## Out-of-box Configuration
 The out-of-box configuration functions without ingress traffic management service. However, it comes with two difference DNS names, one for each EC2 instance, as illustrated below:
 
-![Diagram](../assets/images/AppTraffic0.png)
+  ![Diagram](../assets/images/AppTraffic0.png)
 
 In this configuration, each EC2 instance lives in a separate availability zone. Both are connected to the same database (RDS) instance and storage (S3). In the event of an EC2 instance failure, the other instance is available. User may also choose to stop one of the instances for lower cost.
 
@@ -22,7 +21,7 @@ To bring the solution to produciton, it is recommended to introduce additional c
 ## Use Domain Naming Service (DNS)
 Consider introducing a DNS service to point to both EC2 instances. The DNS resolution result determins which EC2 instance the client connects to. So each EC2 instance must still open 443 and 11112 ports. This pattern is illustrated as below:
 
-![Diagram](../assets/images/AppTraffic1.png)
+  ![Diagram](../assets/images/AppTraffic1.png)
 
 In this pattern, the DNS can resolves to the public DNS name for both EC2 instances. The result of DNS resolution can rotate, round robin or based on availability. In this option you will bring your own DNS name, and manage your own TLS certificate, instead of using the self-signed certificate provisioned during automation.
 
@@ -31,7 +30,7 @@ It is also possible to integrate with Content Delivery Network (CDN, such as Clo
 ## Use Load Balancer (NLB or ALB)
 As cost allows, consider placing a network load balancer in front of the EC2 instances. We would be able to configure the network load balancer so it automatically sends the traffic to a functional EC2 instance, thereby eliminating the manual fail over procedure. This pattern is illustrated as below:
 
-![Diagram](../assets/images/AppTraffic2.png)
+  ![Diagram](../assets/images/AppTraffic2.png)
 
 This configuration has several advantages. The security group of the EC2 instances can be narrowed down to only open to the load balancer. You can use Application Load Balancer or Network Load Balancer in AWS. The former supports integration with Web Application Firewall but only for HTTPS traffic. The latter supports both DICOM and HTTPS traffic. Both options supports integration with AWS Certificate Manager to automatically manage TLS certificate. 
 

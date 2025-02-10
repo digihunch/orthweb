@@ -9,7 +9,7 @@ sudo tail -F /var/log/cloud-init-output.log
 ```
 In the log, each container should say `Orthanc has started`. The configuration files related to Orthanc deployment are in directory `/home/ec2-user/orthanc-config`. Refer to the [orthanc-config](https://github.com/digihunchinc/orthanc-config) repository for how the configuration automation works. 
 
-## DICOM communication
+## DICOM communication (TLS)
 
 To emulate DICOM activity,  we use [dcmtk](https://dicom.offis.de/dcmtk.php.en), with TLS options. We use the `echoscu` executable to issue `C-ECHO` DIMSE command, and the `storescu` executable to issue `C-STORE` commands. For example:
 
@@ -61,3 +61,36 @@ I: Releasing Association
 ```
 
 C-STORE-RSP status 0 indicates successful image transfer, and the image should viewable from the Orthanc site address. 
+
+## DICOM communication (without TLS)
+
+Caution: turn off TLS only if the images are transferred over private connection or encrypted connection. Refer to [device connectivity](../design/deviceconnectivity.md) for how to set up.
+
+To turn off TLS, locate the server configuration in the nginx configuration file for DICOM port, and remove the SSL options. For exmaple, here is what the snippet looks like with TLS encryption: 
+```
+stream {
+    server {
+        listen                11112 ssl;
+        proxy_pass            orthanc-service:4242;
+        ssl_certificate       /usr/local/nginx/conf/site.pem;
+        ssl_certificate_key   /usr/local/nginx/conf/site.pem;
+        ssl_protocols         SSLv3 TLSv1 TLSv1.2 TLSv1.3;
+        ssl_ciphers           HIGH:!aNULL:!MD5:ECDH+AESGCM;
+        ssl_session_cache     shared:SSL:20m;
+        ssl_session_timeout   4h;
+        ssl_handshake_timeout 30s;
+    }
+}
+```
+Here is what it looks like after removing TLS encryption:
+
+```
+stream {
+    server {
+        listen                11112;
+        proxy_pass            orthanc-service:4242;
+    }
+}
+```
+
+When using dcmtk utility for DICOM Ping or C-STORE, also remove the arguments related to tls.

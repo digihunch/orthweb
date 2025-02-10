@@ -8,7 +8,7 @@ Orthanc handles sensitive data and must be hosted on secure platforms. The motiv
 
 3. A baseline Orthanc configuration with key plugins such as advanced authorization and auxiliary services such as KeyCloak. The artifact for configuration management is available in the [orthanc-config](https://github.com/digihunchinc/orthanc-config) GitHub repository. To customize configuration, create a fork of this repo.
 
-While **Orthweb** provisions a fully functional Orthanc solution, there are some areas it does not intend to address. One example is ingress traffic management, whose design must account for integration with the current infrastructure and security setup, which is vastly different from organziation to organization. To drive this initiative in your organization, contact professional services at [Digi Hunch](https://www.digihunch.com).
+While **Orthweb** provisions a fully functional Orthanc solution, there are some areas it does not intend to address. One example is ingress traffic management, whose design must account for integration with the current infrastructure and security setup, which is vastly different from organziation to organization. To drive this initiative in your organization, contact professional services at [Digi Hunch](https://www.digihunch.com)💡.
 
 ## Use case
 
@@ -18,7 +18,7 @@ If you have pre-created networking layer (e.g. VPC, subnets), then you only need
 
 To allow Terraform to create resources in AWS, it needs sufficient permissions for deployment. Such permission for deployment usually requires administrator-level access.
 
-## Toolings
+## Choice of Tools
 
 Orthweb is based on numerous open-source tools and commercial cloud services. Here are the rationales behind the choice:
 
@@ -35,4 +35,4 @@ Orthweb is based on numerous open-source tools and commercial cloud services. He
 
 ## Getting Started
 
-If you just want to start deploying Orthanc, skip to the [Deployment](../deployment/preparation.md) section. Otherwise, in the next section, we will discuss the architecture design, how to use and what to expect from the **Orthweb** solution.
+If you just want to start deploying Orthanc, skip right to the [Deployment](../deployment/preparation.md) section. Otherwise, in the next section, we will discuss the architecture design, how to use and what to expect from the **Orthweb** solution.

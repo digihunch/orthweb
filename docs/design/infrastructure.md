@@ -5,7 +5,7 @@ The Orthweb proposes a reference architecture to host Orthanc on AWS. The refere
 
 The architecure includes a VPC that spans across two availability zones (AZs). Each AZ has a public and a private subnet. Each public subnet stands one EC2 instance, with a public IP address routable from the Internet. The Reference Architecture is illustrated in the diagram below:
 
-![Diagram](../assets/images/Orthweb.png)
+  ![Diagram](../assets/images/Orthweb.png)
 
 The two EC2 instances operates active-active, each with its own public IP. There are more options to manage application traffic and they are discussed separately in the section. The instances listens for DICOM (over TLS) and HTTPS traffic on TCP port `11112` and `443`. 
 

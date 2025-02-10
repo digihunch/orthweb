@@ -1,5 +1,7 @@
 ## Overview
-We first perform a basic level of validation as an end user. Then we'll dive into technical validation with certain components.
+We first perform a basic level of validation as an end user. Then we'll dive into technical validation with certain components. In all the validation steps, it is important to know the correct service address. If your environment comes with customized ingress configuration, such as using your domain name, content delivery network or load balancer, the service address used for testing will be different. 
+
+The steps given are based on out-of-box configurations. So the service address looks like `ec2-35-183-66-248.ca-central-1.compute.amazonaws.com`.
 
 ## DICOM ping
 
@@ -14,9 +16,9 @@ Remember to enable TLS. Then you will be able to verify the node (i.e. C-ECHO) a
 ## Web Browser
 To Validate the the web service, simply visit the site address (with `https://` scheme) and put in the [default credential](https://github.com/digihunch/orthweb/blob/main/app/orthanc.json#L6) at the prompt. Note that your web browser may flag the site as insecure because the server certificate's CA is self-signed and not trusted. 
 
-Alternatively, you may use `curl` command to fetch the web content:
+Alternatively, you may use `curl` command to fetch the health check URI:
 
 ```sh
-curl -HHost:web.orthweb.com -k -X GET https://ec2-35-183-66-248.ca-central-1.compute.amazonaws.com/app/explorer.html -u admin:orthanc --cacert ca.crt
+curl -HHost:web.orthweb.com -k -X GET https://ec2-35-183-66-248.ca-central-1.compute.amazonaws.com/nginx_health --cacert ca.crt
 ```
-The curl command should print out the web content.
+The curl command should return 200 code.

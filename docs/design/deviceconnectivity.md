@@ -7,7 +7,7 @@ As a result, users should not send DICOM images from modalities over the Interne
 ## Private Network Connection
 At network infrastructure level, the organzation may build a AWS Direct Connect connection with AWS. Requirement for such network connection should be reviewed with the network team of the organization, and require collaboration of multiple teams.
 
-![Diagram](../assets/images/private-connection.png)
+  ![Diagram](../assets/images/private-connection.png)
 
 Instead of private physical connection, user may build a private connection over the Internet using VPN.
 
@@ -30,6 +30,6 @@ Once the VPC client software (OpenVPN or AWS VPN client) is configured and conne
 ## Use a DICOM proxy
 The organization may consider running a local DICOM proxy. The proxy receives images from modality in the clear, and forwards the images over the Internet to Orthanc. Unlike the modality application, such proxy applications usually come with full support of TLS. There are not many open-source options. An on-prem instance of Orthanc can be configured to act as a DICOM proxy.
 
-![Diagram](../assets/images/dicom-proxy.png)
+  ![Diagram](../assets/images/dicom-proxy.png)
 
 In this configuration the DICOM port should also open. Use security group to restrict where the port can receive traffic.
