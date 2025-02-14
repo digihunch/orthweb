@@ -22,7 +22,7 @@ locals {
           from_port   = 443
           to_port     = 443
           protocol    = "tcp"
-          cidr_blocks = var.vpc_config.dcm_cli_cidrs
+          cidr_blocks = var.vpc_config.web_cli_cidrs
           rule_desc   = "Allow web traffic"
         },
         {
