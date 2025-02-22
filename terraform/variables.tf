@@ -96,7 +96,7 @@ variable "deployment_options" {
   default = {
     ConfigRepo     = "https://github.com/digihunchinc/orthanc-config.git" # configuration repo to clone.
     SiteName       = null
-    InitCommand    = "pwd && echo Custom Init Command Here"
+    InitCommand    = "pwd && echo Custom Init Command (e.g. make aws)" # Command to run from config directory.
     EnableCWLog    = true
     CWLogRetention = 3 # CloudWatch Log group Retention days -1 to disable
   }
