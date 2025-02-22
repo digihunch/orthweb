@@ -9,7 +9,7 @@ runuser -l ec2-user -c '
   DBSecret=$(aws secretsmanager get-secret-value --secret-id ${sec_name} --query SecretString --output text)
   DBUserName=$(echo $DBSecret | jq -r .username)
   DBPassword=$(echo $DBSecret | jq -r .password)
-  ConfigDir=repo_name=$(basename "${config_repo}" .git)
+  ConfigDir=$(basename "${config_repo}" .git)
 
   if [ -n "${site_name}" ]; then
     sed -i "/^SITE_NAME/c\SITE_NAME=${site_name}" $ConfigDir/.env
