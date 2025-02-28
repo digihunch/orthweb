@@ -18,7 +18,9 @@ provider "tls" {}
 provider "aws" {
   default_tags {
     tags = {
-      Application = "VPN"
+      Environment = var.provider_tags.environment
+      Owner       = var.provider_tags.owner
+      Application = "Client-VPN-Addon"
     }
   }
 }

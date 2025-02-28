@@ -4,7 +4,7 @@ data "aws_vpc" "main" {
 
 data "aws_subnets" "private" {
   filter {
-    name = "vpc-id"
+    name   = "vpc-id"
     values = [var.client_vpn_options.vpc_id]
   }
   tags = {
@@ -21,13 +21,13 @@ resource "tls_self_signed_cert" "ca_cert" {
   private_key_pem = tls_private_key.ca_key.private_key_pem
 
   subject {
-    common_name  = "ca.vpn.digihunch.com"
+    common_name  = "ca.${var.client_vpn_options.cert_domain_suffix}"
     organization = "VPN Organization"
   }
 
-  is_ca_certificate = true
-  set_authority_key_id = true
-  set_subject_key_id = true
+  is_ca_certificate     = true
+  set_authority_key_id  = true
+  set_subject_key_id    = true
   validity_period_hours = var.client_vpn_options.cert_validity_period_hours
 
   allowed_uses = [
@@ -50,20 +50,20 @@ resource "tls_cert_request" "server_csr" {
   private_key_pem = tls_private_key.server_key.private_key_pem
 
   subject {
-    common_name = "server.vpn.digihunch.com"
+    common_name = "server.${var.client_vpn_options.cert_domain_suffix}"
   }
 
-  dns_names = ["server.vpn.digihunch.com"]
+  dns_names = ["server.${var.client_vpn_options.cert_domain_suffix}"]
 }
 
 resource "tls_cert_request" "client_csr" {
   private_key_pem = tls_private_key.client_key.private_key_pem
 
   subject {
-    common_name = "client.vpn.digihunch.com"
+    common_name = "client.${var.client_vpn_options.cert_domain_suffix}"
   }
 
-  dns_names = ["client.vpn.digihunch.com"]
+  dns_names = ["client.${var.client_vpn_options.cert_domain_suffix}"]
 }
 
 resource "tls_locally_signed_cert" "server_cert" {
@@ -71,8 +71,8 @@ resource "tls_locally_signed_cert" "server_cert" {
   ca_private_key_pem = tls_private_key.ca_key.private_key_pem
   ca_cert_pem        = tls_self_signed_cert.ca_cert.cert_pem
 
-  set_subject_key_id = true
-  is_ca_certificate = false
+  set_subject_key_id    = true
+  is_ca_certificate     = false
   validity_period_hours = var.client_vpn_options.cert_validity_period_hours
 
   allowed_uses = [
@@ -121,7 +121,7 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   server_certificate_arn = aws_acm_certificate.imported_vpn_server_cert.arn
   client_cidr_block      = var.client_vpn_options.vpn_client_cidr
   vpc_id                 = var.client_vpn_options.vpc_id
-  security_group_ids = [aws_security_group.vpn_secgroup.id]
+  security_group_ids     = [aws_security_group.vpn_secgroup.id]
   split_tunnel           = true
 
   authentication_options {
@@ -163,7 +163,7 @@ resource "aws_ec2_client_vpn_authorization_rule" "authorization_rule" {
 }
 
 resource "aws_ec2_client_vpn_network_association" "vpn_subnet_association" {
-  for_each = toset(data.aws_subnets.private.ids)
+  for_each               = toset(data.aws_subnets.private.ids)
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client_vpn.id
   subnet_id              = each.value
 }
