@@ -36,7 +36,10 @@ resource "aws_subnet" "public_subnets" {
   cidr_block              = each.value.subnet_cidr_block
   map_public_ip_on_launch = true
   availability_zone       = each.value.availability_zone
-  tags                    = { Name = "${var.resource_prefix}-PublicSubnet${each.key}" }
+  tags = {
+    Name = "${var.resource_prefix}-PublicSubnet${each.key}"
+    Type = "Public"
+  }
 }
 
 resource "aws_subnet" "private_subnets" {
@@ -51,7 +54,10 @@ resource "aws_subnet" "private_subnets" {
   cidr_block              = each.value.subnet_cidr_block
   map_public_ip_on_launch = false
   availability_zone       = each.value.availability_zone
-  tags                    = { Name = "${var.resource_prefix}-PrivateSubnet${each.key}" }
+  tags = {
+    Name = "${var.resource_prefix}-PrivateSubnet${each.key}"
+    Type = "Private"
+  }
 }
 resource "aws_internet_gateway" "maingw" {
   vpc_id = aws_vpc.orthmain.id
@@ -112,7 +118,6 @@ resource "aws_vpc_endpoint" "standard_interface_endpoints" {
   subnet_ids          = values(aws_subnet.private_subnets)[*].id
   security_group_ids  = [aws_security_group.ifep_sg.id]
   tags                = { Name = "${var.resource_prefix}-${each.key}-ifep" }
-  #depends_on = [ aws_subnet.private_subnets ]
 }
 
 
