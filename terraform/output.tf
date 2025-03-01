@@ -14,7 +14,3 @@ output "s3_bucket" {
   value       = module.storage.s3_info.bucket_domain_name
   description = "S3 bucket name for data storage"
 }
-output "vpc_id" {
-  value       = module.network.vpc_info.vpc_id
-  description = "VPC ID"
-}

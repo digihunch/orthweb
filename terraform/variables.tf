@@ -1,6 +1,10 @@
 variable "ec2_config" {
-  description = "Configuration Options for EC2 instances"
-  type        = map(string)
+  description = "EC2 instance configuration.\n `InstanceType` must be amd64 Linux Instance; \n `PublicKeyData` is the Public Key (RSA or ED25519) of the administrator; used when deploying from Terraform Cloud; overriden by valid *PublicKeyPath* value;  \n `PublicKeyPath` is the local file path to the public key. Used when deploying from an environment with access to the public key on the file system."
+  type = object({
+    InstanceType  = string
+    PublicKeyData = string
+    PublicKeyPath = string
+  })
   default = {
     InstanceType  = "t3.medium" # must be an EBS-optimized instance type with amd64 CPU architecture.
     PublicKeyData = null
@@ -26,7 +30,7 @@ variable "ec2_config" {
 }
 
 variable "network_config" {
-  description = "Networking Configuration"
+  description = "Networking Configuration\n`vpc_cidr` is the CIDR block for the main VPC.\n`dcm_cli_cidrs` represents DICOM client IP address space.\n`web_cli_cidrs` represents web client IP address space. \n `az_count` sets number of availability zones, to either 2 or 3.\n`public_subnet_pfxlen` sets the size of public subnets.\n`private_subnet_pfxlen`sets the size of private subnets.\n`interface_endpoints` specifies VPC interface endpoints to configure.\n `vpn_client_cidr` set to a non-conflicting CIDR of at least /22 to configure client VPN; otherwise leave as `null` or `\"\"` to skip client VPN configuration.\n`vpn_cert_cn_suffix` is the suffix of the Common Name of VPN certificates.\n`vpn_cert_valid_days` is validity of VPN certificate in days."
   type = object({
     vpc_cidr              = string
     dcm_cli_cidrs         = list(string)
@@ -35,6 +39,9 @@ variable "network_config" {
     public_subnet_pfxlen  = number
     private_subnet_pfxlen = number
     interface_endpoints   = list(string)
+    vpn_client_cidr       = string
+    vpn_cert_cn_suffix    = string
+    vpn_cert_valid_days   = number
   })
   default = {
     vpc_cidr              = "172.17.0.0/16"
@@ -44,6 +51,9 @@ variable "network_config" {
     public_subnet_pfxlen  = 24
     private_subnet_pfxlen = 22
     interface_endpoints   = []
+    vpn_client_cidr       = ""
+    vpn_cert_cn_suffix    = "vpn.digihunch.com"
+    vpn_cert_valid_days   = 3650
     # For all management traffic on private route: ["kms","secretsmanager","ec2","ssm","ec2messages","ssmmessages"]
     # For secrets and keys on private route: ["kms","secretsmanager"]
     # For all management traffic via Internet (lowest cost): []
@@ -69,10 +79,14 @@ variable "network_config" {
     condition     = var.network_config.az_count >= 1 && var.network_config.az_count <= 3
     error_message = "Input variable network_config.az_count must be a numeric value between 1, 2 or 3"
   }
+  validation {
+    condition     = var.network_config.vpn_client_cidr == null || var.network_config.vpn_client_cidr == "" || can(cidrhost(var.network_config.vpn_client_cidr, 32))
+    error_message = "Input variable network_config.vpn_client_cidr must be either empty or a valid IPv4 CIDR with at least /22 range."
+  }
 }
 
 variable "provider_tags" {
-  description = "Tags to apply for every resource by default"
+  description = "Tags to apply for every resource by default at provider level."
   type        = map(string)
   default = {
     environment = "dev"
@@ -85,7 +99,7 @@ variable "provider_tags" {
 }
 
 variable "deployment_options" {
-  description = "Deployment Options for Orthac app configuration"
+  description = "Deployment Options for app configuration:\n `ConfigRepo` Git Repository for app configuration.\n `SiteName` The Site URL\n `InitCommand` The command to execute from the config directory\n `EnableCWLog` Enable sending Docker daemon log to Cloud Watch.\n `CWLogRetention` Retention for Log Group"
   type = object({
     ConfigRepo     = string
     SiteName       = string

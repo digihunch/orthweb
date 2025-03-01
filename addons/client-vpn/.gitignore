@@ -1,8 +1,0 @@
-terraform.tfstate.backup
-terraform.tfstate
-.terraform/**
-.terraform.tfstate.lock.info
-.terraform.lock.hcl
-*.swp
-*.ovpn
-*.ovpn.part

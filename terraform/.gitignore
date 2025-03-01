@@ -4,3 +4,5 @@ terraform.tfstate
 .terraform.tfstate.lock.info
 .terraform.lock.hcl
 *.swp
+*.ovpn
+*.ovpn.base

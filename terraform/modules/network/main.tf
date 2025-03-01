@@ -98,14 +98,7 @@ resource "aws_security_group" "ifep_sg" {
     protocol    = "tcp"
     cidr_blocks = [var.network_cidr_blocks.vpc_cidr_block]
   }
-  # Outbound rule to block all outbound traffic
-  egress {
-    description = "Deny all outbound traffic"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1" # -1 means all protocols
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # No egress rule becasue an endpoint should not initiate communication
   tags = { Name = "${var.resource_prefix}-interface-endpoint-sg" }
 }
 

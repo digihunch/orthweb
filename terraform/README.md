@@ -9,12 +9,13 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_random"></a> [random](#provider\_random) | 3.6.3 |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.7.1 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_client_vpn"></a> [client\_vpn](#module\_client\_vpn) | ./modules/client-vpn | n/a |
 | <a name="module_database"></a> [database](#module\_database) | ./modules/database | n/a |
 | <a name="module_ec2"></a> [ec2](#module\_ec2) | ./modules/ec2 | n/a |
 | <a name="module_key"></a> [key](#module\_key) | ./modules/key | n/a |
@@ -31,10 +32,10 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_deployment_options"></a> [deployment\_options](#input\_deployment\_options) | Deployment Options for Orthac app configuration | <pre>object({<br/>    ConfigRepo     = string<br/>    SiteName       = string<br/>    InitCommand    = string<br/>    EnableCWLog    = bool<br/>    CWLogRetention = number<br/>  })</pre> | <pre>{<br/>  "CWLogRetention": 3,<br/>  "ConfigRepo": "https://github.com/digihunchinc/orthanc-config.git",<br/>  "EnableCWLog": true,<br/>  "InitCommand": "pwd && echo Custom Init Command (e.g. make aws)",<br/>  "SiteName": null<br/>}</pre> | no |
-| <a name="input_ec2_config"></a> [ec2\_config](#input\_ec2\_config) | Configuration Options for EC2 instances | `map(string)` | <pre>{<br/>  "InstanceType": "t3.medium",<br/>  "PublicKeyData": null,<br/>  "PublicKeyPath": "~/.ssh/id_rsa.pub"<br/>}</pre> | no |
-| <a name="input_network_config"></a> [network\_config](#input\_network\_config) | Networking Configuration | <pre>object({<br/>    vpc_cidr              = string<br/>    dcm_cli_cidrs         = list(string)<br/>    web_cli_cidrs         = list(string)<br/>    az_count              = number<br/>    public_subnet_pfxlen  = number<br/>    private_subnet_pfxlen = number<br/>    interface_endpoints   = list(string)<br/>  })</pre> | <pre>{<br/>  "az_count": 2,<br/>  "dcm_cli_cidrs": [<br/>    "0.0.0.0/0"<br/>  ],<br/>  "interface_endpoints": [],<br/>  "private_subnet_pfxlen": 22,<br/>  "public_subnet_pfxlen": 24,<br/>  "vpc_cidr": "172.17.0.0/16",<br/>  "web_cli_cidrs": [<br/>    "0.0.0.0/0"<br/>  ]<br/>}</pre> | no |
-| <a name="input_provider_tags"></a> [provider\_tags](#input\_provider\_tags) | Tags to apply for every resource by default | `map(string)` | <pre>{<br/>  "environment": "dev",<br/>  "owner": "info@digihunch.com"<br/>}</pre> | no |
+| <a name="input_deployment_options"></a> [deployment\_options](#input\_deployment\_options) | Deployment Options for app configuration:<br/> `ConfigRepo` Git Repository for app configuration.<br/> `SiteName` The Site URL<br/> `InitCommand` The command to execute from the config directory<br/> `EnableCWLog` Enable sending Docker daemon log to Cloud Watch.<br/> `CWLogRetention` Retention for Log Group | <pre>object({<br/>    ConfigRepo     = string<br/>    SiteName       = string<br/>    InitCommand    = string<br/>    EnableCWLog    = bool<br/>    CWLogRetention = number<br/>  })</pre> | <pre>{<br/>  "CWLogRetention": 3,<br/>  "ConfigRepo": "https://github.com/digihunchinc/orthanc-config.git",<br/>  "EnableCWLog": true,<br/>  "InitCommand": "pwd && echo Custom Init Command (e.g. make aws)",<br/>  "SiteName": null<br/>}</pre> | no |
+| <a name="input_ec2_config"></a> [ec2\_config](#input\_ec2\_config) | EC2 instance configuration.<br/> `InstanceType` must be amd64 Linux Instance; <br/> `PublicKeyData` is the Public Key (RSA or ED25519) of the administrator; used when deploying from Terraform Cloud; overriden by valid *PublicKeyPath* value;<br/> `PublicKeyPath` is the local file path to the public key. Used when deploying from an environment with access to the public key on the file system. | <pre>object({<br/>    InstanceType  = string<br/>    PublicKeyData = string<br/>    PublicKeyPath = string<br/>  })</pre> | <pre>{<br/>  "InstanceType": "t3.medium",<br/>  "PublicKeyData": null,<br/>  "PublicKeyPath": "~/.ssh/id_rsa.pub"<br/>}</pre> | no |
+| <a name="input_network_config"></a> [network\_config](#input\_network\_config) | Networking Configuration<br/>`vpc_cidr` is the CIDR block for the main VPC.<br/>`dcm_cli_cidrs` represents DICOM client IP address space.<br/>`web_cli_cidrs` represents web client IP address space. <br/> `az_count` sets number of availability zones, to either 2 or 3.<br/>`public_subnet_pfxlen` sets the size of public subnets.<br/>`private_subnet_pfxlen`sets the size of private subnets.<br/>`interface_endpoints` specifies VPC interface endpoints to configure.<br/> `vpn_client_cidr` set to a non-conflicting CIDR of at least /22 to configure client VPN; otherwise leave as `null` or `""` to skip client VPN configuration.<br/>`vpn_cert_cn_suffix` is the suffix of the Common Name of VPN certificates.<br/>`vpn_cert_valid_days` is validity of VPN certificate in days. | <pre>object({<br/>    vpc_cidr              = string<br/>    dcm_cli_cidrs         = list(string)<br/>    web_cli_cidrs         = list(string)<br/>    az_count              = number<br/>    public_subnet_pfxlen  = number<br/>    private_subnet_pfxlen = number<br/>    interface_endpoints   = list(string)<br/>    vpn_client_cidr       = string<br/>    vpn_cert_cn_suffix    = string<br/>    vpn_cert_valid_days   = number<br/>  })</pre> | <pre>{<br/>  "az_count": 2,<br/>  "dcm_cli_cidrs": [<br/>    "0.0.0.0/0"<br/>  ],<br/>  "interface_endpoints": [],<br/>  "private_subnet_pfxlen": 22,<br/>  "public_subnet_pfxlen": 24,<br/>  "vpc_cidr": "172.17.0.0/16",<br/>  "vpn_cert_cn_suffix": "vpn.digihunch.com",<br/>  "vpn_cert_valid_days": 3650,<br/>  "vpn_client_cidr": "",<br/>  "web_cli_cidrs": [<br/>    "0.0.0.0/0"<br/>  ]<br/>}</pre> | no |
+| <a name="input_provider_tags"></a> [provider\_tags](#input\_provider\_tags) | Tags to apply for every resource by default at provider level. | `map(string)` | <pre>{<br/>  "environment": "dev",<br/>  "owner": "info@digihunch.com"<br/>}</pre> | no |
 
 ## Outputs
 
@@ -44,4 +45,3 @@
 | <a name="output_host_info"></a> [host\_info](#output\_host\_info) | Instance IDs and Public IPs of EC2 instances |
 | <a name="output_s3_bucket"></a> [s3\_bucket](#output\_s3\_bucket) | S3 bucket name for data storage |
 | <a name="output_server_dns"></a> [server\_dns](#output\_server\_dns) | DNS names of EC2 instances |
-| <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | VPC ID |
