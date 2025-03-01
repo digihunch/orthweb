@@ -33,7 +33,7 @@ To determin the variable values, some decisions to make are:
 - CIDR blocks of the web and dicom client to whitelist
 - Whether or not to ship docker log to Cloud Watch and retention period
 
-In most cases, users at least need to update the provider tag and site name. 
+In most cases, users at least need to update the provider tag and site name. Read the full document for input variables [here](https://github.com/digihunch/orthweb/blob/main/terraform/README.md).
 
 ## Terraform Plan
 We plan the deployment with command:

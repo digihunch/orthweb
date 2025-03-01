@@ -12,7 +12,7 @@ While **Orthweb** provisions a fully functional Orthanc solution, there are some
 
 ## Use case
 
-If you have an AWS account without networking foundation for Orthanc, the template in [Orthweb](https://github.com/digihunch/orthweb) suits exactly to your needs. Then you may use the automation artifact in [orthanc-config](https://github.com/digihunchinc/orthanc-config) to configure Orthanc. 
+If you have an AWS account without networking foundation for Orthanc, the template in [Orthweb](https://github.com/digihunch/orthweb) suits exactly to your needs. Then you may use the automation artifact in [orthanc-config](https://github.com/digihunchinc/orthanc-config), or your own repository, to configure Orthanc. 
 
 If you have pre-created networking layer (e.g. VPC, subnets), then you only need to create virtual machine with relevant dependencies before installing Orthanc. You can use **Orthweb** as a reference implementation to examine how the application interact with underlying cloud resources, and potentially reuse some Terraform [modules](https://github.com/digihunch/orthweb/tree/main/terraform/modules) in the repo. 
 

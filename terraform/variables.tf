@@ -1,6 +1,10 @@
 variable "ec2_config" {
-  description = "Configuration Options for EC2 instances"
-  type        = map(string)
+  description = "EC2 instance configuration.\n `InstanceType` must be amd64 Linux Instance; \n `PublicKeyData` is the Public Key (RSA or ED25519) of the administrator; used when deploying from Terraform Cloud; overriden by valid *PublicKeyPath* value;  \n `PublicKeyPath` is the local file path to the public key. Used when deploying from an environment with access to the public key on the file system."
+  type = object({
+    InstanceType  = string
+    PublicKeyData = string
+    PublicKeyPath = string
+  })
   default = {
     InstanceType  = "t3.medium" # must be an EBS-optimized instance type with amd64 CPU architecture.
     PublicKeyData = null
@@ -26,7 +30,7 @@ variable "ec2_config" {
 }
 
 variable "network_config" {
-  description = "Networking Configuration\n `vpn_client_cidr` set to a non-conflicting CIDR of at least /22 to configure client VPN. Otherwise leave blank or null to not configure client VPN."
+  description = "Networking Configuration\n`vpc_cidr` is the CIDR block for the main VPC.\n`dcm_cli_cidrs` represents DICOM client IP address space.\n`web_cli_cidrs` represents web client IP address space. \n `az_count` sets number of availability zones, to either 2 or 3.\n`public_subnet_pfxlen` sets the size of public subnets.\n`private_subnet_pfxlen`sets the size of private subnets.\n`interface_endpoints` specifies VPC interface endpoints to configure.\n `vpn_client_cidr` set to a non-conflicting CIDR of at least /22 to configure client VPN; otherwise leave as `null` or `\"\"` to skip client VPN configuration.\n`vpn_cert_cn_suffix` is the suffix of the Common Name of VPN certificates.\n`vpn_cert_valid_days` is validity of VPN certificate in days."
   type = object({
     vpc_cidr              = string
     dcm_cli_cidrs         = list(string)
@@ -82,7 +86,7 @@ variable "network_config" {
 }
 
 variable "provider_tags" {
-  description = "Tags to apply for every resource by default"
+  description = "Tags to apply for every resource by default at provider level."
   type        = map(string)
   default = {
     environment = "dev"
