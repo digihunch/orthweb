@@ -26,7 +26,7 @@ variable "ec2_config" {
 }
 
 variable "network_config" {
-  description = "Networking Configuration"
+  description = "Networking Configuration\n vpn_client_cidr: set to a non-conflicting CIDR of at least /22 to configure client VPN. Otherwise leave blank or null to not configure client VPN."
   type = object({
     vpc_cidr              = string
     dcm_cli_cidrs         = list(string)
@@ -47,7 +47,7 @@ variable "network_config" {
     public_subnet_pfxlen  = 24
     private_subnet_pfxlen = 22
     interface_endpoints   = []
-    vpn_client_cidr       = "192.168.0.0/22"
+    vpn_client_cidr       = ""
     vpn_cert_cn_suffix    = "vpn.digihunch.com"
     vpn_cert_valid_days   = 3650
     # For all management traffic on private route: ["kms","secretsmanager","ec2","ssm","ec2messages","ssmmessages"]

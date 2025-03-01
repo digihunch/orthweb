@@ -11,7 +11,7 @@ network_config = {
   public_subnet_pfxlen  = 24
   private_subnet_pfxlen = 22
   interface_endpoints   = []
-  vpn_client_cidr       = "192.168.0.0/22"
+  vpn_client_cidr       = "" # 192.168.0.0/22
   vpn_cert_cn_suffix    = "vpn.digihunch.com"
   vpn_cert_valid_days   = 3650
 }
