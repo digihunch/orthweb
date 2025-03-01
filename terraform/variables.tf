@@ -26,7 +26,7 @@ variable "ec2_config" {
 }
 
 variable "network_config" {
-  description = "Networking Configuration\n - `vpn_client_cidr`: set to a non-conflicting CIDR of at least /22 to configure client VPN. Otherwise leave blank or null to not configure client VPN."
+  description = "Networking Configuration\n * `vpn_client_cidr`: set to a non-conflicting CIDR of at least /22 to configure client VPN. Otherwise leave blank or null to not configure client VPN."
   type = object({
     vpc_cidr              = string
     dcm_cli_cidrs         = list(string)
