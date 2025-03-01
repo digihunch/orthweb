@@ -1,11 +1,15 @@
+locals {
+  vpncfg_filename = "vpn-config.ovpn"
+}
+
 data "aws_vpc" "main" {
-  id = var.client_vpn_options.vpc_id
+  id = var.vpn_config.vpc_id
 }
 
 data "aws_subnets" "private" {
   filter {
     name   = "vpc-id"
-    values = [var.client_vpn_options.vpc_id]
+    values = [var.vpn_config.vpc_id]
   }
   tags = {
     Type = "Private"
@@ -21,14 +25,14 @@ resource "tls_self_signed_cert" "ca_cert" {
   private_key_pem = tls_private_key.ca_key.private_key_pem
 
   subject {
-    common_name  = "ca.${var.client_vpn_options.cert_domain_suffix}"
+    common_name  = "ca.${var.vpn_config.vpn_cert_cn_suffix}"
     organization = "VPN Organization"
   }
 
   is_ca_certificate     = true
   set_authority_key_id  = true
   set_subject_key_id    = true
-  validity_period_hours = var.client_vpn_options.cert_validity_period_hours
+  validity_period_hours = var.vpn_config.vpn_cert_valid_days
 
   allowed_uses = [
     "cert_signing",
@@ -50,20 +54,20 @@ resource "tls_cert_request" "server_csr" {
   private_key_pem = tls_private_key.server_key.private_key_pem
 
   subject {
-    common_name = "server.${var.client_vpn_options.cert_domain_suffix}"
+    common_name = "server.${var.vpn_config.vpn_cert_cn_suffix}"
   }
 
-  dns_names = ["server.${var.client_vpn_options.cert_domain_suffix}"]
+  dns_names = ["server.${var.vpn_config.vpn_cert_cn_suffix}"]
 }
 
 resource "tls_cert_request" "client_csr" {
   private_key_pem = tls_private_key.client_key.private_key_pem
 
   subject {
-    common_name = "client.${var.client_vpn_options.cert_domain_suffix}"
+    common_name = "client.${var.vpn_config.vpn_cert_cn_suffix}"
   }
 
-  dns_names = ["client.${var.client_vpn_options.cert_domain_suffix}"]
+  dns_names = ["client.${var.vpn_config.vpn_cert_cn_suffix}"]
 }
 
 resource "tls_locally_signed_cert" "server_cert" {
@@ -73,7 +77,7 @@ resource "tls_locally_signed_cert" "server_cert" {
 
   set_subject_key_id    = true
   is_ca_certificate     = false
-  validity_period_hours = var.client_vpn_options.cert_validity_period_hours
+  validity_period_hours = var.vpn_config.vpn_cert_valid_days * 24
 
   allowed_uses = [
     "key_encipherment",
@@ -87,7 +91,7 @@ resource "tls_locally_signed_cert" "client_cert" {
   ca_private_key_pem = tls_private_key.ca_key.private_key_pem
   ca_cert_pem        = tls_self_signed_cert.ca_cert.cert_pem
 
-  validity_period_hours = var.client_vpn_options.cert_validity_period_hours
+  validity_period_hours = var.vpn_config.vpn_cert_valid_days * 24
 
   allowed_uses = [
     "key_encipherment",
@@ -119,8 +123,8 @@ resource "aws_acm_certificate" "imported_vpn_client_cert" {
 resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
   description            = "Client VPN"
   server_certificate_arn = aws_acm_certificate.imported_vpn_server_cert.arn
-  client_cidr_block      = var.client_vpn_options.vpn_client_cidr
-  vpc_id                 = var.client_vpn_options.vpc_id
+  client_cidr_block      = var.vpn_config.vpn_client_cidr
+  vpc_id                 = var.vpn_config.vpc_id
   security_group_ids     = [aws_security_group.vpn_secgroup.id]
   split_tunnel           = true
 
@@ -136,15 +140,19 @@ resource "aws_ec2_client_vpn_endpoint" "client_vpn" {
     Name = "ClientVPN"
   }
   provisioner "local-exec" {
-    command = "aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id ${self.id} --output text > out/vpn-config.ovpn.part"
+    command = "aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id ${self.id} --output text > ./out/${local.vpncfg_filename}.base"
   }
+}
+data "local_file" "vpn-config-base" {
+  filename   = "./out/${local.vpncfg_filename}.base"
+  depends_on = [aws_ec2_client_vpn_endpoint.client_vpn]
 }
 
 resource "local_file" "vpn_config" {
   depends_on = [aws_ec2_client_vpn_endpoint.client_vpn]
-  filename   = "out/vpn-config.ovpn"
+  filename   = "./out/${local.vpncfg_filename}"
   content    = <<-EOT
-${file("out/vpn-config.ovpn.part")}
+${data.local_file.vpn-config-base.content}
 
 <cert>
 ${tls_locally_signed_cert.client_cert.cert_pem}
@@ -154,6 +162,14 @@ ${tls_locally_signed_cert.client_cert.cert_pem}
 ${tls_private_key.client_key.private_key_pem_pkcs8}
 </key>
 EOT
+}
+
+# Upload the VPN config file to S3 bucket
+resource "aws_s3_object" "vpc_config_file" {
+  bucket      = var.s3_bucket_name
+  key         = "config/${local.vpncfg_filename}"
+  source      = "./out/${local.vpncfg_filename}"
+  source_hash = filebase64sha256("./out/${local.vpncfg_filename}")
 }
 
 resource "aws_ec2_client_vpn_authorization_rule" "authorization_rule" {
@@ -171,7 +187,7 @@ resource "aws_ec2_client_vpn_network_association" "vpn_subnet_association" {
 resource "aws_security_group" "vpn_secgroup" {
   name        = "vpn-secgroup"
   description = "Security group for VPN endpoint"
-  vpc_id      = var.client_vpn_options.vpc_id
+  vpc_id      = var.vpn_config.vpc_id
 
   ingress {
     from_port   = 443

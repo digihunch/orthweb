@@ -71,3 +71,18 @@ module "ec2" {
   resource_prefix    = random_pet.prefix.id
   depends_on         = [module.database, module.storage, module.network]
 }
+
+module "client_vpn" {
+  source = "./modules/client-vpn"
+  count  = var.network_config.vpn_client_cidr == "" || var.network_config.vpn_client_cidr == null ? 0 : 1
+  vpn_config = {
+    vpc_id              = module.network.vpc_info.vpc_id
+    private_subnet_ids  = module.network.vpc_info.private_subnet_ids
+    vpn_client_cidr     = var.network_config.vpn_client_cidr
+    vpn_cert_cn_suffix  = var.network_config.vpn_cert_cn_suffix
+    vpn_cert_valid_days = var.network_config.vpn_cert_valid_days
+  }
+
+  s3_bucket_name = module.storage.s3_info.bucket_name
+  custom_key_arn = module.key.custom_key_id
+}

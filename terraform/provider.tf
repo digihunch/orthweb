@@ -17,3 +17,5 @@ provider "aws" {
     }
   }
 }
+
+provider "tls" {}

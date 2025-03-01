@@ -12,14 +12,12 @@ variable "vpc_config" {
     dcm_cli_cidrs             = list(string)
   })
 }
-
 variable "s3_bucket_name" {
   type = string
 }
 variable "role_name" {
   type = string
 }
-
 variable "db_info" {
   type = object({
     db_address             = string

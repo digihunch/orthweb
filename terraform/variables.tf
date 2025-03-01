@@ -35,6 +35,9 @@ variable "network_config" {
     public_subnet_pfxlen  = number
     private_subnet_pfxlen = number
     interface_endpoints   = list(string)
+    vpn_client_cidr       = string
+    vpn_cert_cn_suffix    = string
+    vpn_cert_valid_days   = number
   })
   default = {
     vpc_cidr              = "172.17.0.0/16"
@@ -44,6 +47,9 @@ variable "network_config" {
     public_subnet_pfxlen  = 24
     private_subnet_pfxlen = 22
     interface_endpoints   = []
+    vpn_client_cidr       = "192.168.0.0/22"
+    vpn_cert_cn_suffix    = "vpn.digihunch.com"
+    vpn_cert_valid_days   = 3650
     # For all management traffic on private route: ["kms","secretsmanager","ec2","ssm","ec2messages","ssmmessages"]
     # For secrets and keys on private route: ["kms","secretsmanager"]
     # For all management traffic via Internet (lowest cost): []
@@ -68,6 +74,10 @@ variable "network_config" {
   validation {
     condition     = var.network_config.az_count >= 1 && var.network_config.az_count <= 3
     error_message = "Input variable network_config.az_count must be a numeric value between 1, 2 or 3"
+  }
+  validation {
+    condition     = var.network_config.vpn_client_cidr == null || var.network_config.vpn_client_cidr == "" || can(cidrhost(var.network_config.vpn_client_cidr, 32))
+    error_message = "Input variable network_config.vpn_client_cidr must be either empty or a valid IPv4 CIDR with at least /22 range."
   }
 }
 
