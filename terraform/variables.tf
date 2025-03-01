@@ -26,7 +26,7 @@ variable "ec2_config" {
 }
 
 variable "network_config" {
-  description = "Networking Configuration\n * `vpn_client_cidr`: set to a non-conflicting CIDR of at least /22 to configure client VPN. Otherwise leave blank or null to not configure client VPN."
+  description = "Networking Configuration\n `vpn_client_cidr` set to a non-conflicting CIDR of at least /22 to configure client VPN. Otherwise leave blank or null to not configure client VPN."
   type = object({
     vpc_cidr              = string
     dcm_cli_cidrs         = list(string)
@@ -95,7 +95,7 @@ variable "provider_tags" {
 }
 
 variable "deployment_options" {
-  description = "Deployment Options for Orthac app configuration"
+  description = "Deployment Options for app configuration:\n `ConfigRepo` Git Repository for app configuration.\n `SiteName` The Site URL\n `InitCommand` The command to execute from the config directory\n `EnableCWLog` Enable sending Docker daemon log to Cloud Watch.\n `CWLogRetention` Retention for Log Group"
   type = object({
     ConfigRepo     = string
     SiteName       = string
